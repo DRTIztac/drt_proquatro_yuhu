@@ -330,12 +330,16 @@ define([
                             "internal_id": "116",
                             "folio": 'nombre_transaccion',
                             "total": 0,
-                            "custbody_drt_nc_identificador_uuid": ""
+                            "custbody_drt_nc_identificador_uuid": "",
+                            "custbody_drt_nc_identificador_folio": '',
+                            "trandate": '',
+                            "createddate": ''
                         },
                         3: {
                             "record_type": "CUSTOMER",
                             "internal_id": "3",
-                            "custentity_mx_rfc": "rfc"
+                            "custentity_mx_rfc": "rfc",
+                            "custentity_drt_nc_curp": "",
                         }
                     }
                 };
