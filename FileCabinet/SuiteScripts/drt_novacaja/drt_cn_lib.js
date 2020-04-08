@@ -7,12 +7,14 @@
 define([
         'N/log',
         'N/search',
-        'N/record'
+        'N/record',
+        'N/https'
     ],
     function (
         log,
         search,
-        record
+        record,
+        https
     ) {
 
         function searchRecord(param_type, param_filters, param_column) {
@@ -325,26 +327,96 @@ define([
                     record: '',
                     error: [],
                     data: {
-                        116: {
-                            "record_type": "SALES_ORDER",
-                            "internal_id": "116",
-                            "folio": 'nombre_transaccion',
-                            "total": 0,
-                            "custbody_drt_nc_identificador_uuid": "",
-                            "custbody_drt_nc_identificador_folio": '',
-                            "trandate": '',
-                            "createddate": ''
-                        },
-                        3: {
-                            "record_type": "CUSTOMER",
-                            "internal_id": "3",
-                            "custentity_mx_rfc": "rfc",
-                            "custentity_drt_nc_curp": "",
-                        }
+                        // 116: {
+                        //     "record_type": "SALES_ORDER",
+                        //     "internal_id": "116",
+                        //     "folio": 'nombre_transaccion',
+                        //     "total": 0,
+                        //     "custbody_drt_nc_identificador_uuid": "",
+                        //     "custbody_drt_nc_identificador_folio": '',
+                        //     "trandate": '',
+                        //     "datecreated": ''
+                        // },
+                        // 3: {
+                        //     "record_type": "CUSTOMER",
+                        //     "internal_id": "3",
+                        //     "custentity_mx_rfc": "rfc",
+                        //     "custentity_drt_nc_curp": "",
+                        // }
                     }
                 };
+
                 if (param_id_registro) {
                     respuesta.record = param_id_registro;
+                    var recordConect = search.lookupFields({
+                        type: 'customrecord_drt_nc_conect',
+                        id: param_id_registro,
+                        columns: [
+                            'custrecord_drt_nc_c_procesando',
+                            'custrecord_drt_nc_c_terminado',
+                            'custrecord_drt_nc_c_resultado',
+                            'custrecord_drt_nc_c_error',
+                            'custrecord_drt_nc_c_transaccion',
+                            'custrecord_drt_nc_c_entity',
+                        ]
+                    }) || '';
+                    log.audit({
+                        title: 'recordConect',
+                        details: JSON.stringify(recordConect)
+                    });
+                    if (recordConect) {
+                        if (recordConect.custrecord_drt_nc_c_procesando) {
+                            respuesta.data.procesando = recordConect.custrecord_drt_nc_c_procesando;
+                        }
+                        if (recordConect.custrecord_drt_nc_c_terminado) {
+                            respuesta.data.terminado = recordConect.custrecord_drt_nc_c_terminado;
+                        }
+                        if (recordConect.custrecord_drt_nc_c_resultado) {
+                            respuesta.data.resultado = recordConect.custrecord_drt_nc_c_resultado;
+                        }
+                        if (recordConect.custrecord_drt_nc_c_error) {
+                            respuesta.data.error = recordConect.custrecord_drt_nc_c_error;
+                        }
+                        if (recordConect.custrecord_drt_nc_c_transaccion && recordConect.custrecord_drt_nc_c_transaccion[0] && recordConect.custrecord_drt_nc_c_transaccion[0].value) {
+                            var transaccionLookup = search.lookupFields({
+                                type: search.Type.TRANSACTION,
+                                id: recordConect.custrecord_drt_nc_c_transaccion[0].value,
+                                columns: [
+                                    'tranid',
+                                    'total',
+                                    'custbody_drt_nc_identificador_uuid',
+                                    'custbody_drt_nc_identificador_folio',
+                                    'trandate',
+                                    'datecreated',
+                                ]
+                            }) || '';
+                            respuesta.data.SALES_ORDER = {};
+                            respuesta.data.SALES_ORDER.id = recordConect.custrecord_drt_nc_c_transaccion[0].value || '';
+                            respuesta.data.SALES_ORDER.tranid = transaccionLookup.tranid || '';
+                            respuesta.data.SALES_ORDER.total = transaccionLookup.total || '';
+                            respuesta.data.SALES_ORDER.custbody_drt_nc_identificador_uuid = transaccionLookup.custbody_drt_nc_identificador_uuid || '';
+                            respuesta.data.SALES_ORDER.custbody_drt_nc_identificador_folio = transaccionLookup.custbody_drt_nc_identificador_folio || '';
+                            respuesta.data.SALES_ORDER.trandate = transaccionLookup.trandate || '';
+                            respuesta.data.SALES_ORDER.datecreated = transaccionLookup.datecreated || '';
+                        }
+                        if (recordConect.custrecord_drt_nc_c_entity && recordConect.custrecord_drt_nc_c_entity[0] && recordConect.custrecord_drt_nc_c_entity[0].value) {
+                            var entityLookup = search.lookupFields({
+                                type: search.Type.CUSTOMER,
+                                id: recordConect.custrecord_drt_nc_c_entity[0].value,
+                                columns: [
+                                    'custentity_mx_rfc',
+                                    'custentity_drt_nc_curp',
+                                ]
+                            }) || '';
+                            respuesta.data.CUSTOMER = {};
+                            respuesta.data.CUSTOMER.id = recordConect.custrecord_drt_nc_c_entity[0].value;
+                            respuesta.data.CUSTOMER.custentity_mx_rfc = entityLookup.custentity_mx_rfc;
+                            respuesta.data.CUSTOMER.custentity_drt_nc_curp = entityLookup.custentity_drt_nc_curp;
+                        }
+                    } else {
+                        respuesta.data = {};
+                        respuesta.data.message = 'Invalid Action.';
+                    }
                 } else {
                     respuesta.data = {};
                     respuesta.data.message = 'Invalid Action.';
@@ -353,7 +425,7 @@ define([
                 respuesta.success = Object.keys(respuesta.data).length > 0;
             } catch (error) {
                 log.error({
-                    title: 'error',
+                    title: 'error responseYuhu',
                     details: JSON.stringify(error)
                 });
             } finally {
@@ -365,11 +437,77 @@ define([
             }
         }
 
+        function bookWebhook(param_case) {
+            try {
+                var respuesta = {
+                    success: false,
+                    data: {}
+                };
+                switch (param_case) {
+                    case 'credito_inicial':
+                        respuesta.data.header = {
+                            "Authorization": "Api-Key Moa1M0rL.9XK5Z5qAyFcG2hH1N9dBPghwrfDkAmFc",
+                            "Content-Type": "application/json"
+                        };
+                        respuesta.data.url = 'https://apidev.yuhu.mx/api/v1/ns/webhook/';
+                        break;
+
+                    default:
+                        break;
+                }
+                respuesta.success = Object.keys(respuesta.data).length > 0;
+            } catch (error) {
+                log.error({
+                    title: 'error bookWebhook',
+                    details: JSON.stringify(error)
+                });
+            } finally {
+                log.emergency({
+                    title: 'respuesta bookWebhook',
+                    details: JSON.stringify(respuesta)
+                });
+                return respuesta;
+            }
+        }
+
+        function postWebhook(param_header, param_url, param_body) {
+            try {
+                var respuesta = {
+                    success: false,
+                    data: {
+                        code: 0
+                    }
+                };
+                respuesta.data = https.post({
+                    headers: param_header,
+                    url: param_url,
+                    body: JSON.stringify(param_body),
+                }) || {
+                    code: 0
+                };
+                respuesta.success = respuesta.data.code == 200;
+            } catch (error) {
+                log.error({
+                    title: 'error postWebhook',
+                    details: JSON.stringify(error)
+                });
+            } finally {
+                log.emergency({
+                    title: 'respuesta postWebhook ',
+                    details: JSON.stringify(respuesta)
+                });
+                return respuesta;
+            }
+        }
+
         return {
             searchRecord: searchRecord,
             createRecord: createRecord,
             submitRecord: submitRecord,
             loadsearch: loadsearch,
-            responseYuhu: responseYuhu
+            responseYuhu: responseYuhu,
+            postWebhook: postWebhook,
+            bookWebhook: bookWebhook,
+
         }
     });

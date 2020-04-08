@@ -51,7 +51,27 @@ define(
                     response = https.post({
                         headers: headerObj,
                         url: 'https://apidev.yuhu.mx/api/v1/ns/webhook/',
-                        body: "{}",
+                        body: JSON.stringify({
+                            "data": {
+                                "116": {
+                                    "recordtype": "SALES_ORDER",
+                                    "internalid": "116",
+                                    "folio": "CRT000112",
+                                    "order_number": "7",
+                                    "total": "50000.00",
+                                    "trandate": "2020-04-06",
+                                    "createddate": "2020-04-06",
+                                    "custbody_drt_nc_identificador_uuid": "d1682bd5-3fce-4499-94ed-b3186bdd15a7",
+                                    "custbody_drt_nc_identificador_folio": "CRT000112"
+                                },
+                                "3": {
+                                    "recordtype": "CUSTOMER",
+                                    "internalid": "3131",
+                                    "custentity_mx_rfc": "OILF920115V17",
+                                    "custentity_drt_nc_curp": "OILF920115HCHRJB04"
+                                }
+                            }
+                        }),
                     });
 
                     post_file('file_name.txt', 516, file.Type.PLAINTEXT, JSON.stringify(response));

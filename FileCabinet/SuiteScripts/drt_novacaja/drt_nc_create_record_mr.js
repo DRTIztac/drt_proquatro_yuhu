@@ -88,7 +88,8 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime'],
                 for (var ids in recordData) {
                     try {
                         var objupdate = {
-                            custrecord_drt_nc_c_procesando: false
+                            custrecord_drt_nc_c_procesando: false,
+                            custrecord_drt_nc_c_error: ''
                         };
                         var data = JSON.parse(recordData[ids]);
                         log.emergency({
@@ -130,6 +131,9 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime'],
                             break;
                         }
                         objupdate.custrecord_drt_nc_c_resultado = mensajeFinal.join();
+
+
+
                     } catch (error) {
                         log.error({
                             title: 'error reduce',
@@ -141,7 +145,7 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime'],
                             title: 'objupdate',
                             details: JSON.stringify(objupdate)
                         });
-                        record.submitFields({
+                        var idUpdate = record.submitFields({
                             type: data.recordType,
                             id: data.id,
                             values: objupdate,
@@ -150,6 +154,11 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime'],
                                 ignoreMandatoryFields: true
                             }
                         });
+                        var body = drt_cn_lib.responseYuhu(idUpdate);
+                        var dataWebhook = drt_cn_lib.bookWebhook('credito_inicial');
+                        if (body.success && dataWebhook.success) {
+                            var sendYuhu = drt_cn_lib.postWebhook(dataWebhook.data.header, dataWebhook.data.url, body.data);
+                        }
                     }
                 }
             } catch (error) {
@@ -298,11 +307,9 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime'],
                 var articulo_interes = runtime.getCurrentScript().getParameter({
                     name: 'custscript_drt_nc_articulo_interes'
                 }) || '';
-                var articulo_iva = runtime.getCurrentScript().getParameter({
-                    name: 'custscript_drt_nc_articulo_iva'
-                }) || '';
 
-                if (articulo_capital && articulo_interes && articulo_iva) {
+
+                if (articulo_capital && articulo_interes) {
                     for (var liena in parametro.item) {
                         objSublist_transaction.item.push({
                             item: articulo_capital,
@@ -314,23 +321,16 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime'],
                         });
                         objSublist_transaction.item.push({
                             item: articulo_interes,
-                            price: -1,
+                            price: "-1",
                             quantity: 1,
                             rate: parametro.item[liena].interes,
                             custcol_drt_nc_num_amortizacion: parametro.item[liena].num_amortizacion,
                             custcol_drt_nc_fecha: parametro.item[liena].fecha
                         });
-                        objSublist_transaction.item.push({
-                            item: articulo_iva,
-                            price: -1,
-                            quantity: 1,
-                            rate: parametro.item[liena].iva,
-                            custcol_drt_nc_num_amortizacion: parametro.item[liena].num_amortizacion,
-                            custcol_drt_nc_fecha: parametro.item[liena].fecha
-                        });
+
                     }
                 } else {
-                    respuesta.error.push('Error en la lectura de los articulos: ' + 'articulo de capital: ' + articulo_capital + 'articulo de interes: ' + articulo_interes + 'articulo de iva: ' + articulo_iva);
+                    respuesta.error.push('Error en la lectura de los articulos: ' + 'articulo de capital: ' + articulo_capital + 'articulo de interes: ' + articulo_interes);
                 }
 
                 if (respuesta.error.length > 0) {
