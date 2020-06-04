@@ -55,7 +55,7 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime'],
                 var objvalue = JSON.parse(context.value)
 
                 record.submitFields({
-                    type: objvalue.recordType,
+                    type: objvalue.recordtype,
                     id: objvalue.id,
                     values: {
                         custrecord_drt_nc_c_procesando: true
@@ -96,18 +96,11 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime'],
                             title: 'data',
                             details: JSON.stringify(data)
                         });
-                        log.audit({
-                            title: 'data.recordType',
-                            details: JSON.stringify(data.recordType)
-                        });
-                        log.audit({
-                            title: 'data.id',
-                            details: JSON.stringify(data.id)
-                        });
+
                         var parametro = JSON.parse(data.values.custrecord_drt_nc_c_context);
                         var mensajeFinal = [];
-                        switch (parametro.recordType) {
-                            case 'SALES_ORDER': {
+                        switch (parametro.recordtype) {
+                            case 'salesorder': {
                                 var salesOrder = procesarSalesOrder(data);
                                 if (salesOrder.success) {
                                     if (salesOrder.data.transaccion) {
@@ -127,7 +120,7 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime'],
                             break;
 
                         default:
-                            mensajeFinal.push('Opción no valida: ' + parametro.recordType);
+                            mensajeFinal.push('Opción no valida: ' + parametro.recordtype);
                             break;
                         }
                         objupdate.custrecord_drt_nc_c_resultado = mensajeFinal.join();
@@ -146,7 +139,7 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime'],
                             details: JSON.stringify(objupdate)
                         });
                         var idUpdate = record.submitFields({
-                            type: data.recordType,
+                            type: data.recordtype,
                             id: data.id,
                             values: objupdate,
                             options: {

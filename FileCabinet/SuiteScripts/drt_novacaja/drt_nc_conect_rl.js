@@ -22,6 +22,7 @@ define(['./drt_cn_lib.js', 'N/search'], function (drt_cn_lib, search) {
                     respuesta = checkStatus;
                 }
                 break;
+
             default:
                 respuesta.data.message = 'Invalid Action.';
                 break;
@@ -65,17 +66,35 @@ define(['./drt_cn_lib.js', 'N/search'], function (drt_cn_lib, search) {
                 record: '',
                 error: {}
             };
-            var recordLog = drt_cn_lib.createRecord('customrecord_drt_nc_conect', {
-                custrecord_drt_nc_c_context: JSON.stringify(context),
-                custrecord_drt_nc_c_http: 'POST'
-            });
-            if (recordLog.success) {
-                respuesta.data = recordLog.data;
-                respuesta.record = recordLog.data;
+            if (context.data == "update") {
+                var update = drt_cn_lib.updateYuhu(context);
+                respuesta = {};
+                respuesta = update;
 
+            } else {
+
+                if (
+                    context.recordtype == "invoice" ||
+                    context.recordtype == "customerpayment" ||
+                    context.recordtype == "cashsale" ||
+                    context.recordtype == "journalentry" ||
+                    context.recordtype == "salesorder"
+                ) {
+                    var recordLog = drt_cn_lib.createRecord('customrecord_drt_nc_conect', {
+                        custrecord_drt_nc_c_context: JSON.stringify(context),
+                        custrecord_drt_nc_c_http: 'POST'
+                    });
+                    if (recordLog.success) {
+                        respuesta.data = recordLog.data;
+                        respuesta.record = recordLog.data;
+
+                    }
+                    respuesta.success = respuesta.record != '';
+
+                } else {
+                    respuesta.data.message = 'Invalid Action.';
+                }
             }
-            respuesta.success = respuesta.record != '';
-
 
         } catch (error) {
             log.audit({

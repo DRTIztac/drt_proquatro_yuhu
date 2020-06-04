@@ -500,6 +500,63 @@ define([
             }
         }
 
+        function updateYuhu(param_context) {
+            try {
+                var respuesta = {
+                    success: false,
+                    data: '',
+                    error: []
+                };
+                log.audit({
+                    title: 'updateYuhu param_context',
+                    details: JSON.stringify(param_context)
+                });
+
+                if (param_context && param_context.recordtype && param_context.id) {
+
+                    if (Object.keys(param_context.body).length > 0) {
+                        var newRecord = record.load({
+                            type: param_context.recordtype,
+                            id: param_context.id,
+                            isDynamic: true
+                        });
+
+                        for (var field in param_context.body) {
+                            newRecord.setValue({
+                                fieldId: field,
+                                value: param_context.body[field]
+                            });
+                        }
+
+                        respuesta.data = newRecord.save({
+                            enableSourcing: false,
+                            ignoreMandatoryFields: true
+                        }) || '';
+
+                    } else {
+                        respuesta.error.push('Es necesaria informacion para actualizar {id:valor} ' + JSON.stringify(param_context.body));
+                    }
+                } else {
+                    respuesta.error.push('Es necesario id ' + param_context.id + ' y recordtype ' + param_context.recordtype);
+                }
+
+                respuesta.success = respuesta.data != '';
+            } catch (error) {
+                log.error({
+                    title: 'error updateYuhu',
+                    details: JSON.stringify(error)
+                });
+                respuesta.error.push('Error: ' + JSON.stringify(error));
+
+            } finally {
+                log.emergency({
+                    title: 'respuesta updateYuhu ',
+                    details: JSON.stringify(respuesta)
+                });
+                return respuesta;
+            }
+        }
+
         return {
             searchRecord: searchRecord,
             createRecord: createRecord,
@@ -508,6 +565,6 @@ define([
             responseYuhu: responseYuhu,
             postWebhook: postWebhook,
             bookWebhook: bookWebhook,
-
+            updateYuhu: updateYuhu,
         }
     });
