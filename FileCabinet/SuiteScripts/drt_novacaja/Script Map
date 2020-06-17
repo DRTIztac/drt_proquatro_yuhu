@@ -1,0 +1,6 @@
+
+drt_nc_create_record_mr.js          // Credito inicial
+drt_nc_factura_parcialidad.js          // Leer SalesOrder por fecha de Vencimiento de Factura generar invoice
+drt_nc_notificar_yuhu.js          // Lee todas las transacciones pendientes de enviar y se le envia el mensaje a yuhu (url por caso)
+drt_nc_pagos.js          //Crear todos los pagos pendientes por generar 
+drt_nc_timbrar.js          // timbrar  facturas
