@@ -47,7 +47,7 @@ define(
                 };
 
                 var form = serverWidget.createForm({
-                    title: 'DRT NC - Response Yuhu'
+                    title: 'DRT NC - webhook Yuhu'
                 });
                 var response = {
                     data: {
