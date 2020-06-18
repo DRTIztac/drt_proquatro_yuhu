@@ -8,20 +8,30 @@ define(
         'N/record',
         'N/file',
         'N/https',
-        'N/search'
+        'N/search',
+        './drt_cn_lib'
     ],
     function (
         serverWidget,
         record,
         file,
         https,
-        search
+        search,
+        drt_cn_lib
     ) {
         function onRequest(context) {
             try {
                 if (context.request.method === 'GET') {
+                    log.audit({
+                        title: 'context GET',
+                        details: JSON.stringify(context)
+                    });
                     printForm(context);
                 } else {
+                    log.audit({
+                        title: 'context POST',
+                        details: JSON.stringify(context)
+                    });
                     context.response.write(JSON.stringify(context.request.parameters));
                 }
             } catch (error) {
@@ -40,41 +50,39 @@ define(
                     title: 'DRT NC - Response Yuhu'
                 });
                 var response = {
-                    body: ''
+                    data: {
+                        code: '',
+                        body: '',
+                    }
                 };
                 try {
-                    var headerObj = {
-                        "Authorization": "Api-Key Moa1M0rL.9XK5Z5qAyFcG2hH1N9dBPghwrfDkAmFc",
-                        "Content-Type": "application/json"
-                    };
+                    var arrayWebhook = [
+                        'create-order', //credito_inicial,
+                        'maturities-receivable', //vencimiento_por_cobrar,
+                        'update-credit', //actualiza_saldo_credito,
+                        'outstanding-balance', //saldo_pendiente_aplicar,
+                    ];
 
-                    response = https.post({
-                        headers: headerObj,
-                        url: 'https://apidev.yuhu.mx/api/v1/ns/webhook/',
-                        body: JSON.stringify({
-                            "data": {
-                                "116": {
-                                    "recordtype": "SALES_ORDER",
-                                    "internalid": "116",
-                                    "folio": "CRT000112",
-                                    "order_number": "7",
-                                    "total": "50000.00",
-                                    "trandate": "2020-04-06",
-                                    "createddate": "2020-04-06",
-                                    "custbody_drt_nc_identificador_uuid": "d1682bd5-3fce-4499-94ed-b3186bdd15a7",
-                                    "custbody_drt_nc_identificador_folio": "CRT000112"
-                                },
-                                "3": {
-                                    "recordtype": "CUSTOMER",
-                                    "internalid": "3131",
-                                    "custentity_mx_rfc": "OILF920115V17",
-                                    "custentity_drt_nc_curp": "OILF920115HCHRJB04"
-                                }
-                            }
-                        }),
-                    });
+                    var webhookConsultado = arrayWebhook[0];
+                    if (context.request.parameters.webhook && arrayWebhook.indexOf(context.request.parameters.webhook) >= 0) {
+                        webhookConsultado = context.request.parameters.webhook;
+                    }
+                    if (context.request.parameters.webhook && parseInt(context.request.parameters.webhook) >= 0 && parseInt(context.request.parameters.webhook) <= 3) {
+                        webhookConsultado = arrayWebhook[context.request.parameters.webhook];
+                    }
 
-                    post_file('file_name.txt', 516, file.Type.PLAINTEXT, JSON.stringify(response));
+                    var dataWebhook = drt_cn_lib.bookWebhook(webhookConsultado);
+                    if (dataWebhook.success) {
+                        response = drt_cn_lib.postWebhook(dataWebhook.data.header, dataWebhook.data.url, dataWebhook.data.ejemplo);
+                    } else {
+                        response.data.code = '0';
+                        response.data.body = 'No existe Webhook ';
+                    }
+
+
+
+
+
                 } catch (error) {
                     log.error({
                         title: 'error',
@@ -82,30 +90,40 @@ define(
                     });
                 }
                 var objField = [{
-                    id: 'custpage_respose',
-                    type: serverWidget.FieldType.TEXTAREA,
-                    label: 'Respuesta Yuhu Body',
-                    seleccion: [],
-                    defaultValue: JSON.stringify(response.body).substring(0, 4000),
-                    add: 'addField',
-                    field: [],
-                }, {
-                    id: 'custpage_length',
-                    type: serverWidget.FieldType.TEXT,
-                    label: 'Respuesta Yuhu length',
-                    seleccion: [],
-                    defaultValue: JSON.stringify(response.body).length,
-                    add: 'addField',
-                    field: [],
-                }, {
-                    id: 'custpage_code',
-                    type: serverWidget.FieldType.TEXT,
-                    label: 'Respuesta Yuhu code',
-                    seleccion: [],
-                    defaultValue: response.code,
-                    add: 'addField',
-                    field: [],
-                }];
+                        id: 'custpage_case',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Webhook Consultado',
+                        seleccion: [],
+                        defaultValue: webhookConsultado,
+                        add: 'addField',
+                        field: [],
+                    },
+                    {
+                        id: 'custpage_respose',
+                        type: serverWidget.FieldType.TEXTAREA,
+                        label: 'Respuesta Yuhu Body',
+                        seleccion: [],
+                        defaultValue: JSON.stringify(response).substring(0, 4000),
+                        add: 'addField',
+                        field: [],
+                    }, {
+                        id: 'custpage_length',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Respuesta Yuhu length',
+                        seleccion: [],
+                        defaultValue: JSON.stringify(response).length,
+                        add: 'addField',
+                        field: [],
+                    }, {
+                        id: 'custpage_code',
+                        type: serverWidget.FieldType.TEXT,
+                        label: 'Respuesta Yuhu code',
+                        seleccion: [],
+                        defaultValue: response.data.code,
+                        add: 'addField',
+                        field: [],
+                    }
+                ];
                 // context.response.write(JSON.stringify(response));
 
 
