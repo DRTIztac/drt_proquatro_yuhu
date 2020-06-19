@@ -460,19 +460,19 @@ define([
                             "record": "2001",
                             "error": [],
                             "data": {
-                                "116": {
+                                "1892": {
                                     "recordtype": "salesorder",
-                                    "internalid": "116",
-                                    "folio": "nombre_transaccion",
-                                    "total": 40000.00,
-                                    "trandate": "2020-06-15",
-                                    "createddate": "2020-06-15",
+                                    "internalid": "1892",
+                                    "folio": "86",
+                                    "total": 48653.86,
+                                    "trandate": "2020-06-19",
+                                    "createddate": "2020-06-19",
                                     "custbody_drt_nc_identificador_uuid": "ab2009f4-1dba-4990-8d67-5eb8f70fb671",
                                     "custbody_drt_nc_identificador_folio": "CRT7002240"
                                 },
-                                "3": {
+                                "115": {
                                     "recordtype": "customer",
-                                    "internalid": "3",
+                                    "internalid": "115",
                                     "custentity_mx_rfc": "EIIF920502751",
                                     "custentity_drt_nc_curp": "EIIF920502HNLSRR00",
                                     "uuid_yuhu": "7b6ad1a1-638b-4cd2-938f-498149dced58"
@@ -533,16 +533,12 @@ define([
                                     "custbody_drt_nc_identificador_uuid": "ab2009f4-1dba-4990-8d67-5eb8f70fb671",
                                     "custbody_drt_nc_identificador_folio": "CRT7002240"
                                 },
-                                "301": {
-                                    "recordtype": "cheque",
-                                    "internalid": "301",
-                                    "folio": "nombre_transaccion",
-                                    "total": 24000.00,
-                                    "trandate": "",
-                                    "createddate": "",
-                                    "num_amortizacion": "1",
-                                    "custbody_drt_nc_identificador_uuid": "ab2009f4-1dba-4990-8d67-5eb8f70fb671",
-                                    "custbody_drt_nc_identificador_folio": "CRT7002240"
+                                "115": {
+                                    "recordtype": "customer",
+                                    "internalid": "115",
+                                    "custentity_drt_nc_curp": "CAGG780421HCLHLB05",
+                                    "custentity_drt_nc_uuid_yuhu": 'c9d71dcc-aceb-4d99-8ccd-63c97df9f9e6',
+                                    "custentity_mx_rfc": "CAGG780421NM1"
                                 }
                             }
                         };

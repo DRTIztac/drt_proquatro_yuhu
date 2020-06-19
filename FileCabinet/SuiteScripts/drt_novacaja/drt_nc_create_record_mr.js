@@ -55,7 +55,7 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime'],
                 var objvalue = JSON.parse(context.value)
 
                 record.submitFields({
-                    type: objvalue.recordtype,
+                    type: objvalue.recordType,
                     id: objvalue.id,
                     values: {
                         custrecord_drt_nc_c_procesando: true
@@ -99,7 +99,7 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime'],
 
                         var parametro = JSON.parse(data.values.custrecord_drt_nc_c_context);
                         var mensajeFinal = [];
-                        switch (parametro.recordtype) {
+                        switch (parametro.recordType) {
                             case 'salesorder': {
                                 var salesOrder = procesarSalesOrder(data);
                                 if (salesOrder.success) {
@@ -139,7 +139,7 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime'],
                             details: JSON.stringify(objupdate)
                         });
                         var idUpdate = record.submitFields({
-                            type: data.recordtype,
+                            type: data.recordType,
                             id: data.id,
                             values: objupdate,
                             options: {
@@ -183,9 +183,9 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime'],
                 if (param_objdata.values.custrecord_drt_nc_c_entity.value) {
                     cliente = param_objdata.values.custrecord_drt_nc_c_entity.value;
                 }
-                if (!cliente && parametro.curp_cliente) {
+                if (!cliente && parametro.custentity_drt_nc_curp) {
                     var searchcustomer = drt_cn_lib.searchRecord(record.Type.CUSTOMER, [
-                        ['isinactive', search.Operator.IS, 'F'], 'and', ['custentity_drt_nc_curp', search.Operator.IS, parametro.curp_cliente]
+                        ['isinactive', search.Operator.IS, 'F'], 'and', ['custentity_drt_nc_curp', search.Operator.IS, parametro.custentity_drt_nc_curp]
                     ], [{
                         name: 'custentity_drt_nc_curp'
                     }]);
@@ -204,8 +204,11 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime'],
                         objField_customer.isperson = "F";
                         objField_customer.companyname = parametro.customer.companyname;
                     }
-                    if (parametro.customer.curp_cliente) {
-                        objField_customer.custentity_drt_nc_curp = parametro.customer.curp_cliente;
+                    if (parametro.customer.custentity_drt_nc_curp) {
+                        objField_customer.custentity_drt_nc_curp = parametro.customer.custentity_drt_nc_curp;
+                    }
+                    if (parametro.customer.custentity_drt_nc_uuid_yuhu) {
+                        objField_customer.custentity_drt_nc_uuid_yuhu = parametro.customer.custentity_drt_nc_uuid_yuhu;
                     }
                     if (parametro.customer.email) {
                         objField_customer.email = parametro.customer.email;
@@ -218,8 +221,8 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime'],
 
                     if (parametro.customer.addressbook) {
                         objAddress.addressbook = {};
-                        if (parametro.customer.addressbook.addr1) {
-                            objAddress.addressbook.addr1 = parametro.customer.addressbook.addr1;
+                        if (parametro.customer.addressbook.custrecord_streetname) {
+                            objAddress.addressbook.addr1 = parametro.customer.addressbook.custrecord_streetname;
                         }
                         if (parametro.customer.addressbook.addr2) {
                             objAddress.addressbook.addr2 = parametro.customer.addressbook.addr2;
@@ -241,6 +244,37 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime'],
                         }
                         if (parametro.customer.addressbook.state) {
                             objAddress.addressbook.state = parametro.customer.addressbook.state;
+                        }
+
+                        if (parametro.customer.addressbook.custrecord_streetname) {
+                            objAddress.addressbook.custrecord_streetname = parametro.customer.addressbook.custrecord_streetname;
+                        }
+                        if (parametro.customer.addressbook.custrecord_streetnum) {
+                            objAddress.addressbook.custrecord_streetnum = parametro.customer.addressbook.custrecord_streetnum;
+                        }
+                        if (parametro.customer.addressbook.custrecord_unit) {
+                            objAddress.addressbook.custrecord_unit = parametro.customer.addressbook.custrecord_unit;
+                        }
+                        if (parametro.customer.addressbook.custrecord_colonia) {
+                            objAddress.addressbook.custrecord_colonia = parametro.customer.addressbook.custrecord_colonia;
+                        }
+                        if (parametro.customer.addressbook.zip) {
+                            objAddress.addressbook.zip = parametro.customer.addressbook.zip;
+                        }
+                        if (parametro.customer.addressbook.state) {
+                            objAddress.addressbook.state = parametro.customer.addressbook.state;
+                        }
+                        if (parametro.customer.addressbook.custrecord_village) {
+                            objAddress.addressbook.custrecord_village = parametro.customer.addressbook.custrecord_village;
+                        }
+                        if (parametro.customer.addressbook.city) {
+                            objAddress.addressbook.city = parametro.customer.addressbook.city;
+                        }
+                        if (parametro.customer.addressbook.country) {
+                            objAddress.addressbook.country = parametro.customer.addressbook.country;
+                        }
+                        if (parametro.customer.addressbook.addressee) {
+                            objAddress.addressbook.addressee = parametro.customer.addressbook.addressee;
                         }
                     }
 
@@ -281,19 +315,24 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime'],
                     respuesta.error.push('Hace falta location:' + location);
                 }
 
-                if (parametro.identificador_folio) {
-                    objField_transaction.custbody_drt_nc_identificador_folio = parametro.identificador_folio;
+                if (parametro.custbody_drt_nc_identificador_folio) {
+                    objField_transaction.custbody_drt_nc_identificador_folio = parametro.custbody_drt_nc_identificador_folio;
                 } else {
-                    respuesta.error.push('Hace falta identificador_folio:' + identificador_folio);
+                    respuesta.error.push('Hace falta identificador_folio:' + parametro.custbody_drt_nc_identificador_folio);
                 }
 
-                if (parametro.identificador_uuid) {
-                    objField_transaction.custbody_drt_nc_identificador_uuid = parametro.identificador_uuid;
+                if (parametro.custbody_drt_nc_identificador_uuid) {
+                    objField_transaction.custbody_drt_nc_identificador_uuid = parametro.custbody_drt_nc_identificador_uuid;
                 } else {
-                    respuesta.error.push('Hace falta identificador_uuid:' + identificador_uuid);
+                    respuesta.error.push('Hace falta identificador_uuid:' + parametro.custbody_drt_nc_identificador_uuid);
                 }
 
-
+                if (parametro.custbody_drt_nc_tipo_descuento) {
+                    objField_transaction.custbody_drt_nc_tipo_descuento = parametro.custbody_drt_nc_tipo_descuento;
+                }
+                if (parametro.custbody_drt_nc_folio_sustitucion) {
+                    objField_transaction.custbody_drt_nc_folio_sustitucion = parametro.custbody_drt_nc_folio_sustitucion;
+                }
                 var articulo_capital = runtime.getCurrentScript().getParameter({
                     name: 'custscript_drt_nc_articulo_capital'
                 }) || '';

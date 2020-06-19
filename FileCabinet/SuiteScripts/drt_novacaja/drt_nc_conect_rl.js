@@ -74,11 +74,11 @@ define(['./drt_cn_lib.js', 'N/search'], function (drt_cn_lib, search) {
             } else {
 
                 if (
-                    context.recordtype == "invoice" ||
-                    context.recordtype == "customerpayment" ||
-                    context.recordtype == "cashsale" ||
-                    context.recordtype == "journalentry" ||
-                    context.recordtype == "salesorder"
+                    context.recordType == "invoice" ||
+                    context.recordType == "customerpayment" ||
+                    context.recordType == "cashsale" ||
+                    context.recordType == "journalentry" ||
+                    context.recordType == "salesorder"
                 ) {
                     var recordLog = drt_cn_lib.createRecord('customrecord_drt_nc_conect', {
                         custrecord_drt_nc_c_context: JSON.stringify(context),
