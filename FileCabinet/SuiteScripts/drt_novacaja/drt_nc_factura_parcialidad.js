@@ -53,6 +53,8 @@ function(record,search) {
     	
     		var id=rowValues.tranid;
     	var fecha=  rowValues.custcol_drt_nc_fecha;
+    	var amortizacion=rowValues.custcol_drt_nc_num_amortizacion;
+    	var conexion = rowValues.custbody_drt_nc_con_so ;
     	log.debug({title:"id amortizacion",details:id +   fecha })
     	
    /*
@@ -62,6 +64,9 @@ function(record,search) {
     * "item":
     * {"value":"17","text":"ARTICULO INTERES"},"custcol2":"","custcol_drt_nc_fecha":"2020-06-19","custcol_drt_nc_num_amortizacion":"2"}}*/
     	try{
+
+
+
     	var invrec = record.transform({
     		'fromType':record.Type.SALES_ORDER,
     		'fromId':Number(rowJson.id),
@@ -79,11 +84,11 @@ function(record,search) {
     	    
     	    var sublistFieldValue = invrec.getSublistValue({
     	    	 sublistId: 'item',
-    	    	 fieldId: 'custcol_drt_nc_fecha',
+    	    	 fieldId: 'custcol_drt_nc_num_amortizacion',
     	    	 line:j
     	    })
 log.debug({title:"sublistFieldValue",details:sublistFieldValue })
-    	    if ( fecha != sublistFieldValue)
+    	    if ( amortizacion != sublistFieldValue)
     	    {
     	    	invrec.removeLine({
     	    		 sublistId: 'item',
@@ -92,6 +97,9 @@ log.debug({title:"sublistFieldValue",details:sublistFieldValue })
     	    }
     	}
    
+    	invrec.setValue({fieldId:'custbody_drt_nc_con_in',value:conexion})
+
+
     	var invoiceid = invrec.save({
     		'enableSourcing':true,
     		'ignoreMandatoryFields':true
@@ -100,8 +108,8 @@ log.debug({title:"sublistFieldValue",details:sublistFieldValue })
     	
     	log.debug({title:"generated invoice id",details:invoiceid})
     	
-    	
-    	
+
+
     	}catch(error){
         	log.debug({title:"error",details:error })
 
