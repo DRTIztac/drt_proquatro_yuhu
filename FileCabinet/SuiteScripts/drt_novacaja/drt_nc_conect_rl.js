@@ -66,20 +66,62 @@ define(['./drt_cn_lib.js', 'N/search'], function (drt_cn_lib, search) {
                 record: '',
                 error: {}
             };
+            var field_respuesta = '';
+            var field_error = '';
             if (context.data == "update") {
                 var update = drt_cn_lib.updateYuhu(context);
                 respuesta = {};
                 respuesta = update;
 
             } else {
+                switch (context.recordType) {
+                    case 'salesorder': {
+                        field_respuesta = 'customrecord_drt_nc_conect';
+                        field_error = 'custrecord_drt_nc_p_error';
+                        var recordLog = drt_cn_lib.createRecord('customrecord_drt_nc_conect', {
+                            custrecord_drt_nc_c_context: JSON.stringify(context),
+                            custrecord_drt_nc_c_http: 'POST'
+                        });
+                        if (recordLog.success) {
+                            respuesta.data = recordLog.data;
+                            respuesta.record = recordLog.data;
 
-                if (
-                    context.recordType == "invoice" ||
-                    context.recordType == "customerpayment" ||
-                    context.recordType == "cashsale" ||
-                    context.recordType == "journalentry" ||
-                    context.recordType == "salesorder"
-                ) {
+                        }
+                        respuesta.success = respuesta.record != '';
+                    }
+                    break;
+                case 'invoice': {
+                    field_error = 'custrecord_drt_nc_p_error';
+                    var recordLog = drt_cn_lib.createRecord('cvustomrecord_drt_nc_conect', {
+                        custrecord_drt_nc_c_context: JSON.stringify(context),
+                        custrecord_drt_nc_c_http: 'POST'
+                    });
+                    if (recordLog.success) {
+                        respuesta.data = recordLog.data;
+                        respuesta.record = recordLog.data;
+
+                    }
+                    respuesta.success = respuesta.record != '';
+                }
+                break;
+                case 'customerpayment': {
+                    field_respuesta = '	custrecord_drt_nc_p_respuesta';
+                    field_error = 'custrecord_drt_nc_p_error';
+                    var recordLog = drt_cn_lib.createRecord('customrecord_drt_nc_pagos', {
+                        custrecord_drt_nc_p_context: JSON.stringify(context),
+                        custrecord_drt_nc_p_http: 'POST'
+                    });
+                    if (recordLog.success) {
+                        respuesta.data = recordLog.data;
+                        respuesta.record = recordLog.data;
+
+                    }
+                    respuesta.success = respuesta.record != '';
+                }
+                break;
+                case 'cashsale': {
+                    field_respuesta = '';
+                    field_error = 'custrecord_drt_nc_p_error';
                     var recordLog = drt_cn_lib.createRecord('customrecord_drt_nc_conect', {
                         custrecord_drt_nc_c_context: JSON.stringify(context),
                         custrecord_drt_nc_c_http: 'POST'
@@ -90,9 +132,27 @@ define(['./drt_cn_lib.js', 'N/search'], function (drt_cn_lib, search) {
 
                     }
                     respuesta.success = respuesta.record != '';
+                }
+                break;
+                case 'journalentry': {
+                    field_respuesta = '';
+                    field_error = 'custrecord_drt_nc_p_error';
+                    var recordLog = drt_cn_lib.createRecord('customrecord_drt_nc_conect', {
+                        custrecord_drt_nc_c_context: JSON.stringify(context),
+                        custrecord_drt_nc_c_http: 'POST'
+                    });
+                    if (recordLog.success) {
+                        respuesta.data = recordLog.data;
+                        respuesta.record = recordLog.data;
 
-                } else {
+                    }
+                    respuesta.success = respuesta.record != '';
+                }
+                break;
+
+                default:
                     respuesta.data.message = 'Invalid Action.';
+                    break;
                 }
             }
 
@@ -102,20 +162,20 @@ define(['./drt_cn_lib.js', 'N/search'], function (drt_cn_lib, search) {
                 details: error
             });
             respuesta.error = error;
-            if (respuesta.record) {
-                drt_cn_lib.submitRecord('customrecord_drt_nc_conect', respuesta.record, {
-                    custrecord_drt_nc_c_error: JSON.stringify(error)
-                });
+            if (respuesta.record && field_error) {
+                var objError = {};
+                objError[field_error] = JSON.stringify(error);
+                drt_cn_lib.submitRecord('customrecord_drt_nc_conect', respuesta.record, objError);
             }
         } finally {
             log.audit({
                 title: 'respuesta',
                 details: respuesta
             });
-            if (respuesta.record) {
-                drt_cn_lib.submitRecord('customrecord_drt_nc_conect', respuesta.record, {
-                    custrecord_drt_nc_c_respuesta: JSON.stringify(respuesta)
-                })
+            if (respuesta.record && field_respuesta) {
+                var objRespuesta = {};
+                objRespuesta[field_respuesta] = JSON.stringify(respuesta);
+                drt_cn_lib.submitRecord('customrecord_drt_nc_conect', respuesta.record, objRespuesta);
             }
             return respuesta;
         }

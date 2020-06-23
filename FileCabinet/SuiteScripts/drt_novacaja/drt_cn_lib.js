@@ -8,13 +8,15 @@ define([
         'N/log',
         'N/search',
         'N/record',
-        'N/https'
+        'N/https',
+        'N/format'
     ],
     function (
         log,
         search,
         record,
-        https
+        https,
+        format
     ) {
 
         function searchRecord(param_type, param_filters, param_column) {
@@ -708,6 +710,45 @@ define([
             }
         }
 
+        function formatDate(param_fecha, separador_destino, lugar_año, luigar_mes, lugar_dia, hora) {
+            var respuesta = '';
+            try {
+                var objDate = format.parse({
+                    value: param_fecha,
+                    type: format.Type.DATE
+                });
+
+                var año = objDate.getFullYear() || '';
+                var mes = objDate.getMonth() || '';
+                var dia = objDate.getDate() || '';
+                var arrayFecha = ['', '', '', ];
+                arrayFecha[lugar_año] = año;
+                arrayFecha[luigar_mes] = mes * 1 + 1 < 10 ? '0' + (mes * 1 + 1) : mes * 1 + 1;
+                arrayFecha[lugar_dia] = dia < 10 ? '0' + dia : dia;
+
+                log.audit({
+                    title: 'fecha1',
+                    details: ' objDate ' + objDate +
+                        ' año ' + año +
+                        ' mes ' + mes +
+                        ' dia ' + dia
+                });
+                respuesta = arrayFecha[0] + separador_destino + arrayFecha[1] + separador_destino + arrayFecha[2] + hora;
+            } catch (error) {
+                log.error({
+                    title: 'error fechaSplit',
+                    details: JSON.stringify(error)
+                });
+                respuesta = '';
+            } finally {
+                log.audit({
+                    title: 'respuesta fechaSplit',
+                    details: JSON.stringify(respuesta)
+                });
+                return respuesta;
+            }
+        }
+
         return {
             searchRecord: searchRecord,
             createRecord: createRecord,
@@ -717,5 +758,6 @@ define([
             postWebhook: postWebhook,
             bookWebhook: bookWebhook,
             updateYuhu: updateYuhu,
+            formatDate: formatDate
         }
     });
