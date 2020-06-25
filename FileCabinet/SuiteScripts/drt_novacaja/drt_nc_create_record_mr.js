@@ -439,7 +439,8 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                             custcol_drt_nc_fecha: format.parse({
                                 value: parametro.item[liena].fecha,
                                 type: format.Type.DATE
-                            })
+                            }),
+                            custcol_drt_nc_num_amortizacion: parametro.item[liena].num_amortizacion
                         });
                         objSublist_transaction.item.push({
                             item: articulo_interes,
