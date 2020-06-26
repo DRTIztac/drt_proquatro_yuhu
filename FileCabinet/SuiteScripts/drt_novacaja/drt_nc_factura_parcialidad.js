@@ -97,7 +97,8 @@ log.debug({title:"sublistFieldValue",details:sublistFieldValue })
     	    }
     	}
    
-    	invrec.setValue({fieldId:'custbody_drt_nc_con_in',value:conexion})
+    	
+    	invrec.setValue({fieldId:'custbody_drt_nc_num_amortizacion',value:amortizacion})
 
 
     	var invoiceid = invrec.save({
