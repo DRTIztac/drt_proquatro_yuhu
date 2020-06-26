@@ -175,7 +175,6 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                     error: []
                 };
 
-                var empresa = '';
                 var objField_empresa = {};
                 var objAddress_empresa = {};
                 var cliente = '';
@@ -195,27 +194,27 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                     var searchcompany = searchidentificador(record.Type.CUSTOMER, 'custentity_mx_rfc', parametro.empresa.custentity_mx_rfc);
                     if (searchcompany.success) {
                         for (var resultado in searchcompany.data) {
-                            empresa = resultado;
+                            respuesta.data.commpany = resultado;
                         }
                     } else {
 
                         if (parametro.empresa.isperson) {
-                            parametro.empresa.isperson = "T";
-                            parametro.empresa.firstname = parametro.empresa.firstname;
-                            parametro.empresa.lastname = parametro.empresa.lastname;
+                            objField_empresa.isperson = "T";
+                            objField_empresa.firstname = parametro.empresa.firstname;
+                            objField_empresa.lastname = parametro.empresa.lastname;
                         } else {
                             parametro.empresa.isperson = "F";
-                            parametro.empresa.companyname = parametro.empresa.companyname;
+                            objField_empresa.companyname = parametro.empresa.companyname;
                         }
 
                         if (parametro.empresa.custentity_drt_nc_uuid_yuhu) {
-                            parametro.empresa.custentity_drt_nc_uuid_yuhu = parametro.empresa.custentity_drt_nc_uuid_yuhu;
+                            objField_empresa.custentity_drt_nc_uuid_yuhu = parametro.empresa.custentity_drt_nc_uuid_yuhu;
                         }
                         if (parametro.empresa.email) {
-                            parametro.empresa.email = parametro.empresa.email;
+                            objField_empresa.email = parametro.empresa.email;
                         }
                         if (parametro.empresa.custentity_mx_rfc) {
-                            parametro.empresa.custentity_mx_rfc = parametro.empresa.custentity_mx_rfc;
+                            objField_empresa.custentity_mx_rfc = parametro.empresa.custentity_mx_rfc;
                         }
                         if (
                             parametro.empresa.addressbook &&
@@ -415,6 +414,10 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                     objField_transaction.custbody_drt_nc_folio_sustitucion = parametro.custbody_drt_nc_folio_sustitucion;
                 }
 
+                if (parametro.class) {
+                    objField_transaction.class = parametro.class;
+                }
+
                 objField_transaction.custbody_drt_nc_con_so = param_objdata.id;
                 objField_transaction.orderstatus = 'B';
 
@@ -436,7 +439,8 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                             custcol_drt_nc_fecha: format.parse({
                                 value: parametro.item[liena].fecha,
                                 type: format.Type.DATE
-                            })
+                            }),
+                            custcol_drt_nc_num_amortizacion: parametro.item[liena].num_amortizacion
                         });
                         objSublist_transaction.item.push({
                             item: articulo_interes,
