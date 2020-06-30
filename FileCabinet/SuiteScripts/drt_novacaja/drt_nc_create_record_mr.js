@@ -221,8 +221,8 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                             parametro.empresa.addressbook.custrecord_streetname &&
                             parametro.empresa.addressbook.custrecord_streetnum &&
                             parametro.empresa.addressbook.city &&
-                            parametro.empresa.addressbook.statedisplayname &&
-                            parametro.empresa.addressbook.zipcode
+                            parametro.empresa.addressbook.state &&
+                            parametro.empresa.addressbook.zip
                         ) {
                             objAddress_empresa.addressbook = {};
                             objAddress_empresa.addressbook.country = 'MX';
@@ -238,13 +238,11 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                             if (parametro.empresa.addressbook.custrecord_colonia) {
                                 objAddress_empresa.addressbook.custrecord_colonia = parametro.empresa.addressbook.custrecord_colonia;
                             }
-                            if (parametro.empresa.addressbook.statedisplayname) {
-                                objAddress_empresa.addressbook.zipcode = parametro.empresa.addressbook.statedisplayname;
-                                objAddress_empresa.addressbook.state = parametro.empresa.addressbook.statedisplayname;
+                            if (parametro.empresa.addressbook.state) {
+                                objAddress_empresa.addressbook.state = parametro.empresa.addressbook.state;
                             }
-                            if (parametro.empresa.addressbook.zipcode) {
-                                objAddress_empresa.addressbook.statedisplayname = parametro.empresa.addressbook.zipcode;
-                                objAddress_empresa.addressbook.zip = parametro.empresa.addressbook.zipcode;
+                            if (parametro.empresa.addressbook.zip) {
+                                objAddress_empresa.addressbook.zip = parametro.empresa.addressbook.zip;
                             }
                             if (parametro.empresa.addressbook.custrecord_village) {
                                 objAddress_empresa.addressbook.custrecord_village = parametro.empresa.addressbook.custrecord_village;
