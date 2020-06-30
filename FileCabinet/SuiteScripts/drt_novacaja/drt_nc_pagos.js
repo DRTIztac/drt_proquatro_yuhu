@@ -36,7 +36,7 @@
            search.createColumn({name: "externalid", label: "External ID"}),
            search.createColumn({name: "isinactive", label: "Inactive"}),
            search.createColumn({name: "internalid", label: "Internal ID"}),
-           search.createColumn({name: "custrecord_drt_nc_p_transaccion", label: "Transacción"})
+           search.createColumn({name: "custrecord_drt_nc_p_transaccion", label: "Transacci�n"})
            ]
        });
             //var searchResultCount = customrecord_drt_nc_pagosSearchObj.runPaged().count;
@@ -53,6 +53,49 @@
      * @param {MapSummary} context - Data collection containing the key/value pairs to process through the map stage
      * @since 2015.1
      */
+
+     function getRegistroPago(uuidYuhu){
+         var vendorpaymentSearchObj = search.create({
+               type: "vendorpayment",
+               filters:
+               [
+                  ["mainline","is","T"], 
+                  "AND", 
+                  ["type","anyof","VendPymt"], 
+                  "AND", 
+                  ["custbody_drt_nc_identificador_uuid","is",uuidYuhu]
+               ],
+               columns:
+               [
+                  search.createColumn({
+                     name: "trandate",
+                     sort: search.Sort.ASC
+                  }),
+                  "type",
+                  search.createColumn({
+                     name: "tranid",
+                     sort: search.Sort.ASC
+                  }),
+                  "transactionnumber",
+                  "entity",
+                  "account",
+                  "otherrefnum",
+                  "statusref",
+                  "memo",
+                  "currency",
+                  "fxamount",
+                  "amount",
+                  "custbody_psg_ei_inbound_edocument",
+                  "custbody_drt_nc_identificador_uuid"
+               ]
+            });
+            var searchResultCount = vendorpaymentSearchObj.runPaged().count;
+            
+            log.debug({details:searchResultCount})
+            return searchResultCount>0
+    
+
+     }
      function map(context) {
         var jsonRecord=JSON.parse(context.value);
 /*
@@ -87,10 +130,15 @@ try{
     var dataCustomer= getCustomerData(jsonPayment.internalid);
     var customer = dataCustomer ;
     var invoice  = Number(jsonPayment.internalid) ;
+    var existePago = getRegistroPago(jsonPayment.custbody_drt_nc_identificador_uuid) ;
+
     
-    
+
+    if(!existePago){
+
+
     obody_field.customer       = parseInt(customer);
-    obody_field.subsidiary =1;
+    obody_field.subsidiary =  1;
     obody_field.custbody_drt_nc_tipo_pago =jsonPayment.tipo_pago;
     obody_field.account =317;
     obody_field.custbody_drt_nc_identificador_uuid =jsonPayment.custbody_drt_nc_identificador_uuid;
@@ -104,18 +152,36 @@ try{
     
     log.debug({title:'oPayment',details:JSON.stringify(oPayment)})
     
+    context.write(obody_field.customer ,oPayment,oPayment.param_lin);
     var oPayment=createPayment( oPayment.body_field, oPayment.param_line);
-    record_pagos.setValue({fieldId:'custrecord_drt_nc_p_transaccion',value:oPayment.data});
-    log.debug({title:"Payment ",details: JSON.stringify(jsonPayment)});
+    if(oPayment.success){
+        record_pagos.setValue({fieldId:'custrecord_drt_nc_p_transaccion',value:oPayment.data});
+    }else{
+        throw new Error(JSON.stringify(oPayment.error));
+    }
+        
+    
+
+    log.debug({title:"Payment ",details: JSON.stringify(oPayment)});
+}else{
+    record_pagos.setValue({fieldId:'custrecord_drt_nc_p_error',value:"ya existe registro en pagos de "+jsonPayment.custbody_drt_nc_identificador_uuid });
+
+}
 }catch(error){
     record_pagos.setValue({fieldId:'custrecord_drt_nc_p_error',value:error});
     
     log.emergency({title:"Error al generar payment",details: error});
 } finally{
-    record_pagos.save();
+    log.debug("Finally");
+
+        
 }
-
-
+record_pagos.setValue({fieldId:'isinactive',value:true});
+var updateId = record_pagos.save({
+    enableSourcing: true,
+    ignoreMandatoryFields: true
+    });
+log.debug("Sales Order updated", updateId);
 }
 
 function createPayment( param_body, param_line) {
@@ -239,6 +305,7 @@ function getCustomerData(idInvoice){
      * @since 2015.1
      */
      function reduce(context) {
+         log.debug({title:"reduce",details:JSON.stringify(JSON.parse(context)) })
 
      } 
 
