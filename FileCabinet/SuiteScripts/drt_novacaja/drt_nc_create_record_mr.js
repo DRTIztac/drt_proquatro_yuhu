@@ -317,8 +317,8 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                         parametro.customer.addressbook.custrecord_streetname &&
                         parametro.customer.addressbook.custrecord_streetnum &&
                         parametro.customer.addressbook.city &&
-                        parametro.customer.addressbook.statedisplayname &&
-                        parametro.customer.addressbook.zipcode
+                        parametro.customer.addressbook.state &&
+                        parametro.customer.addressbook.zip
                     ) {
                         objAddress.addressbook = {};
                         objAddress.addressbook.country = 'MX';
@@ -334,13 +334,11 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                         if (parametro.customer.addressbook.custrecord_colonia) {
                             objAddress.addressbook.custrecord_colonia = parametro.customer.addressbook.custrecord_colonia;
                         }
-                        if (parametro.customer.addressbook.statedisplayname) {
-                            objAddress.addressbook.zipcode = parametro.customer.addressbook.statedisplayname;
-                            objAddress.addressbook.state = parametro.customer.addressbook.statedisplayname;
+                        if (parametro.customer.addressbook.state) {
+                            objAddress.addressbook.state = parametro.customer.addressbook.state;
                         }
-                        if (parametro.customer.addressbook.zipcode) {
-                            objAddress.addressbook.statedisplayname = parametro.customer.addressbook.zipcode;
-                            objAddress.addressbook.zip = parametro.customer.addressbook.zipcode;
+                        if (parametro.customer.addressbook.zip) {
+                            objAddress.addressbook.zip = parametro.customer.addressbook.zip;
                         }
                         if (parametro.customer.addressbook.custrecord_village) {
                             objAddress.addressbook.custrecord_village = parametro.customer.addressbook.custrecord_village;
