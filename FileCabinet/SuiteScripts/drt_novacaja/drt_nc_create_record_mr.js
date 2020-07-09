@@ -425,19 +425,8 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                 }) || '';
 
 
-                if (articulo_capital && articulo_interes) {
+                if (articulo_interes) {
                     for (var liena in parametro.item) {
-                        objSublist_transaction.item.push({
-                            item: articulo_capital,
-                            price: "-1",
-                            quantity: 1,
-                            rate: parametro.item[liena].capital,
-                            custcol_drt_nc_fecha: format.parse({
-                                value: parametro.item[liena].fecha,
-                                type: format.Type.DATE
-                            }),
-                            custcol_drt_nc_num_amortizacion: parametro.item[liena].num_amortizacion
-                        });
                         objSublist_transaction.item.push({
                             item: articulo_interes,
                             price: "-1",
@@ -447,24 +436,46 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                                 value: parametro.item[liena].fecha,
                                 type: format.Type.DATE
                             }),
-                            custcol_drt_nc_num_amortizacion: parametro.item[liena].num_amortizacion
+                            custcol_drt_nc_num_amortizacion: parametro.item[liena].num_amortizacion,
+                            custcol_drt_nc_monto_capital: parametro.item[liena].capital,
+                            custcol_drt_nc_monto_iva: parametro.item[liena].iva
                         });
 
                     }
                 } else {
-                    respuesta.error.push('Error en la lectura de los articulos: ' + 'articulo de capital: ' + articulo_capital + 'articulo de interes: ' + articulo_interes);
+                    respuesta.error.push('Error en la lectura de articulo de interes: ' + articulo_interes);
                 }
 
                 if (respuesta.error.length > 0) {
                     respuesta.error.push('No se pueden generar la transacción hace falta informacion requerida.');
                 } else {
-                    var newtransaction = drt_cn_lib.createRecord(record.Type.SALES_ORDER, objField_transaction, objSublist_transaction, objAddress);
+                    var newtransaction = drt_cn_lib.createRecord(record.Type.SALES_ORDER, objField_transaction, objSublist_transaction, {});
                     if (Object.keys(newtransaction.error).length > 0) {
                         respuesta.error.push('Error al generar la transaccion: ' + newtransaction.error.message);
                     }
-                    if (newtransaction.success) {
-                        respuesta.data.transaccion = newtransaction.data;
-                    }
+                    parametro.aaccount = 317;
+                    // if (newtransaction.success) {
+                    //     respuesta.data.transaccion = newtransaction.data;
+                    //     if (parametro.total) {
+                    //         var objField_journal = {};
+                    //         objField_journal.trandate = format.parse({
+                    //             value: parametro.trandate,
+                    //             type: format.Type.DATE
+                    //         });
+                    //         var objField_journal = {
+                    //             line: []
+                    //         };
+                    //         objField_journal.line.push({
+                    //             aaccount: 629,
+                    //             debit: parametro.total,
+                    //         });
+                    //         objField_journal.line.push({
+                    //             aaccount: parametro.aaccount,
+                    //             credit: parametro.total,
+                    //         });
+                    //         var newjournalentry = drt_cn_lib.createRecord(record.Type.JOURNAL_ENTRY, objField_journal, objSublist_journal, {});
+                    //     }
+                    // }
                 }
 
                 respuesta.success = Object.keys(respuesta.data).length > 0;
