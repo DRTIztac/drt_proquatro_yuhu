@@ -3,10 +3,10 @@
  * @NScriptType MapReduceScript
  * @NModuleScope SameAccount
  */
-define(['N/record', 'N/search'],
+ define(['N/record', 'N/search'],
 
-function(record,search) {
-   
+    function(record,search) {
+
     /**
      * Marks the beginning of the Map/Reduce process and generates input data.
      *
@@ -17,24 +17,24 @@ function(record,search) {
      * @return {Array|Object|Search|RecordRef} inputSummary
      * @since 2015.1
      */
-    function getInputData() {
-    	
-    	const param_registro= 'customsearch_drt_ss_line_salesorder';
-    	var respuesta=[];
-        var transactionSearchObj = search.load({
-            id: param_registro
-        });
+     function getInputData() {
 
-        
-         var defaultFilters = transactionSearchObj.filters;
+       const param_registro= 'customsearch_drt_ss_line_salesorder';
+       var respuesta=[];
+       var transactionSearchObj = search.load({
+        id: param_registro
+    });
 
-         var allFilters = defaultFilters;
-         transactionSearchObj.filters = allFilters;
-         
 
-    	 return transactionSearchObj;
-    }
-    
+       var defaultFilters = transactionSearchObj.filters;
+
+       var allFilters = defaultFilters;
+       transactionSearchObj.filters = allFilters;
+
+
+       return transactionSearchObj;
+   }
+
 
     /**
      * Executes when the map entry point is triggered and applies to each key/value pair.
@@ -42,28 +42,28 @@ function(record,search) {
      * @param {MapSummary} context - Data collection containing the key/value pairs to process through the map stage
      * @since 2015.1
      */
-    function map(context) {
-    	var rowJson = JSON.parse(context.value),
-    	rowValues= rowJson.values,
-    	itemValues= rowValues.item;
-    	
-    
-    	
-    	log.debug({title:"JSON DETAIL",details:JSON.stringify(rowJson)})
-    	
-    		var id=rowValues.tranid;
-    	var fecha=  rowValues.custcol_drt_nc_fecha;
-    	var amortizacion=rowValues.custcol_drt_nc_num_amortizacion;
-    	var conexion = rowValues.custbody_drt_nc_con_so ;
-    	log.debug({title:"id amortizacion",details:id +   fecha })
-    	
+     function map(context) {
+       var rowJson = JSON.parse(context.value),
+       rowValues= rowJson.values,
+       itemValues= rowValues.item;
+
+
+
+       log.debug({title:"JSON DETAIL",details:JSON.stringify(rowJson)})
+
+       var id=rowValues.tranid;
+       var fecha=  rowValues.custcol_drt_nc_fecha;
+       var amortizacion=rowValues.custcol_drt_nc_num_amortizacion;
+       var conexion = rowValues.custbody_drt_nc_con_so ;
+       log.debug({title:"id amortizacion",details:id +   fecha })
+
    /*
     * {"recordType":"salesorder"
     * ,"id":"1543",
     * "values":{"tranid":"85",
     * "item":
     * {"value":"17","text":"ARTICULO INTERES"},"custcol2":"","custcol_drt_nc_fecha":"2020-06-19","custcol_drt_nc_num_amortizacion":"2"}}*/
-    	try{
+    try{
 
 
 
@@ -71,51 +71,96 @@ function(record,search) {
     		'fromType':record.Type.SALES_ORDER,
     		'fromId':Number(rowJson.id),
     		'toType':record.Type.INVOICE,
-    		 isDynamic: true
-    	});
-    
+         isDynamic: true
+     });
+
     	
     	var itemcount = invrec.getLineCount({"sublistId": "item"});
-    
-    	log.debug({title:"itemcount",details:itemcount })
+
+    	log.debug({title:"itemcount",details:itemcount });
     	for (var j = itemcount-1; j >=0  ; j--)
     	{
-    	    
-    	    
-    	    var sublistFieldValue = invrec.getSublistValue({
-    	    	 sublistId: 'item',
-    	    	 fieldId: 'custcol_drt_nc_num_amortizacion',
-    	    	 line:j
-    	    })
-log.debug({title:"sublistFieldValue",details:sublistFieldValue })
-    	    if ( amortizacion != sublistFieldValue)
-    	    {
-    	    	invrec.removeLine({
-    	    		 sublistId: 'item',
-    	    		 line: j
-    	    		});
-    	    }
-    	}
-   
-    	
-    	invrec.setValue({fieldId:'custbody_drt_nc_num_amortizacion',value:amortizacion})
 
 
-    	var invoiceid = invrec.save({
-    		'enableSourcing':true,
-    		'ignoreMandatoryFields':true
-    	});
-    	
-    	
-    	log.debug({title:"generated invoice id",details:invoiceid})
-    	
-    	
+           var sublistFieldValue = invrec.getSublistValue({
+             sublistId: 'item',
+             fieldId: 'custcol_drt_nc_num_amortizacion',
+             line:j
+         })
+           log.debug({title:"sublistFieldValue",details:sublistFieldValue })
+           if ( amortizacion != sublistFieldValue)
+           {
+              invrec.removeLine({
+                sublistId: 'item',
+                line: j
+            });
+          }
+      }
 
-    	}catch(error){
-        	log.debug({title:"error",details:error })
 
-    	}
-    }
+      invrec.setValue({fieldId:'custbody_drt_nc_num_amortizacion',value:amortizacion})
+
+
+      var invoiceid = invrec.save({
+          'enableSourcing':true,
+          'ignoreMandatoryFields':true
+      });
+
+
+      log.debug({title:"generated invoice id",details:invoiceid})
+
+      var salesRec = record.load({
+        type:record.Type.SALES_ORDER,
+        id:rowJson.id,           
+        isDynamic: true
+    });
+
+      var itemcount = salesRec.getLineCount({"sublistId": "item"});
+    var control=false;
+      for( var i =0 ; i < itemcount ; i++ )
+      {
+        var intquantity = salesRec.getSublistValue({
+           sublistId: 'item',
+           fieldId: 'quantitybilled',
+           line:i
+       });
+        var drtInvoice = salesRec.getSublistValue({
+           sublistId: 'item',
+           fieldId: 'custcol_drt_nc_invoice',
+           line:i
+       });
+        log.debug({title:"Invoice",details:"intquantity"+intquantity +"drtInvoice"+drtInvoice})
+
+        if( intquantity == 1 && drtInvoice == "" )
+        {
+            control=true;
+            log.debug({title:"Invoice"+invoiceid,details:"Enter on change 2"});
+            salesRec.selectLine({sublistId:"item",line:i});
+
+            salesRec.setCurrentSublistValue({
+                sublistId: 'item',
+                fieldId:'custcol_drt_nc_invoice',                                
+                value: Number(invoiceid)
+
+                });
+          
+
+        }
+        if(!(intquantity == 1 && drtInvoice == "") && control){
+                continue;
+            }
+    }   
+
+    salesRec.save({
+          enableSourcing:false,
+          ignoreMandatoryFields:true
+      });
+
+}catch(error){
+   log.debug({title:"error",details:error })
+
+}
+}
 
     /**
      * Executes when the reduce entry point is triggered and applies to each group.
@@ -123,9 +168,9 @@ log.debug({title:"sublistFieldValue",details:sublistFieldValue })
      * @param {ReduceSummary} context - Data collection containing the groups to process through the reduce stage
      * @since 2015.1
      */
-    function reduce(context) {
+     function reduce(context) {
 
-    }
+     }
 
 
     /**
@@ -134,11 +179,11 @@ log.debug({title:"sublistFieldValue",details:sublistFieldValue })
      * @param {Summary} summary - Holds statistics regarding the execution of a map/reduce script
      * @since 2015.1
      */
-    function summarize(summary) {
+     function summarize(summary) {
 
-    }
+     }
 
-    return {
+     return {
         getInputData: getInputData,
         map: map,
         reduce: reduce,
