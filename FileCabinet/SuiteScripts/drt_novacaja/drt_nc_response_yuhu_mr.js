@@ -11,26 +11,60 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                     type: search.Type.TRANSACTION,
                     columns: [
                         //Campos Nativos
-                        'entity',
-                        'total',
-                        'title',
-                        'trandate',
-                        'title',
+                        search.createColumn({
+                            name: 'entity'
+                        }),
+                        search.createColumn({
+                            name: 'total'
+                        }),
+                        search.createColumn({
+                            name: 'title'
+                        }),
+                        search.createColumn({
+                            name: 'trandate'
+                        }),
+                        search.createColumn({
+                            name: 'title'
+                        }),
                         //Campos Conexion por transaccion
-                        'custbody_drt_nc_con_cp',
-                        'custbody_drt_nc_con_cs',
-                        'custbody_drt_nc_con_in',
-                        'custbody_drt_nc_con_je',
-                        'custbody_drt_nc_con_so',
+                        search.createColumn({
+                            name: 'custbody_drt_nc_con_cp'
+                        }),
+                        search.createColumn({
+                            name: 'custbody_drt_nc_con_cs'
+                        }),
+                        search.createColumn({
+                            name: 'custbody_drt_nc_con_in'
+                        }),
+                        search.createColumn({
+                            name: 'custbody_drt_nc_con_je'
+                        }),
+                        search.createColumn({
+                            name: 'custbody_drt_nc_con_so'
+                        }),
                         //Campos Customm
-                        'custbody_drt_nc_notificacion_registro',
-                        'custbody_drt_nc_identificador_folio',
-                        'custbody_drt_nc_identificador_uuid',
-                        'custbody_drt_nc_folio_sustitucion',
+                        search.createColumn({
+                            name: 'custbody_drt_nc_notificacion_registro'
+                        }),
+                        search.createColumn({
+                            name: 'custbody_drt_nc_identificador_folio'
+                        }),
+                        search.createColumn({
+                            name: 'custbody_drt_nc_identificador_uuid'
+                        }),
+                        search.createColumn({
+                            name: 'custbody_drt_nc_folio_sustitucion'
+                        }),
                         //Cammpos Opcionales
-                        'custbody_drt_nc_num_amortizacion',
-                        'custbody_drt_nc_tipo_descuento',
-                        'custbody_drt_nc_tipo_pago',
+                        search.createColumn({
+                            name: 'custbody_drt_nc_num_amortizacion'
+                        }),
+                        search.createColumn({
+                            name: 'custbody_drt_nc_tipo_descuento'
+                        }),
+                        search.createColumn({
+                            name: 'custbody_drt_nc_tipo_pago'
+                        })
                     ],
                     filters: [
                         [
@@ -51,7 +85,7 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                             ['custbody_drt_nc_con_cs', search.Operator.IS, search.Operator.ANYOF, '@NONE@']
                         ],
                         'and',
-                        ['custbody_drt_nc_notificacion_registro', search.Operator.IS, search.Operator.ISEMPTY, null]
+                        ['custbody_drt_nc_notificacion_registro', search.Operator.IS, search.Operator.ISEMPTY, ""]
                     ]
                 });
             } catch (error) {
