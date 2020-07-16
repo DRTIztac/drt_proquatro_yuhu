@@ -66,26 +66,79 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                 });
                 var respuesta = search.create({
                     type: search.Type.TRANSACTION,
-                    columns: [
-                        'trandate',
-                        'tranid',
-                        'amount',
-                        'entity',
-                        'total',
-                        'taxtotal',
-                        'custbody_drt_nc_pendiente_enviar',
-                        'custbody_drt_nc_con_cp',
-                        'custbody_drt_nc_con_cs',
-                        'custbody_drt_nc_con_in',
-                        'custbody_drt_nc_con_je',
-                        'custbody_drt_nc_con_so',
-                        'custbody_drt_nc_notificacion_registro',
-                        'custbody_drt_nc_identificador_folio',
-                        'custbody_drt_nc_identificador_uuid',
-                        'custbody_drt_nc_folio_sustitucion',
-                        'custbody_drt_nc_num_amortizacion',
-                        'custbody_drt_nc_tipo_descuento',
-                        'custbody_drt_nc_tipo_pago'
+                    columns: [{
+                            name: 'entity'
+                        },
+                        //         {
+                        //             name: 'customer'
+                        //         },
+                        // { join: 'customer', name: 'firstname' },
+                        // { join: 'customer', name: 'lastname' },
+                        // { join: 'customer', name: 'isperson' },
+                        // { join: 'customer', name: 'companyname' },
+                        // { join: 'customer', name: 'email' },
+                        // { join: 'customer', name: 'custrecord_efx_fe_imp_sat' },
+                        // { join: 'customer', name: 'custentity_drt_nc_curp' },
+                        // { join: 'customer', name: 'custentity_drt_nc_uuid_yuhu' },
+                        // { join: 'customer', name: 'custentity_mx_rfc' },
+                        // { join: 'customer', name: 'custentity_drt_nc_empresa' },
+                        {
+                            name: 'trandate'
+                        },
+                        {
+                            name: 'tranid'
+                        },
+                        {
+                            name: 'amount'
+                        },
+                        {
+                            name: 'entity'
+                        },
+                        {
+                            name: 'total'
+                        },
+                        {
+                            name: 'taxtotal'
+                        },
+                        {
+                            name: 'custbody_drt_nc_pendiente_enviar'
+                        },
+                        {
+                            name: 'custbody_drt_nc_con_cp'
+                        },
+                        {
+                            name: 'custbody_drt_nc_con_cs'
+                        },
+                        {
+                            name: 'custbody_drt_nc_con_in'
+                        },
+                        {
+                            name: 'custbody_drt_nc_con_je'
+                        },
+                        {
+                            name: 'custbody_drt_nc_con_so'
+                        },
+                        {
+                            name: 'custbody_drt_nc_notificacion_registro'
+                        },
+                        {
+                            name: 'custbody_drt_nc_identificador_folio'
+                        },
+                        {
+                            name: 'custbody_drt_nc_identificador_uuid'
+                        },
+                        {
+                            name: 'custbody_drt_nc_folio_sustitucion'
+                        },
+                        {
+                            name: 'custbody_drt_nc_num_amortizacion'
+                        },
+                        {
+                            name: 'custbody_drt_nc_tipo_descuento'
+                        },
+                        {
+                            name: 'custbody_drt_nc_tipo_pago'
+                        }
                     ],
                     filters: arrayFilter
                 });
