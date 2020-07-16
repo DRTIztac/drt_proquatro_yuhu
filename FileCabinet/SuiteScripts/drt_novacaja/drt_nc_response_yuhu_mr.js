@@ -7,86 +7,87 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
 
         function getInputData() {
             try {
+
+
+                var arrayFilter = [
+
+                    [
+                        ['type', search.Operator.IS, 'SalesOrd'],
+                        'and',
+                        ['custbody_drt_nc_con_so', search.Operator.NONEOF, '@NONE@'],
+                        'and',
+                        ['custbody_drt_nc_pendiente_enviar', search.Operator.IS, "T"],
+                        'and',
+                        ['mainline', search.Operator.IS, 'T'],
+                        'and',
+                        ['custbody_drt_nc_notificacion_registro', search.Operator.ISEMPTY, ""]
+                    ],
+                    'or',
+                    [
+                        ['type', search.Operator.ANYOF, 'CustInvc'],
+                        'and',
+                        ['custbody_drt_nc_con_in', search.Operator.NONEOF, '@NONE@'],
+                        'and',
+                        ['custbody_drt_nc_pendiente_enviar', search.Operator.IS, "T"],
+                        'and',
+                        ['mainline', search.Operator.IS, 'T'],
+                        'and',
+                        ['custbody_drt_nc_notificacion_registro', search.Operator.ISEMPTY, ""]
+                    ],
+                    'or',
+                    [
+                        ['type', search.Operator.ANYOF, 'CustPymt'],
+                        'and',
+                        ['custbody_drt_nc_con_cp', search.Operator.NONEOF, '@NONE@'],
+                        'and',
+                        ['custbody_drt_nc_pendiente_enviar', search.Operator.IS, "T"],
+                        'and',
+                        ['mainline', search.Operator.IS, 'T'],
+                        'and',
+                        ['custbody_drt_nc_notificacion_registro', search.Operator.ISEMPTY, ""]
+                    ],
+                    'or',
+                    [
+                        ['type', search.Operator.ANYOF, 'CashSale'],
+                        'and',
+                        ['custbody_drt_nc_con_cs', search.Operator.NONEOF, '@NONE@'],
+                        'and',
+                        ['custbody_drt_nc_pendiente_enviar', search.Operator.IS, "T"],
+                        'and',
+                        ['mainline', search.Operator.IS, 'T'],
+                        'and',
+                        ['custbody_drt_nc_notificacion_registro', search.Operator.ISEMPTY, ""]
+                    ]
+                ];
+
+                log.audit({
+                    title: 'arrayFilter',
+                    details: JSON.stringify(arrayFilter)
+                });
                 var respuesta = search.create({
                     type: search.Type.TRANSACTION,
                     columns: [
-                        //Campos Nativos
-                        search.createColumn({
-                            name: 'entity'
-                        }),
-                        search.createColumn({
-                            name: 'total'
-                        }),
-                        search.createColumn({
-                            name: 'title'
-                        }),
-                        search.createColumn({
-                            name: 'trandate'
-                        }),
-                        search.createColumn({
-                            name: 'title'
-                        }),
-                        //Campos Conexion por transaccion
-                        search.createColumn({
-                            name: 'custbody_drt_nc_con_cp'
-                        }),
-                        search.createColumn({
-                            name: 'custbody_drt_nc_con_cs'
-                        }),
-                        search.createColumn({
-                            name: 'custbody_drt_nc_con_in'
-                        }),
-                        search.createColumn({
-                            name: 'custbody_drt_nc_con_je'
-                        }),
-                        search.createColumn({
-                            name: 'custbody_drt_nc_con_so'
-                        }),
-                        //Campos Customm
-                        search.createColumn({
-                            name: 'custbody_drt_nc_notificacion_registro'
-                        }),
-                        search.createColumn({
-                            name: 'custbody_drt_nc_identificador_folio'
-                        }),
-                        search.createColumn({
-                            name: 'custbody_drt_nc_identificador_uuid'
-                        }),
-                        search.createColumn({
-                            name: 'custbody_drt_nc_folio_sustitucion'
-                        }),
-                        //Cammpos Opcionales
-                        search.createColumn({
-                            name: 'custbody_drt_nc_num_amortizacion'
-                        }),
-                        search.createColumn({
-                            name: 'custbody_drt_nc_tipo_descuento'
-                        }),
-                        search.createColumn({
-                            name: 'custbody_drt_nc_tipo_pago'
-                        })
+                        'trandate',
+                        'tranid',
+                        'amount',
+                        'entity',
+                        'total',
+                        'taxtotal',
+                        'custbody_drt_nc_pendiente_enviar',
+                        'custbody_drt_nc_con_cp',
+                        'custbody_drt_nc_con_cs',
+                        'custbody_drt_nc_con_in',
+                        'custbody_drt_nc_con_je',
+                        'custbody_drt_nc_con_so',
+                        'custbody_drt_nc_notificacion_registro',
+                        'custbody_drt_nc_identificador_folio',
+                        'custbody_drt_nc_identificador_uuid',
+                        'custbody_drt_nc_folio_sustitucion',
+                        'custbody_drt_nc_num_amortizacion',
+                        'custbody_drt_nc_tipo_descuento',
+                        'custbody_drt_nc_tipo_pago'
                     ],
-                    filters: [
-                        [
-                            ['recordtype', search.Operator.IS, search.Type.INVOICE],
-                            'and',
-                            ['custbody_drt_nc_con_in', search.Operator.IS, search.Operator.ANYOF, '@NONE@']
-                        ],
-                        'or',
-                        [
-                            ['recordtype', search.Operator.IS, search.Type.CUSTOMER_PAYMMENT],
-                            'and',
-                            ['custbody_drt_nc_con_cp', search.Operator.IS, search.Operator.ANYOF, '@NONE@']
-                        ],
-                        'or',
-                        [
-                            ['recordtype', search.Operator.IS, search.Type.CASH_SALE],
-                            'and',
-                            ['custbody_drt_nc_con_cs', search.Operator.IS, search.Operator.ANYOF, '@NONE@']
-                        ],
-                        'and',
-                        ['custbody_drt_nc_notificacion_registro', search.Operator.IS, search.Operator.ISEMPTY, ""]
-                    ]
+                    filters: arrayFilter
                 });
             } catch (error) {
                 log.error({
@@ -122,6 +123,12 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
         function reduce(context) {
             try {
                 var recordData = context.values;
+                var arrayWebhook = [
+                    'create-order', //credito_inicial,
+                    'maturities-receivable', //vencimiento_por_cobrar,
+                    'update-credit', //actualiza_saldo_credito,
+                    'outstanding-balance', //saldo_pendiente_aplicar,
+                ];
                 for (var ids in recordData) {
                     try {
                         var objupdate = {};
@@ -137,9 +144,10 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
 
 
                         var mensajeFinal = [];
+                        var webhookConsultado = '';
                         switch (data.recordType) {
                             case 'salesorder': {
-
+                                webhookConsultado = arrayWebhook[0];
                             }
                             break;
 
@@ -147,8 +155,24 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                             mensajeFinal.push('Transaccion no valida: ' + data.recordType);
                             break;
                         }
-
-
+                        var response = {
+                            data: {
+                                code: '',
+                                body: '',
+                            }
+                        };
+                        var dataWebhook = drt_cn_lib.bookWebhook(webhookConsultado);
+                        if (dataWebhook.success) {
+                            response = drt_cn_lib.postWebhook(dataWebhook.data.header, dataWebhook.data.url, data);
+                        }
+                        log.audit({
+                            title: 'response.data.code',
+                            details: JSON.stringify(response.data.code)
+                        });
+                        if (response.data.code == 200) {
+                            objupdate.custbody_drt_nc_pendiente_enviar = false;
+                            objupdate.custbody_drt_nc_notificacion_registro = JSON.stringify(data);
+                        }
 
                     } catch (error) {
                         log.error({
