@@ -296,7 +296,7 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                         objField_customer.custentity_mx_rfc = parametro.customer.custentity_mx_rfc;
                     }
                     if (respuesta.data.commpany) {
-                        objField_customer.parent = respuesta.data.commpany;
+                        objField_customer.custentity_drt_nc_empresa = respuesta.data.commpany;
                     }
                     var addes = {
                         custrecord_streetname: "calle",
@@ -415,8 +415,17 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                 }
 
                 objField_transaction.custbody_drt_nc_con_so = param_objdata.id;
+                objField_transaction.custbody_drt_nc_pendiente_enviar = true;
                 objField_transaction.orderstatus = 'B';
-
+                if (parametro.custbody_drt_nc_total_iva) {
+                    objField_transaction.custbody_drt_nc_total_iva = paraetro.custbody_drt_nc_total_iva;
+                }
+                if (parametro.custbody_drt_nc_total_interes) {
+                    objField_transaction.custbody_drt_nc_total_interes = paraetro.custbody_drt_nc_total_interes;
+                }
+                if (parametro.custbody_drt_nc_total_capital) {
+                    objField_transaction.custbody_drt_nc_total_capital = paraetro.custbody_drt_nc_total_capital;
+                }
                 var articulo_capital = runtime.getCurrentScript().getParameter({
                     name: 'custscript_drt_nc_articulo_capital'
                 }) || '';
@@ -436,11 +445,12 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                                 value: parametro.item[liena].fecha,
                                 type: format.Type.DATE
                             }),
+                            custcol_drt_nc_facturado: parametro.item[liena].custcol_drt_nc_facturado == 'T' || parametro.item[liena].custcol_drt_nc_facturado == true,
+                            custcol_drt_nc_monto_interes: parametro.item[liena].intere,
                             custcol_drt_nc_num_amortizacion: parametro.item[liena].num_amortizacion,
                             custcol_drt_nc_monto_capital: parametro.item[liena].capital,
                             custcol_drt_nc_monto_iva: parametro.item[liena].iva
                         });
-
                     }
                 } else {
                     respuesta.error.push('Error en la lectura de articulo de interes: ' + articulo_interes);
