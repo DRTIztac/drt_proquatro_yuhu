@@ -148,7 +148,7 @@ define(['N/search', 'N/render', 'N/file', 'N/record', 'N/runtime', 'N/config', '
         switch(tipo_pago)
         {
           case PAGO.NORMAL:
-          pago_simple();  
+          pago_simple( customer,jsonPayment,invoice );  
           if(jsonPayment.excedente > 0 )
           {
             var param_body={
@@ -188,7 +188,7 @@ define(['N/search', 'N/render', 'N/file', 'N/record', 'N/runtime', 'N/config', '
           
           break;
           case PAGO.MORATORIO:
-          pago_simple();  
+          pago_simple( customer,jsonPayment,invoice );  
           break;
           default:
 
@@ -282,7 +282,8 @@ define(['N/search', 'N/render', 'N/file', 'N/record', 'N/runtime', 'N/config', '
       }
 
 
-      function pago_simple(){
+      function pago_simple( customer,jsonPayment,invoice )
+      {
 
         var obody_field;
         var oPayment;
@@ -296,7 +297,7 @@ define(['N/search', 'N/render', 'N/file', 'N/record', 'N/runtime', 'N/config', '
         var line= {
           internalid:invoice,
           amount:jsonPayment.total
-        } ;
+        };
         arrLine.push(line);
         oPayment.body_field=obody_field;
         oPayment.param_line=arrLine;    
@@ -310,12 +311,6 @@ define(['N/search', 'N/render', 'N/file', 'N/record', 'N/runtime', 'N/config', '
         }else{
           throw new Error(JSON.stringify(oPayment.error));
         }
-
-
-
-        log.debug({title:"Payment ",details: JSON.stringify(oPayment)});
-        log.debug({title:"jsonPayment.excedente ",details: jsonPayment.excedente});
-
 
 
       }
@@ -354,11 +349,11 @@ define(['N/search', 'N/render', 'N/file', 'N/record', 'N/runtime', 'N/config', '
               log.debug({title:"param_line[fieldId][i]",details:param_line[fieldId][i] +""+ i })
               if(i!="subist")
               {
-              nuevo_registro.setCurrentSublistValue({
-                sublistId: "item",
-                fieldId: i,
-                value: param_line[fieldId][i]  
-              });  
+                nuevo_registro.setCurrentSublistValue({
+                  sublistId: "item",
+                  fieldId: i,
+                  value: param_line[fieldId][i]  
+                });  
               }
               
             }
@@ -524,11 +519,11 @@ define(['N/search', 'N/render', 'N/file', 'N/record', 'N/runtime', 'N/config', '
     const param_record= 'salesorder';
     const fieldsublist="item";
 //esTotal:esTotal , items:jsonPayment.item 
-        var respuesta = {
-          success: false,
-          data: '',
-          error: {}
-        };
+var respuesta = {
+  success: false,
+  data: '',
+  error: {}
+};
 try {
 
 
@@ -541,63 +536,84 @@ try {
 
 
 
-    var lineCount = actualizarReg.getLineCount({
-      sublistId: fieldsublist
-    }) || 0;
+  var lineCount = actualizarReg.getLineCount({
+    sublistId: fieldsublist
+  }) || 0;
 
-    log.audit({
-      title: 'lineCount SALES',
-      details: JSON.stringify(lineCount)
+  log.audit({
+    title: ' SALES',
+    details: JSON.stringify(objSalesOrder)
+  });
+  var arrAmort = objRenderArray(objSalesOrder.items ,"num_amortizacion");
+  var numMax= getMaxOfArray(arrAmort);
+  var numMin= getMinOfArray(arrAmort);
+  log.debug({title:"maximo minimo",details:numMax+" "+numMin + JSON.stringify(arrAmort)})
+  for (var renglon = 0; renglon < lineCount; renglon++) {
+
+    actualizarReg.selectLine({
+      sublistId: fieldsublist,
+      line: renglon
     });
+    var isInvoiced=actualizarReg.getCurrentSublistValue({
+      sublistId: fieldsublist,
+      fieldId: 'linkedordbill',
+    }) ;
 
-    for (var renglon = 0; renglon < lineCount; renglon++) {
 
-      actualizarReg.selectLine({
-        sublistId: fieldsublist,
-        line: renglon
-      });
-      var isInvoiced=actualizarReg.getCurrentSublistValue({
-        sublistId: fieldsublist,
-        fieldId: 'linkedordbill',
-      }) ;
-
-      log.debug({title:"TEST",details:isInvoiced})
-      if(isInvoiced=="F")
+    if(isInvoiced=="F")
+    {
+      if(objSalesOrder.esTotal)
       {
-        if(objSalesOrder.esTotal)
+        actualizarReg.setCurrentSublistValue({
+          sublistId: fieldsublist,
+          fieldId: 'amount',
+          value: 0
+        });
+        actualizarReg.commitLine({sublistId:"item"});
+
+      }else{
+        var numAmort=actualizarReg.getCurrentSublistValue({
+          sublistId: fieldsublist,
+          fieldId: 'custcol_drt_nc_num_amortizacion',
+        }) ;
+
+
+        if(  numMax < parseInt(numAmort)  )
         {
+          log.debug({title:"salesOrder",details:"numamort"+ numAmort});
+
           actualizarReg.setCurrentSublistValue({
             sublistId: fieldsublist,
-            fieldId: 'amount',
+            fieldId: 'rate',
             value: 0
           });
 
+          actualizarReg.commitLine({sublistId:"item"});
         }else{
-          var numAmort=actualizarReg.getCurrentSublistValue({
-            sublistId: fieldsublist,
-            fieldId: 'custcol_drt_nc_num_amortizacion',
-          }) ;
 
-
-          if( (objSalesOrder.item).find( esAmortizado(numAmort)   ) ){
-            log.debug({title:"salesOrder",details:"ENTERING SALESOREDER"});
+          var indexAmort = arrAmort.indexOf(numAmort) ;
+          if(indexAmort >= 0)
+          {
             actualizarReg.setCurrentSublistValue({
               sublistId: fieldsublist,
-              fieldId: 'amount',
-              value: 0
+              fieldId: 'rate',
+              value: objSalesOrder.items[indexAmort]["interés"]
             });
-          }
+            actualizarReg.commitLine({sublistId:"item"});
 
+          }
         }
 
       }
 
     }
 
-    respuesta.data = actualizarReg.save({
-      enableSourcing: true,
-      ignoreMandatoryFields: true
-    }) || '';
+  }
+
+  respuesta.data = actualizarReg.save({
+    enableSourcing: true,
+    ignoreMandatoryFields: true
+  }) || '';
   
   respuesta.success = respuesta.data != '';
 } catch (error) {
@@ -616,10 +632,25 @@ try {
 
 }
 
-function esAmortizado(x,busqueda) { 
-  return x.nombre === busqueda;
+function objRenderArray(arrayObj ,idT){
+  var newArray=[];
+
+  for (var i in arrayObj){
+
+    newArray.push(arrayObj[i][idT]);
+
+  }
+
+  return newArray;
 }
 
+function getMaxOfArray(numArray) {
+  return Math.max.apply(null, numArray);
+}
+
+function getMinOfArray(numArray) {
+  return Math.min.apply(null, numArray);
+}
   /**
    * Executes when the reduce entry point is triggered and applies to each group.
    *
