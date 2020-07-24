@@ -154,10 +154,6 @@ define([
                 }
 
                 for (var sublist in param_obj_subrecord) {
-                    log.audit({
-                        title: 'sublist',
-                        details: JSON.stringify(sublist)
-                    });
                     newRecord.selectNewLine({
                         sublistId: sublist
                     }); //addressbook
@@ -450,159 +446,70 @@ define([
                     title: 'bookWebhook',
                     details: JSON.stringify(param_case)
                 });
-                switch (param_case) {
-                    case 'salesorder': //credito_inicial
-                        respuesta.data.header = {
-                            "Authorization": "Api-Key Moa1M0rL.9XK5Z5qAyFcG2hH1N9dBPghwrfDkAmFc",
-                            "Content-Type": "application/json"
-                        };
-                        respuesta.data.url = 'https://apidev.yuhu.mx/api/v1/ns/webhook/salesorder/';
-                        respuesta.data.ejemplo = {
-                            "success": true,
-                            "record": "2001",
-                            "error": [],
-                            "data": {
-                                "1892": {
-                                    "recordtype": "salesorder",
-                                    "internalid": "1892",
-                                    "folio": "86",
-                                    "total": 48653.86,
-                                    "trandate": "2020-06-19",
-                                    "createddate": "2020-06-19",
-                                    "custbody_drt_nc_identificador_uuid": "ab2009f4-1dba-4990-8d67-5eb8f70fb671",
-                                    "custbody_drt_nc_identificador_folio": "CRT7002240"
-                                },
-                                "115": {
-                                    "recordtype": "customer",
-                                    "internalid": "115",
-                                    "custentity_mx_rfc": "EIIF920502751",
-                                    "custentity_drt_nc_curp": "EIIF920502HNLSRR00",
-                                    "uuid_yuhu": "7b6ad1a1-638b-4cd2-938f-498149dced58"
-                                }
-                            }
-                        };
-                        break;
-                    case 'maturities-receivable': //vencimiento_por_cobrar
-                        respuesta.data.header = {
-                            "Authorization": "Api-Key Moa1M0rL.9XK5Z5qAyFcG2hH1N9dBPghwrfDkAmFc",
-                            "Content-Type": "application/json"
-                        };
-                        respuesta.data.url = 'https://apidev.yuhu.mx/api/v1/ns/webhook/maturities-receivable/';
-                        respuesta.data.ejemplo = {
-                            "success": true,
-                            "record": "2001",
-                            "error": [],
-                            "case": "",
-                            "data": {
-                                "116": {
-                                    "recordtype": "invoice",
-                                    "internalid": "116",
-                                    "folio": "nombre_folio_transaccion",
-                                    "total": 2027.24,
-                                    "trandate": "2020-05-30",
-                                    "createddate": "2020-05-30",
-                                    "num_amortizacion": "1",
-                                    "custbody_drt_nc_tipo_descuento": "0",
-                                    "empresa_custentity_mx_rfc": "FERE920115V20",
-                                    "empresa_companyname": "fereicode sa de cv",
-                                    "custbody_mx_cfdi_uuid": "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
-                                    "custbody_drt_nc_identificador_uuid": "ab2009f4-1dba-4990-8d67-5eb8f70fb671",
-                                    "custbody_drt_nc_identificador_folio": "CRT7002240"
-                                }
-                            }
-                        }
 
-                        break;
-                    case 'update-credit': //actualiza_saldo_credito
+                switch (param_case) {
+                    case 'salesorder':
                         respuesta.data.header = {
                             "Authorization": "Api-Key Moa1M0rL.9XK5Z5qAyFcG2hH1N9dBPghwrfDkAmFc",
                             "Content-Type": "application/json"
                         };
-                        respuesta.data.url = 'https://apidev.yuhu.mx/api/v1/ns/webhook/update-credit/';
-                        respuesta.data.ejemplo = {
-                            "success": true,
-                            "record": "2001",
-                            "error": [],
-                            "data": {
-                                "116": {
-                                    "recordtype": "customerpayment",
-                                    "internalid": "116",
-                                    "folio": "nombre_transaccion",
-                                    "total": 24000.00,
-                                    "trandate": "2020-05-31",
-                                    "createddate": "2020-05-31",
-                                    "num_amortizacion": "1",
-                                    "custbody_drt_nc_identificador_uuid": "ab2009f4-1dba-4990-8d67-5eb8f70fb671",
-                                    "custbody_drt_nc_identificador_folio": "CRT7002240"
-                                },
-                                "115": {
-                                    "recordtype": "customer",
-                                    "internalid": "115",
-                                    "custentity_drt_nc_curp": "CAGG780421HCLHLB05",
-                                    "custentity_drt_nc_uuid_yuhu": 'c9d71dcc-aceb-4d99-8ccd-63c97df9f9e6',
-                                    "custentity_mx_rfc": "CAGG780421NM1"
-                                }
-                            }
-                        };
+                        respuesta.data.url = 'https://apidev.yuhu.mx/api/v1/ns/webhook/' + param_case + '/';
+                        respuesta.data.ejemplo = {};
                         break;
-                    case 'outstanding-balance': //saldo_pendiente_aplicar
+                    case 'invoice':
                         respuesta.data.header = {
                             "Authorization": "Api-Key Moa1M0rL.9XK5Z5qAyFcG2hH1N9dBPghwrfDkAmFc",
                             "Content-Type": "application/json"
                         };
-                        respuesta.data.url = 'https://apidev.yuhu.mx/api/v1/ns/webhook/outstanding-balance/';
-                        respuesta.data.ejemplo = {
-                            "success": true,
-                            "record": "",
-                            "error": [],
-                            "case": "",
-                            "data": {
-                                "120": {
-                                    "recordtype": "invoice",
-                                    "internalid": "120",
-                                    "folio": "nombre_transaccion",
-                                    "total": 2000,
-                                    "trandate": "1/06/2020",
-                                    "createddate": "1/06/2020",
-                                    "custbody_drt_nc_tipo_descuento": "0",
-                                    "empresa_custentity_mx_rfc": "FERE920115V20",
-                                    "empresa_companyname": "fereicode sa de cv",
-                                    "custbody_mx_cfdi_uuid": "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
-                                    "num_amortizacion": "4",
-                                    "custbody_drt_nc_identificador_uuid": "ab2009f4-1dba-4990-8d67-5eb8f70fb671",
-                                    "custbody_drt_nc_identificador_folio": "CRT7002240"
-                                },
-                                "335": {
-                                    "recordtype": "customerpayment",
-                                    "internalid": "335",
-                                    "folio": "nombre_transaccion",
-                                    "total": 2300,
-                                    "trandate": "1/06/2020",
-                                    "createddate": "1/06/2020",
-                                    "custbody_drt_nc_tipo_descuento": "0",
-                                    "empresa_custentity_mx_rfc": "FERE920115V20",
-                                    "empresa_companyname": "fereicode sa de cv",
-                                    "num_amortizacion": "4",
-                                    "custbody_drt_nc_identificador_uuid": "ab2009f4-1dba-4990-8d67-5eb8f70fb671",
-                                    "custbody_drt_nc_identificador_folio": "CRT7002240"
-                                },
-                                "336": {
-                                    "recordtype": "journalentry",
-                                    "internalid": "336",
-                                    "folio": "nombre_transaccion",
-                                    "total": 2300,
-                                    "trandate": "1/06/2020",
-                                    "createddate": "1/06/2020",
-                                    "custbody_drt_nc_tipo_descuento": "0",
-                                    "empresa_custentity_mx_rfc": "FERE920115V20",
-                                    "empresa_companyname": "fereicode sa de cv",
-                                    "num_amortizacion": "4",
-                                    "custbody_drt_nc_identificador_uuid": "ab2009f4-1dba-4990-8d67-5eb8f70fb671",
-                                    "custbody_drt_nc_identificador_folio": "CRT7002240"
-                                }
-                            }
-                        };
+                        respuesta.data.url = 'https://apidev.yuhu.mx/api/v1/ns/webhook/' + param_case + '/';
+                        respuesta.data.ejemplo = {};
                         break;
+
+                    case 'customerpayment':
+                        respuesta.data.header = {
+                            "Authorization": "Api-Key Moa1M0rL.9XK5Z5qAyFcG2hH1N9dBPghwrfDkAmFc",
+                            "Content-Type": "application/json"
+                        };
+                        respuesta.data.url = 'https://apidev.yuhu.mx/api/v1/ns/webhook/' + param_case + '/';
+                        respuesta.data.ejemplo = {};
+                        break;
+
+                    case 'journalentry':
+                        respuesta.data.header = {
+                            "Authorization": "Api-Key Moa1M0rL.9XK5Z5qAyFcG2hH1N9dBPghwrfDkAmFc",
+                            "Content-Type": "application/json"
+                        };
+                        respuesta.data.url = 'https://apidev.yuhu.mx/api/v1/ns/webhook/' + param_case + '/';
+                        respuesta.data.ejemplo = {};
+                        break;
+
+                    case 'customerdeposit':
+                        respuesta.data.header = {
+                            "Authorization": "Api-Key Moa1M0rL.9XK5Z5qAyFcG2hH1N9dBPghwrfDkAmFc",
+                            "Content-Type": "application/json"
+                        };
+                        respuesta.data.url = 'https://apidev.yuhu.mx/api/v1/ns/webhook/' + param_case + '/';
+                        respuesta.data.ejemplo = {};
+                        break;
+
+                    case 'check':
+                        respuesta.data.header = {
+                            "Authorization": "Api-Key Moa1M0rL.9XK5Z5qAyFcG2hH1N9dBPghwrfDkAmFc",
+                            "Content-Type": "application/json"
+                        };
+                        respuesta.data.url = 'https://apidev.yuhu.mx/api/v1/ns/webhook/' + param_case + '/';
+                        respuesta.data.ejemplo = {};
+                        break;
+
+                    case 'cashsale':
+                        respuesta.data.header = {
+                            "Authorization": "Api-Key Moa1M0rL.9XK5Z5qAyFcG2hH1N9dBPghwrfDkAmFc",
+                            "Content-Type": "application/json"
+                        };
+                        respuesta.data.url = 'https://apidev.yuhu.mx/api/v1/ns/webhook/' + param_case + '/';
+                        respuesta.data.ejemplo = {};
+                        break;
+
 
                     default:
                         break;
@@ -631,13 +538,27 @@ define([
                         body: ''
                     }
                 };
-                respuesta.data = https.post({
-                    headers: param_header,
-                    url: param_url,
-                    body: JSON.stringify(param_body),
-                }) || {
-                    code: 0
-                };
+                if (param_header && param_url && param_body) {
+                    log.audit({
+                        title: 'postWebhook param_header',
+                        details: JSON.stringify(param_header)
+                    });
+                    log.audit({
+                        title: 'postWebhook param_url',
+                        details: JSON.stringify(param_url)
+                    });
+                    log.audit({
+                        title: 'postWebhook param_body',
+                        details: JSON.stringify(param_body)
+                    });
+                    respuesta.data = https.post({
+                        headers: param_header,
+                        url: param_url,
+                        body: JSON.stringify(param_body),
+                    }) || {
+                        code: 0
+                    };
+                }
                 respuesta.success = respuesta.data.code == 200;
             } catch (error) {
                 log.error({
@@ -645,10 +566,10 @@ define([
                     details: JSON.stringify(error)
                 });
             } finally {
-                log.emergency({
-                    title: 'respuesta postWebhook ',
-                    details: JSON.stringify(respuesta)
-                });
+                // log.emergency({
+                //     title: 'respuesta postWebhook ',
+                //     details: JSON.stringify(respuesta)
+                // });
                 return respuesta;
             }
         }

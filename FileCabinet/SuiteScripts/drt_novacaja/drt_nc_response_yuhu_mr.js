@@ -10,11 +10,10 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
 
 
                 var arrayFilter = [
-
                     [
-                        ['type', search.Operator.IS, 'SalesOrd'],
+                        ['type', search.Operator.ANYOF, 'CustInvc'],
                         'and',
-                        ['custbody_drt_nc_con_so', search.Operator.NONEOF, '@NONE@'],
+                        ['custbody_drt_nc_con_in', search.Operator.NONEOF, '@NONE@'],
                         'and',
                         ['custbody_drt_nc_pendiente_enviar', search.Operator.IS, "T"],
                         'and',
@@ -24,9 +23,9 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                     ],
                     'or',
                     [
-                        ['type', search.Operator.ANYOF, 'CustInvc'],
+                        ['type', search.Operator.IS, 'SalesOrd'],
                         'and',
-                        ['custbody_drt_nc_con_in', search.Operator.NONEOF, '@NONE@'],
+                        ['custbody_drt_nc_con_so', search.Operator.NONEOF, '@NONE@'],
                         'and',
                         ['custbody_drt_nc_pendiente_enviar', search.Operator.IS, "T"],
                         'and',
@@ -57,6 +56,18 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                         ['mainline', search.Operator.IS, 'T'],
                         'and',
                         ['custbody_drt_nc_notificacion_registro', search.Operator.ISEMPTY, ""]
+                    ],
+                    'or',
+                    [
+                        ['type', search.Operator.ANYOF, 'Journal'],
+                        'and',
+                        ['custbody_drt_nc_con_je', search.Operator.NONEOF, '@NONE@'],
+                        'and',
+                        ['custbody_drt_nc_pendiente_enviar', search.Operator.IS, "T"],
+                        'and',
+                        ['mainline', search.Operator.IS, 'T'],
+                        'and',
+                        ['custbody_drt_nc_notificacion_registro', search.Operator.ISEMPTY, ""]
                     ]
                 ];
 
@@ -67,22 +78,6 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                 var respuesta = search.create({
                     type: search.Type.TRANSACTION,
                     columns: [{
-                            name: 'entity'
-                        },
-                        //         {
-                        //             name: 'customer'
-                        //         },
-                        // { join: 'customer', name: 'firstname' },
-                        // { join: 'customer', name: 'lastname' },
-                        // { join: 'customer', name: 'isperson' },
-                        // { join: 'customer', name: 'companyname' },
-                        // { join: 'customer', name: 'email' },
-                        // { join: 'customer', name: 'custrecord_efx_fe_imp_sat' },
-                        // { join: 'customer', name: 'custentity_drt_nc_curp' },
-                        // { join: 'customer', name: 'custentity_drt_nc_uuid_yuhu' },
-                        // { join: 'customer', name: 'custentity_mx_rfc' },
-                        // { join: 'customer', name: 'custentity_drt_nc_empresa' },
-                        {
                             name: 'trandate'
                         },
                         {
@@ -137,7 +132,46 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                             name: 'custbody_drt_nc_tipo_descuento'
                         },
                         {
+                            name: 'custbody_drt_nc_total_transaccion'
+                        },
+                        {
+                            name: 'custbody_drt_nc_total_iva'
+                        },
+                        {
+                            name: 'custbody_drt_nc_total_interes'
+                        },
+                        {
+                            name: 'custbody_drt_nc_total_capital'
+                        },
+                        {
+                            name: 'custbody_drt_nc_createdfrom'
+                        },
+                        {
                             name: 'custbody_drt_nc_tipo_pago'
+                        }, {
+                            name: "custentity_drt_nc_curp",
+                            join: "customer"
+                        }, {
+                            name: "custentity_drt_nc_uuid_yuhu",
+                            join: "customer"
+                        }, {
+                            name: "custentity_mx_rfc",
+                            join: "customer"
+                        }, {
+                            name: "isperson",
+                            join: "customer"
+                        }, {
+                            name: "companyname",
+                            join: "customer"
+                        }, {
+                            name: "firstname",
+                            join: "customer"
+                        }, {
+                            name: "lastname",
+                            join: "customer"
+                        }, {
+                            name: "email",
+                            join: "customer"
                         }
                     ],
                     filters: arrayFilter
@@ -176,12 +210,6 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
         function reduce(context) {
             try {
                 var recordData = context.values;
-                var arrayWebhook = [
-                    'create-order', //credito_inicial,
-                    'maturities-receivable', //vencimiento_por_cobrar,
-                    'update-credit', //actualiza_saldo_credito,
-                    'outstanding-balance', //saldo_pendiente_aplicar,
-                ];
                 for (var ids in recordData) {
                     try {
                         var objupdate = {};
@@ -195,19 +223,7 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                             details: JSON.stringify(data.values)
                         });
 
-
-                        var mensajeFinal = [];
-                        var webhookConsultado = '';
-                        switch (data.recordType) {
-                            case 'salesorder': {
-                                webhookConsultado = arrayWebhook[0];
-                            }
-                            break;
-
-                        default:
-                            mensajeFinal.push('Transaccion no valida: ' + data.recordType);
-                            break;
-                        }
+                        var webhookConsultado = data.recordType;
                         var response = {
                             data: {
                                 code: '',
