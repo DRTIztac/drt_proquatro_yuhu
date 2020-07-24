@@ -170,14 +170,14 @@ define([
                         sublistId: sublist,
                         fieldId: 'addressbookaddress'
                     });
-                    for (var field in param_obj_sublist[sublist]) {
+                    for (var field in param_obj_subrecord[sublist]) {
                         log.audit({
-                            title: 'param_obj_sublist[' + sublist + '][' + field + ']',
-                            details: JSON.stringify(param_obj_sublist[sublist][field])
+                            title: 'param_obj_subrecord[' + sublist + '][' + field + ']',
+                            details: JSON.stringify(param_obj_subrecord[sublist][field])
                         });
                         subrec.setValue({
                             fieldId: field,
-                            value: param_obj_sublist[sublist][field]
+                            value: param_obj_subrecord[sublist][field]
                         });
                     }
                     newRecord.commitLine({
@@ -451,12 +451,12 @@ define([
                     details: JSON.stringify(param_case)
                 });
                 switch (param_case) {
-                    case 'create-order': //credito_inicial
+                    case 'salesorder': //credito_inicial
                         respuesta.data.header = {
                             "Authorization": "Api-Key Moa1M0rL.9XK5Z5qAyFcG2hH1N9dBPghwrfDkAmFc",
                             "Content-Type": "application/json"
                         };
-                        respuesta.data.url = 'https://apidev.yuhu.mx/api/v1/ns/webhook/create-order/';
+                        respuesta.data.url = 'https://apidev.yuhu.mx/api/v1/ns/webhook/salesorder/';
                         respuesta.data.ejemplo = {
                             "success": true,
                             "record": "2001",

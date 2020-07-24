@@ -113,7 +113,7 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                                     }
                                     if (salesOrder.data.commpany) {
                                         objupdate.custrecord_drt_nc_c_company = salesOrder.data.commpany;
-                                        mensajeFinal.push('Se genero empresa con id: ' + objupdate.custrecord_drt_nc_c_entity);
+                                        mensajeFinal.push('Se genero empresa con id: ' + objupdate.custrecord_drt_nc_c_company);
                                     }
                                 } else {}
                                 if (salesOrder.error.length > 0) {
@@ -151,11 +151,6 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                                 ignoreMandatoryFields: true
                             }
                         });
-                        var body = drt_cn_lib.responseYuhu(idUpdate);
-                        var dataWebhook = drt_cn_lib.bookWebhook('credito_inicial');
-                        if (body.success && dataWebhook.success) {
-                            var sendYuhu = drt_cn_lib.postWebhook(dataWebhook.data.header, dataWebhook.data.url, body.data);
-                        }
                     }
                 }
             } catch (error) {
@@ -181,9 +176,15 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                 var objField_customer = {};
                 var objSublist_customer = {};
                 var objField_transaction = {};
+                var objField_journal = {
+                    line: []
+                };
                 var objAddress = {};
                 var objSublist_transaction = {
                     item: [],
+                };
+                var objSublist_journal = {
+                    line: [],
                 };
                 var parametro = JSON.parse(param_objdata.values.custrecord_drt_nc_c_context);
                 if (param_objdata.values.custrecord_drt_nc_c_entity.value) {
@@ -193,9 +194,8 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                 if (parametro.empresa && parametro.empresa.custentity_mx_rfc) {
                     var searchcompany = searchidentificador(record.Type.CUSTOMER, 'custentity_mx_rfc', parametro.empresa.custentity_mx_rfc);
                     if (searchcompany.success) {
-                        for (var resultado in searchcompany.data) {
-                            respuesta.data.commpany = resultado;
-                        }
+                        respuesta.data.commpany = searchcompany.data;
+
                     } else {
 
                         if (parametro.empresa.isperson) {
@@ -262,6 +262,9 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                         if (crear_empresa.success) {
                             respuesta.data.commpany = crear_empresa.data;
                         }
+                        if (Object.keys(crear_empresa.error).length > 0) {
+                            respuesta.error.push('Error al generar empresa: ' + crear_empresa.error.message);
+                        }
 
                     }
                 }
@@ -269,11 +272,10 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                 if (!cliente && parametro.custentity_drt_nc_curp) {
                     var searchcustomer = searchidentificador(record.Type.CUSTOMER, 'custentity_drt_nc_curp', parametro.custentity_drt_nc_curp);
                     if (searchcustomer.success) {
-                        for (var resultado in searchcustomer.data) {
-                            cliente = resultado;
-                        }
+                        cliente = searchcustomer.data;
                     }
                 }
+
                 if (!cliente) {
                     if (parametro.customer.isperson) {
                         objField_customer.isperson = "T";
@@ -353,7 +355,8 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                         }
 
                     }
-                    var newentity = drt_cn_lib.createRecord(record.Type.CUSTOMER, objField_customer, objAddress);
+                    var newentity = drt_cn_lib.createRecord(record.Type.CUSTOMER, objField_customer, {}, objAddress);
+
 
                     if (newentity.success) {
                         cliente = newentity.data;
@@ -361,7 +364,7 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                     if (Object.keys(newentity.error).length > 0) {
                         respuesta.error.push('Error al generar cliente: ' + newentity.error.message);
                     }
-
+                    // Street Name, Street Number, ZIP, City, State
 
                 }
 
@@ -418,13 +421,16 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                 objField_transaction.custbody_drt_nc_pendiente_enviar = true;
                 objField_transaction.orderstatus = 'B';
                 if (parametro.custbody_drt_nc_total_iva) {
-                    objField_transaction.custbody_drt_nc_total_iva = paraetro.custbody_drt_nc_total_iva;
+                    objField_transaction.custbody_drt_nc_total_iva = parametro.custbody_drt_nc_total_iva;
                 }
                 if (parametro.custbody_drt_nc_total_interes) {
-                    objField_transaction.custbody_drt_nc_total_interes = paraetro.custbody_drt_nc_total_interes;
+                    objField_transaction.custbody_drt_nc_total_interes = parametro.custbody_drt_nc_total_interes;
                 }
                 if (parametro.custbody_drt_nc_total_capital) {
-                    objField_transaction.custbody_drt_nc_total_capital = paraetro.custbody_drt_nc_total_capital;
+                    objField_transaction.custbody_drt_nc_total_capital = parametro.custbody_drt_nc_total_capital;
+                }
+                if (parametro.total) {
+                    objField_transaction.custbody_drt_nc_total_transaccion = parametro.total;
                 }
                 var articulo_capital = runtime.getCurrentScript().getParameter({
                     name: 'custscript_drt_nc_articulo_capital'
@@ -446,7 +452,8 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                                 type: format.Type.DATE
                             }),
                             custcol_drt_nc_facturado: parametro.item[liena].custcol_drt_nc_facturado == 'T' || parametro.item[liena].custcol_drt_nc_facturado == true,
-                            custcol_drt_nc_monto_interes: parametro.item[liena].intere,
+                            custcol_drt_nc_monto_total: parametro.item[liena].total,
+                            custcol_drt_nc_monto_interes: parametro.item[liena].interes,
                             custcol_drt_nc_num_amortizacion: parametro.item[liena].num_amortizacion,
                             custcol_drt_nc_monto_capital: parametro.item[liena].capital,
                             custcol_drt_nc_monto_iva: parametro.item[liena].iva
@@ -463,31 +470,38 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                     if (Object.keys(newtransaction.error).length > 0) {
                         respuesta.error.push('Error al generar la transaccion: ' + newtransaction.error.message);
                     }
-                    parametro.aaccount = 317;
-                    // if (newtransaction.success) {
-                    //     respuesta.data.transaccion = newtransaction.data;
-                    //     if (parametro.total) {
-                    //         var objField_journal = {};
-                    //         objField_journal.trandate = format.parse({
-                    //             value: parametro.trandate,
-                    //             type: format.Type.DATE
-                    //         });
-                    //         var objField_journal = {
-                    //             line: []
-                    //         };
-                    //         objField_journal.line.push({
-                    //             aaccount: 629,
-                    //             debit: parametro.total,
-                    //         });
-                    //         objField_journal.line.push({
-                    //             aaccount: parametro.aaccount,
-                    //             credit: parametro.total,
-                    //         });
-                    //         var newjournalentry = drt_cn_lib.createRecord(record.Type.JOURNAL_ENTRY, objField_journal, objSublist_journal, {});
-                    //     }
-                    // }
-                }
 
+                    if (newtransaction.success) {
+                        respuesta.data.transaccion = newtransaction.data;
+                    }
+
+                }
+                if (respuesta.data.transaccion && parametro.total) {
+                    // objField_journal.entity = objField_transaction.entity;
+                    // objField_journal.custbody_drt_nc_identificador_uuid = 'custbody_drt_nc_identificador_uuid';
+                    objField_journal.custbody_drt_nc_con_je = param_objdata.id;
+                    objField_journal.custbody_drt_nc_createdfrom = respuesta.data.transaccion;
+                    objField_journal.custbody_drt_nc_pendiente_enviar = true;
+
+                    if (objField_transaction.trandate) {
+                        objField_journal.trandate = objField_transaction.trandate;
+                    }
+                    objSublist_journal.line.push({
+                        account: 819,
+                        debit: parametro.total
+                    });
+                    objSublist_journal.line.push({
+                        account: 617,
+                        credit: parametro.total,
+                        entity: objField_transaction.entity,
+                    });
+
+                    var newjournalentry = drt_cn_lib.createRecord(record.Type.JOURNAL_ENTRY, objField_journal, objSublist_journal, {});
+                    if (newjournalentry.success) {
+                        respuesta.data.journal = newjournalentry.data;
+                    }
+
+                }
                 respuesta.success = Object.keys(respuesta.data).length > 0;
             } catch (error) {
                 log.error({
