@@ -17,9 +17,7 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                         'and',
                         ['custbody_drt_nc_pendiente_enviar', search.Operator.IS, "T"],
                         'and',
-                        ['mainline', search.Operator.IS, 'T'],
-                        'and',
-                        ['custbody_drt_nc_notificacion_registro', search.Operator.ISEMPTY, ""]
+                        ['mainline', search.Operator.IS, 'T']
                     ],
                     'or',
                     [
@@ -29,9 +27,7 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                         'and',
                         ['custbody_drt_nc_pendiente_enviar', search.Operator.IS, "T"],
                         'and',
-                        ['mainline', search.Operator.IS, 'T'],
-                        'and',
-                        ['custbody_drt_nc_notificacion_registro', search.Operator.ISEMPTY, ""]
+                        ['mainline', search.Operator.IS, 'T']
                     ],
                     'or',
                     [
@@ -41,9 +37,7 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                         'and',
                         ['custbody_drt_nc_pendiente_enviar', search.Operator.IS, "T"],
                         'and',
-                        ['mainline', search.Operator.IS, 'T'],
-                        'and',
-                        ['custbody_drt_nc_notificacion_registro', search.Operator.ISEMPTY, ""]
+                        ['mainline', search.Operator.IS, 'T']
                     ],
                     'or',
                     [
@@ -53,9 +47,7 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                         'and',
                         ['custbody_drt_nc_pendiente_enviar', search.Operator.IS, "T"],
                         'and',
-                        ['mainline', search.Operator.IS, 'T'],
-                        'and',
-                        ['custbody_drt_nc_notificacion_registro', search.Operator.ISEMPTY, ""]
+                        ['mainline', search.Operator.IS, 'T']
                     ],
                     'or',
                     [
@@ -65,9 +57,7 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                         'and',
                         ['custbody_drt_nc_pendiente_enviar', search.Operator.IS, "T"],
                         'and',
-                        ['mainline', search.Operator.IS, 'T'],
-                        'and',
-                        ['custbody_drt_nc_notificacion_registro', search.Operator.ISEMPTY, ""]
+                        ['mainline', search.Operator.IS, 'T']
                     ]
                 ];
 
@@ -114,9 +104,6 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                             name: 'custbody_drt_nc_con_so'
                         },
                         {
-                            name: 'custbody_drt_nc_notificacion_registro'
-                        },
-                        {
                             name: 'custbody_drt_nc_identificador_folio'
                         },
                         {
@@ -145,6 +132,9 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                         },
                         {
                             name: 'custbody_drt_nc_createdfrom'
+                        },
+                        {
+                            name: 'custbody_mx_cfdi_uuid'
                         },
                         {
                             name: 'custbody_drt_nc_tipo_pago'
