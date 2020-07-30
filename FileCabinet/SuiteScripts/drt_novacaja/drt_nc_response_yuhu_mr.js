@@ -232,6 +232,7 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                         };
                         var dataWebhook = drt_cn_lib.bookWebhook(webhookConsultado);
                         if (dataWebhook.success) {
+                            data.webhook = dataWebhook.data.url;
                             response = drt_cn_lib.postWebhook(dataWebhook.data.header, dataWebhook.data.url, data);
                         }
                         log.audit({
@@ -240,8 +241,8 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                         });
                         if (response.data.code == 200) {
                             objupdate.custbody_drt_nc_pendiente_enviar = false;
-                            objupdate.custbody_drt_nc_notificacion_registro = JSON.stringify(data);
                         }
+                        objupdate.custbody_drt_nc_notificacion_registro = JSON.stringify(data);
 
                     } catch (error) {
                         log.error({
