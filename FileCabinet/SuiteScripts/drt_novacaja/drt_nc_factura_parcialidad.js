@@ -143,7 +143,16 @@
                 value: Number(invoiceid)
 
                 });
-          
+
+            salesRec.setCurrentSublistValue({
+                sublistId: 'item',
+                fieldId:'custcol_drt_nc_facturado',                                
+                value: true
+
+                });
+           salesRec.commitLine({  
+              sublistId: "item"
+            });
 
         }
         if(!(intquantity == 1 && drtInvoice == "") && control){

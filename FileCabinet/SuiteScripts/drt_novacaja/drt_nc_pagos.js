@@ -99,13 +99,14 @@ define(['N/search', 'N/render', 'N/file', 'N/record', 'N/runtime', 'N/config', '
    function map(context) {
 
     const PAGO={
-      NORMAL:1,    
-      MORATORIO:2    ,
-      CAPITAL_PARCIAL:3,    
-      CAPITAL_TOTAL:4    
+      NORMAL:0,    
+      MORATORIO:1    ,
+      CAPITAL_PARCIAL:2,    
+      CAPITAL_TOTAL:3    
     }; 
 
-    const param_record={deposito:'customerdeposit',cashsale:"CASHSALE" , salesOrder:"SALES_ORDER"} ;
+    const param_record={deposito:'customerdeposit',cashsale:"CASHSALE" , salesOrder:"SALES_ORDER",journal:"journalentry"} ;
+    const notificacionYuhu="custbody_drt_nc_pendiente_enviar";
 
     var jsonRecord=JSON.parse(context.value);
 
@@ -169,12 +170,32 @@ define(['N/search', 'N/render', 'N/file', 'N/record', 'N/runtime', 'N/config', '
 
           case PAGO.CAPITAL_PARCIAL:
 
-          
-          var objCashSale=createObjCashSale(customer,jsonPayment.interés);  
 
 
           try{
-            var oCashSale =  createTransaction(param_record.cashsale,objCashSale);  
+
+          if(jsonPayment.interés>0){
+          var objCashSale=createObjCashSale(customer,jsonPayment.interés);  
+          var oCashSale =  createTransaction(param_record.cashsale,objCashSale);   
+          }
+          if(jsonPayment.capital>0){
+          var dateTransdate = jsonPayment.trandate;
+          var entity= entity;
+          var amount = amount;
+          var isDebit=isDebit;
+          var objdebit = {              
+            account:629,
+            amount:,
+            entity
+          };
+        
+  
+          var objJournal = createObjJournalEntry(dateTransdate,entity,amount, isDebit); 
+            log.debug({title:"objJournal",details:JSON.stringify(objJournal)});
+            
+          }
+          
+
             log.debug({title:"Cambio",details:JSON.stringify(oCashSale)});
 
             var ajuste    =  ajustar_sales_order({ esTotal:esTotal ,salesorderId:jsonPayment.record, items:jsonPayment.item});  
@@ -247,6 +268,44 @@ define(['N/search', 'N/render', 'N/file', 'N/record', 'N/runtime', 'N/config', '
       return objcashSale;
 
     }
+
+    function createObjJournalEntry(dateTransdate,objdebit,objcredit){
+
+      try{
+
+
+    var objJournalEntry={
+      body_field: {
+        trandate:dateTransdate,
+      },
+      line_field: []
+    };
+
+
+    var lineItem=
+    {
+  sublist:"line",
+  account:objdebit.account,
+  debit:objdebit.amount,
+  entity:objdebit.entity
+    };
+      objJournalEntry.line_field.push(lineItem);
+    var lineItem=
+    {
+  sublist:"line",
+  account:objcredit.account, 
+  credit:objcredit.amount,
+  entity:objcredit.entity
+    };
+  objJournalEntry.line_field.push(lineItem);
+
+      log.debug({title:"cashsale",details:JSON.stringify(objJournalEntry)});
+      return objJournalEntry;
+}catch(error){
+        throw error;
+      }
+
+    }
     function createObjSalesOrder(rate){
 
 
@@ -274,12 +333,7 @@ define(['N/search', 'N/render', 'N/file', 'N/record', 'N/runtime', 'N/config', '
 
       }
 
-      function pago_cash_sale(objcashSale){
 
-
-
-
-      }
 
 
       function pago_simple( customer,jsonPayment,invoice )
@@ -294,6 +348,8 @@ define(['N/search', 'N/render', 'N/file', 'N/record', 'N/runtime', 'N/config', '
         obody_field.account =317;
         obody_field.custbody_drt_nc_identificador_uuid  = jsonPayment.custbody_drt_nc_identificador_uuid;
         obody_field.custbody_drt_nc_identificador_folio = jsonPayment.custbody_drt_nc_identificador_folio;
+        obody_field[this.notificacionYuhu] = "T";
+        
         var line= {
           internalid:invoice,
           amount:jsonPayment.total
@@ -340,17 +396,27 @@ define(['N/search', 'N/render', 'N/file', 'N/record', 'N/runtime', 'N/config', '
               value: param_body[fieldId]
             });
           }
+
+var curSublist;
           for (var fieldId in param_line) {
 
-            nuevo_registro.selectNewLine({ 
-              sublistId: 'item' 
-            });
+        
             for(var i in param_line[fieldId]){
-              log.debug({title:"param_line[fieldId][i]",details:param_line[fieldId][i] +""+ i })
-              if(i!="subist")
+              curSublist=param_line[fieldId]["sublist"]||"item";
+              if(fieldId==0){
+            nuevo_registro.selectNewLine({ 
+              sublistId: curSublist 
+            });    
+              }
+            
+               
+              
+              log.debug({title:"param_line[fieldId][i]",details:param_line[fieldId][i] +""+ i });
+
+              if(i!="sublist")
               {
                 nuevo_registro.setCurrentSublistValue({
-                  sublistId: "item",
+                  sublistId: curSublist,
                   fieldId: i,
                   value: param_line[fieldId][i]  
                 });  
@@ -358,7 +424,7 @@ define(['N/search', 'N/render', 'N/file', 'N/record', 'N/runtime', 'N/config', '
               
             }
             nuevo_registro.commitLine({  
-              sublistId: 'item'
+              sublistId: curSublist
             });
           }
 
