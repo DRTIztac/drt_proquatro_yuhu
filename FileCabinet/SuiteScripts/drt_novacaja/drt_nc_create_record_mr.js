@@ -176,16 +176,12 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                 var objField_customer = {};
                 var objSublist_customer = {};
                 var objField_transaction = {};
-                var objField_journal = {
-                    line: []
-                };
+
                 var objAddress = {};
                 var objSublist_transaction = {
                     item: [],
                 };
-                var objSublist_journal = {
-                    line: [],
-                };
+
                 var parametro = JSON.parse(param_objdata.values.custrecord_drt_nc_c_context);
                 if (param_objdata.values.custrecord_drt_nc_c_entity.value) {
                     cliente = param_objdata.values.custrecord_drt_nc_c_entity.value;
@@ -476,25 +472,34 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                     }
 
                 }
-                if (respuesta.data.transaccion && parametro.total) {
+                if (respuesta.data.transaccion && parametro.dispersion && parametro.dispersion.length > 0) {
+                    var objSublist_journal = {
+                        line: [],
+                    };
+                    var objField_journal = {};
+
                     // objField_journal.entity = objField_transaction.entity;
                     // objField_journal.custbody_drt_nc_identificador_uuid = 'custbody_drt_nc_identificador_uuid';
                     objField_journal.custbody_drt_nc_con_je = param_objdata.id;
                     objField_journal.custbody_drt_nc_createdfrom = respuesta.data.transaccion;
-                    objField_journal.custbody_drt_nc_pendiente_enviar = true;
+                    objField_journal.custbody_drt_nc_pendiente_enviar = false;
 
                     if (objField_transaction.trandate) {
                         objField_journal.trandate = objField_transaction.trandate;
                     }
-                    objSublist_journal.line.push({
-                        account: 819,
-                        debit: parametro.total
-                    });
-                    objSublist_journal.line.push({
-                        account: 617,
-                        credit: parametro.total,
-                        entity: objField_transaction.entity,
-                    });
+                    for (var banco in parametro.dispersion) {
+                        objSublist_journal.line.push({
+                            account: 819,
+                            debit: parametro.dispersion[banco].monto,
+                            entity: objField_transaction.entity,
+                            custcol_drt_nc_identificador_uuid: parametro.dispersion[banco].identificador
+                        });
+                        objSublist_journal.line.push({
+                            account: parametro.dispersion[banco].banco,
+                            credit: parametro.dispersion[banco].monto,
+                            custcol_drt_nc_identificador_uuid: parametro.dispersion[banco].identificador
+                        });
+                    }
 
                     var newjournalentry = drt_cn_lib.createRecord(record.Type.JOURNAL_ENTRY, objField_journal, objSublist_journal, {});
                     if (newjournalentry.success) {
