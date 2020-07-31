@@ -27,8 +27,6 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                         'and',
                         ['custrecord_drt_nc_c_terminado', search.Operator.IS, 'F'],
                         'and',
-                        ['custrecord_drt_nc_c_http', search.Operator.IS, 'POST'],
-                        'and',
                         ['custrecord_drt_nc_c_context', search.Operator.ISNOTEMPTY, null],
                         'and',
                         ['custrecord_drt_nc_c_transaccion', search.Operator.ANYOF, '@NONE@']
@@ -139,7 +137,7 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                         objupdate.custrecord_drt_nc_c_error = JSON.stringify(error);
                     } finally {
                         log.audit({
-                            title: 'objupdate',
+                            title: 'objupdate ' + data.id,
                             details: JSON.stringify(objupdate)
                         });
                         var idUpdate = record.submitFields({
