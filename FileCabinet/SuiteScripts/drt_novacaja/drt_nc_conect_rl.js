@@ -45,11 +45,6 @@ define(['./drt_cn_lib.js', 'N/search'], function (drt_cn_lib, search) {
                 title: 'respuesta',
                 details: respuesta
             });
-            if (respuesta.record) {
-                drt_cn_lib.submitRecord('customrecord_drt_nc_conect', respuesta.record, {
-                    custrecord_drt_nc_c_respuesta: JSON.stringify(respuesta)
-                })
-            }
             return respuesta;
         }
     }
@@ -64,6 +59,7 @@ define(['./drt_cn_lib.js', 'N/search'], function (drt_cn_lib, search) {
                 success: false,
                 data: {},
                 record: '',
+                recordType: '',
                 error: {}
             };
             var field_respuesta = '';
@@ -76,11 +72,11 @@ define(['./drt_cn_lib.js', 'N/search'], function (drt_cn_lib, search) {
             } else {
                 switch (context.recordType) {
                     case 'salesorder': {
-                        field_respuesta = 'customrecord_drt_nc_conect';
-                        field_error = 'custrecord_drt_nc_p_error';
-                        var recordLog = drt_cn_lib.createRecord('customrecord_drt_nc_conect', {
+                        respuesta.recordType = 'customrecord_drt_nc_conect';
+                        field_respuesta = 'custrecord_drt_nc_c_respuesta';
+                        field_error = 'custrecord_drt_nc_c_error';
+                        var recordLog = drt_cn_lib.createRecord(respuesta.recordType, {
                             custrecord_drt_nc_c_context: JSON.stringify(context),
-                            custrecord_drt_nc_c_http: 'POST'
                         });
                         if (recordLog.success) {
                             respuesta.data = recordLog.data;
@@ -91,10 +87,11 @@ define(['./drt_cn_lib.js', 'N/search'], function (drt_cn_lib, search) {
                     }
                     break;
                 case 'invoice': {
-                    field_error = 'custrecord_drt_nc_p_error';
-                    var recordLog = drt_cn_lib.createRecord('cvustomrecord_drt_nc_conect', {
-                        custrecord_drt_nc_c_context: JSON.stringify(context),
-                        custrecord_drt_nc_c_http: 'POST'
+                    respuesta.recordType = 'customrecord_drt_nc_mora';
+                    field_respuesta = 'custrecord_drt_nc_m_respuesta';
+                    field_error = 'custrecord_drt_nc_m_error';
+                    var recordLog = drt_cn_lib.createRecord(respuesta.recordType, {
+                        custrecord_drt_nc_m_context: JSON.stringify(context),
                     });
                     if (recordLog.success) {
                         respuesta.data = recordLog.data;
@@ -105,11 +102,11 @@ define(['./drt_cn_lib.js', 'N/search'], function (drt_cn_lib, search) {
                 }
                 break;
                 case 'customerpayment': {
-                    field_respuesta = '	custrecord_drt_nc_p_respuesta';
+                    respuesta.recordType = 'customrecord_drt_nc_pagos';
+                    field_respuesta = 'custrecord_drt_nc_p_respuesta';
                     field_error = 'custrecord_drt_nc_p_error';
-                    var recordLog = drt_cn_lib.createRecord('customrecord_drt_nc_pagos', {
-                        custrecord_drt_nc_p_context: JSON.stringify(context),
-                        custrecord_drt_nc_p_http: 'POST'
+                    var recordLog = drt_cn_lib.createRecord(respuesta.recordType, {
+                        custrecord_drt_nc_p_conexion: JSON.stringify(context),
                     });
                     if (recordLog.success) {
                         respuesta.data = recordLog.data;
@@ -120,26 +117,11 @@ define(['./drt_cn_lib.js', 'N/search'], function (drt_cn_lib, search) {
                 }
                 break;
                 case 'cashsale': {
-                    field_respuesta = '';
+                    respuesta.recordType = 'customrecord_drt_nc_pagos';
+                    field_respuesta = 'custrecord_drt_nc_p_respuesta';
                     field_error = 'custrecord_drt_nc_p_error';
-                    var recordLog = drt_cn_lib.createRecord('customrecord_drt_nc_conect', {
-                        custrecord_drt_nc_c_context: JSON.stringify(context),
-                        custrecord_drt_nc_c_http: 'POST'
-                    });
-                    if (recordLog.success) {
-                        respuesta.data = recordLog.data;
-                        respuesta.record = recordLog.data;
-
-                    }
-                    respuesta.success = respuesta.record != '';
-                }
-                break;
-                case 'journalentry': {
-                    field_respuesta = '';
-                    field_error = 'custrecord_drt_nc_p_error';
-                    var recordLog = drt_cn_lib.createRecord('customrecord_drt_nc_conect', {
-                        custrecord_drt_nc_c_context: JSON.stringify(context),
-                        custrecord_drt_nc_c_http: 'POST'
+                    var recordLog = drt_cn_lib.createRecord(respuesta.recordType, {
+                        custrecord_drt_nc_p_conexion: JSON.stringify(context),
                     });
                     if (recordLog.success) {
                         respuesta.data = recordLog.data;
