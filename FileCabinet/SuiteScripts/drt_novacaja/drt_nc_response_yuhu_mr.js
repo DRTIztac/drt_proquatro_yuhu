@@ -58,6 +58,16 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                         ['custbody_drt_nc_pendiente_enviar', search.Operator.IS, "T"],
                         'and',
                         ['mainline', search.Operator.IS, 'T']
+                    ],
+                    'or',
+                    [
+                        ['type', search.Operator.ANYOF, 'check'],
+                        'and',
+                        ['custbody_drt_nc_con_ch', search.Operator.NONEOF, '@NONE@'],
+                        'and',
+                        ['custbody_drt_nc_pendiente_enviar', search.Operator.IS, "T"],
+                        'and',
+                        ['mainline', search.Operator.IS, 'T']
                     ]
                 ];
 
@@ -179,10 +189,6 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
 
         function map(context) {
             try {
-                log.audit({
-                    title: ' context map ',
-                    details: JSON.stringify(context)
-                });
                 var objvalue = JSON.parse(context.value)
 
                 context.write({
@@ -204,15 +210,6 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                     try {
                         var objupdate = {};
                         var data = JSON.parse(recordData[ids]);
-                        log.emergency({
-                            title: 'data',
-                            details: JSON.stringify(data)
-                        });
-                        log.audit({
-                            title: 'data.values',
-                            details: JSON.stringify(data.values)
-                        });
-
                         var webhookConsultado = data.recordType;
                         var response = {
                             data: {
@@ -226,38 +223,48 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                             response = drt_cn_lib.postWebhook(dataWebhook.data.header, dataWebhook.data.url, data);
                         }
                         log.audit({
-                            title: 'response.data.code',
-                            details: JSON.stringify(response.data.code)
+                            title: 'statuscode' + response.data.code + ' recordType: ' + data.recordType + ' id: ' + data.id,
+                            details: JSON.stringify(data)
                         });
-                        if (response.data.code == 200) {
-                            objupdate.custbody_drt_nc_pendiente_enviar = false;
-                        }
-                        objupdate.custbody_drt_nc_notificacion_registro = JSON.stringify(data);
 
+                        if (
+                            data.recordType &&
+                            data.id
+                        ) {
+
+                            var objRecord = record.load({
+                                type: data.recordType,
+                                id: data.id,
+                                isDynamic: true
+                            });
+                            if (response.data.code == 200) {
+                                objupdate.custbody_drt_nc_pendiente_enviar = false;
+                                objRecord.setValue({
+                                    fieldId: 'custbody_drt_nc_pendiente_enviar',
+                                    value: false,
+                                    ignoreFieldChange: true
+                                });
+                            }
+                            objRecord.setValue({
+                                fieldId: 'custbody_drt_nc_notificacion_registro',
+                                value: JSON.stringify(data),
+                                ignoreFieldChange: true
+                            });
+
+                            var recordId = objRecord.save({
+                                enableSourcing: true,
+                                ignoreMandatoryFields: true
+                            });
+                            log.audit({
+                                title: 'recordId',
+                                details: JSON.stringify(recordId)
+                            });
+                        }
                     } catch (error) {
                         log.error({
                             title: 'error reduce',
                             details: JSON.stringify(error)
                         });
-                    } finally {
-                        log.audit({
-                            title: 'objupdate',
-                            details: JSON.stringify(objupdate)
-                        });
-                        if (Object.keys(objupdate).length > 0 &&
-                            data.recordType &&
-                            data.id
-                        ) {
-                            var idUpdate = record.submitFields({
-                                type: data.recordType,
-                                id: data.id,
-                                values: objupdate,
-                                options: {
-                                    enableSourcing: true,
-                                    ignoreMandatoryFields: true
-                                }
-                            });
-                        }
                     }
                 }
             } catch (error) {

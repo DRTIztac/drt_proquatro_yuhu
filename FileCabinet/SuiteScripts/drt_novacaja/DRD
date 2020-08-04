@@ -1,0 +1,17 @@
+Reporte de facturas con error en timbrado
+Reporte de facturas que se timbro a publico general
+
+Actualizacion de informacion de clientes  
+Origen de credito
+
+
+Generacion Pago (Generar Invoice)
+    De la orden de venta con la fecha de linea de amortizacion generar factura
+    La factura que se genero se debe timbrar 
+    si el timbrado dio errror utilizar publico general
+    Responder id de factura 
+
+
+Generacion Cobro (Generar Customer Payment)
+    Yuhu envia cunto se esta pagando de cada factura
+    Reclasifica impuesto 
