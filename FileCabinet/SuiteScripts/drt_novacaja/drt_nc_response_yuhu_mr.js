@@ -61,7 +61,7 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                     ],
                     'or',
                     [
-                        ['type', search.Operator.ANYOF, 'check'],
+                        ['type', search.Operator.ANYOF, 'Check'],
                         'and',
                         ['custbody_drt_nc_con_ch', search.Operator.NONEOF, '@NONE@'],
                         'and',
