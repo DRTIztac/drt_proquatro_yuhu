@@ -10,13 +10,9 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
 
 
                 var arrayFilter = [
-                    [
-                        ['custentity_drt_nc_con_cm', search.Operator.NONEOF, '@NONE@'],
-                        'and',
-                        ['custentity_drt_nc_pendiente_enviar', search.Operator.IS, "T"],
-                        'and',
-                        ['mainline', search.Operator.IS, 'T']
-                    ]
+                    ['custentity_drt_nc_con_cm', search.Operator.NONEOF, '@NONE@'],
+                    'and',
+                    ['custentity_drt_nc_pendiente_enviar', search.Operator.IS, "T"]
                 ];
 
                 log.audit({
@@ -112,7 +108,9 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                             response = drt_cn_lib.postWebhook(dataWebhook.data.header, dataWebhook.data.url, data);
                         }
                         log.audit({
-                            title: 'statuscode' + response.data.code + ' recordType: ' + data.recordType + ' id: ' + data.id,
+                            title: ' statuscode ' + response.data.code +
+                                ' recordType: ' + data.recordType +
+                                ' id: ' + data.id,
                             details: JSON.stringify(data)
                         });
 
@@ -135,7 +133,7 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                                 });
                             }
                             objRecord.setValue({
-                                fieldId: 'custentity_drt_nc_con_cm',
+                                fieldId: 'custentity_drt_nc_informacion_envio',
                                 value: JSON.stringify(data),
                                 ignoreFieldChange: true
                             });
