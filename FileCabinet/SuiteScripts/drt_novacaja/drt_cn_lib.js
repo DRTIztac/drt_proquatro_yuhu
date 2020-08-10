@@ -509,6 +509,14 @@ define([
                         respuesta.data.url = 'https://apidev.yuhu.mx/api/v1/ns/webhook/' + param_case + '/';
                         respuesta.data.ejemplo = {};
                         break;
+                    case 'customer':
+                        respuesta.data.header = {
+                            "Authorization": "Api-Key Moa1M0rL.9XK5Z5qAyFcG2hH1N9dBPghwrfDkAmFc",
+                            "Content-Type": "application/json"
+                        };
+                        respuesta.data.url = 'https://apidev.yuhu.mx/api/v1/ns/webhook/' + param_case + '/';
+                        respuesta.data.ejemplo = {};
+                        break;
 
 
                     default:
