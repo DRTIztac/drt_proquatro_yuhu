@@ -38,67 +38,98 @@ function customizeGlImpact(transactionRecord, standardLines, customLines, book) 
         var total = '';
         var debit = '';
         var credit = '';
-        var memo = '';
+        var memo = 'DRT NC - Reclasificación de Capital';
+        var tipo_descuento = transactionRecord.getFieldValue('custbody_drt_nc_tipo_descuento') || '';
+        var tipo_descuentoText = transactionRecord.getFieldText('custbody_drt_nc_tipo_descuento') || '';
+        if (tipo_descuentoText) {
+            memo += ', Tipo descuento ' + tipo_descuentoText
+        }
+        var tipo_pagoText = transactionRecord.getFieldText('custbody_drt_nc_tipo_pago') || '';
+        if (tipo_pagoText) {
+            memo += ', Tipo pago ' + tipo_pagoText
+        }
 
         if (identificador_uuid && identificador_folio) {
             switch (type) {
                 case 'custinvc':
-                    total = total_capital;
-                    credit =
-                        317;
-                    memo = 'Capital';
-                    var record_id = transactionRecord.getLineItemValue('item', 'item', 1) || '';
-                    var fields = ['custitem_drt_accounnt_capital']
-                    if (record_id) {
-                        var columns = nlapiLookupField('item', record_id, fields);
-                        debit =
-                            // 327;
-                            columns[fields[0]] || '';
-                    }
-                    if (total && debit && credit) {
-                        lineGL(
-                            customLines,
-                            total,
-                            debit,
-                            credit,
-                            memo
-                        );
-                    }
-                    break;
-                case 'custpymt':
-                    total = total_capital;
-                    debit =
-                        // 617;
-                        transactionRecord.getFieldValue('account') || '';
-                    var internalid = transactionRecord.getLineItemValue('apply', 'internalid', 1) || '';
-                    if (internalid) {
-                        var record = nlapiLoadRecord('invoice', internalid) || '';
-                        var record_id = record.getLineItemValue('item', 'item', 1) || '';
+                    var LineItemCount = transactionRecord.getLineItemCount('item') || '';
+                    if (LineItemCount) {
+                        total = total_capital;
+                        credit =
+                            // 317;
+                            transactionRecord.getFieldValue('account') || '';
+                        var record_id = transactionRecord.getLineItemValue('item', 'item', 1) || '';
                         var fields = ['custitem_drt_accounnt_capital']
                         if (record_id) {
                             var columns = nlapiLookupField('item', record_id, fields);
-                            credit =
-                                // 629;
+                            debit =
+                                // 327;
                                 columns[fields[0]] || '';
                         }
-
                     }
+                    break;
+                case 'cashsale':
+                    var LineItemCount = transactionRecord.getLineItemCount('item') || '';
+                    if (LineItemCount) {
+                        total = total_capital;
+                        credit =
+                            // 317;
+                            transactionRecord.getFieldValue('account') || '';
+                        var record_id = transactionRecord.getLineItemValue('item', 'item', 1) || '';
+                        var fields = ['custitem_drt_accounnt_capital']
+                        if (record_id) {
+                            var columns = nlapiLookupField('item', record_id, fields);
+                            debit =
+                                // 327;
+                                columns[fields[0]] || '';
+                        }
+                        if (total && debit && credit && tipo_descuento == 1) {
 
-                    memo = 'Capital';
-                    if (total && debit && credit) {
-                        lineGL(
-                            customLines,
-                            total,
-                            debit,
-                            credit,
-                            memo
-                        );
+                            lineGL(
+                                customLines,
+                                total,
+                                credit,
+                                debit,
+                                memo + ', Abono'
+                            );
+                            memo += ', Cargo'
+                        }
+                    }
+                    break;
+                case 'custpymt':
+                    var LineItemCount = transactionRecord.getLineItemCount('apply') || '';
+                    if (LineItemCount) {
+                        total = total_capital;
+                        debit =
+                            // 617;
+                            transactionRecord.getFieldValue('account') || '';
+                        var internalid = transactionRecord.getLineItemValue('apply', 'internalid', 1) || '';
+                        if (internalid) {
+                            var record = nlapiLoadRecord('invoice', internalid) || '';
+                            var record_id = record.getLineItemValue('item', 'item', 1) || '';
+                            var fields = ['custitem_drt_accounnt_capital']
+                            if (record_id) {
+                                var columns = nlapiLookupField('item', record_id, fields);
+                                credit =
+                                    // 629;
+                                    columns[fields[0]] || '';
+                            }
+                        }
                     }
                     break;
 
                 default:
                     break;
             }
+        }
+        if (total && debit && credit) {
+            lineGL(
+                customLines,
+                total,
+                debit,
+                credit,
+                memo
+            );
         }
 
     } catch (error) {
