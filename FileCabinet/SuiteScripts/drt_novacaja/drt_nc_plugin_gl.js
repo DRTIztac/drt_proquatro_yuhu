@@ -52,21 +52,21 @@ function customizeGlImpact(transactionRecord, standardLines, customLines, book) 
         if (identificador_uuid && identificador_folio) {
             switch (type) {
                 case 'custinvc':
-                    var LineItemCount = transactionRecord.getLineItemCount('item') || '';
-                    if (LineItemCount) {
-                        total = total_capital;
-                        credit =
-                            // 317;
-                            transactionRecord.getFieldValue('account') || '';
-                        var record_id = transactionRecord.getLineItemValue('item', 'item', 1) || '';
-                        var fields = ['custitem_drt_accounnt_capital']
-                        if (record_id) {
-                            var columns = nlapiLookupField('item', record_id, fields);
-                            debit =
-                                // 327;
-                                columns[fields[0]] || '';
-                        }
-                    }
+                    // var LineItemCount = transactionRecord.getLineItemCount('item') || '';
+                    // if (LineItemCount) {
+                    //     total = total_capital;
+                    //     credit =
+                    //         // 317;
+                    //         transactionRecord.getFieldValue('account') || '';
+                    //     var record_id = transactionRecord.getLineItemValue('item', 'item', 1) || '';
+                    //     var fields = ['custitem_drt_accounnt_capital']
+                    //     if (record_id) {
+                    //         var columns = nlapiLookupField('item', record_id, fields);
+                    //         debit =
+                    //             // 327;
+                    //             columns[fields[0]] || '';
+                    //     }
+                    // }
                     break;
                 case 'cashsale':
                     var LineItemCount = transactionRecord.getLineItemCount('item') || '';
