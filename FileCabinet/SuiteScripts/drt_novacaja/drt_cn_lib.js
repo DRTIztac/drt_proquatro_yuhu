@@ -678,7 +678,51 @@ define([
             }
         }
 
+        function lookup(param_type, param_id, param_columns) {
+            try {
+                var respuesta = {
+                    success: false,
+                    data: {},
+                    error: {}
+                };
+                log.audit({
+                    title: 'lookup',
+                    details: ' param_type: ' + param_type +
+                        ' param_id: ' + param_id +
+                        ' param_columns: ' + param_columns
+                });
+                if (param_type && param_id && param_columns.length > 0) {
+
+                    respuesta.data = search.lookupFields({
+                        type: param_type,
+                        id: param_id,
+                        columns: param_columns
+                    }) || '';
+                    respuesta.success = Object.keys(respuesta.data).length > 0;
+                } else {
+                    respuesta.error.message =
+                        'Falta Informacion ' +
+                        ' *type: ' + param_type +
+                        ' *id: ' + param_id +
+                        ' *columns: ' + param_columns;
+                }
+            } catch (error) {
+                log.error({
+                    title: 'error lookup',
+                    details: JSON.stringify(error)
+                });
+                respuesta.error = error;
+            } finally {
+                log.emergency({
+                    title: 'respuesta lookup',
+                    details: JSON.stringify(respuesta)
+                });
+                return respuesta;
+            }
+        }
+
         return {
+            lookup: lookup,
             searchRecord: searchRecord,
             createRecord: createRecord,
             submitRecord: submitRecord,
