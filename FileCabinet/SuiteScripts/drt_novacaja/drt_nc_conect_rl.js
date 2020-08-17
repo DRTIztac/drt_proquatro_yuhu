@@ -22,6 +22,83 @@ define(['./drt_cn_lib.js', 'N/file'], function (drt_cn_lib, file) {
                     respuesta = checkStatus;
                 }
                 break;
+            case "lookup": {
+                var columns = '';
+                if (
+                    context.type == 'customer'
+                ) {
+                    columns = [
+                        'custentity_drt_nc_curp',
+                        'custentity_drt_nc_uuid_yuhu',
+                        'custentity_mx_rfc',
+                        'isperson',
+                        'companyname',
+                        'firstname',
+                        'lastname',
+                        'email',
+                    ];
+                } else if (
+                    context.type == 'salesorder' ||
+                    context.type == 'invoice' ||
+                    context.type == 'customerpayment' ||
+                    context.type == 'customerdeposit' ||
+                    context.type == 'check' ||
+                    context.type == 'cashsale' ||
+                    context.type == 'journalentry'
+                ) {
+                    columns = [
+                        'trandate',
+                        'tranid',
+                        'amount',
+                        'entity',
+                        'total',
+                        'taxtotal',
+                        'custbody_drt_nc_pendiente_enviar',
+                        'custbody_drt_nc_con_cp',
+                        'custbody_drt_nc_con_cs',
+                        'custbody_drt_nc_con_in',
+                        'custbody_drt_nc_con_je',
+                        'custbody_drt_nc_con_so',
+                        'custbody_drt_nc_identificador_folio',
+                        'custbody_drt_nc_identificador_uuid',
+                        'custbody_drt_nc_folio_sustitucion',
+                        'custbody_drt_nc_num_amortizacion',
+                        'custbody_drt_nc_tipo_descuento',
+                        'custbody_drt_nc_total_transaccion',
+                        'custbody_drt_nc_total_iva',
+                        'custbody_drt_nc_total_interes',
+                        'custbody_drt_nc_total_capital',
+                        'custbody_drt_nc_createdfrom',
+                        'custbody_mx_cfdi_uuid',
+                        'custbody_drt_nc_tipo_pago',
+                        "customer.custentity_drt_nc_curp",
+                        "customer.custentity_drt_nc_uuid_yuhu",
+                        "customer.custentity_mx_rfc",
+                        "customer.isperson",
+                        "customer.companyname",
+                        "customer.firstname",
+                        "customer.lastname",
+                        "customer.email",
+                    ];
+
+                } else if (
+                    context.type == 'customrecord_drt_nc_conect'
+                ) {
+                    columns = '';
+                } else if (
+                    context.type == 'customrecord_drt_nc_mora'
+                ) {
+                    columns = '';
+                } else if (
+                    context.type == 'customrecord_drt_nc_pagos'
+                ) {
+                    columns = '';
+                }
+                var datalookup = drt_cn_lib.lookup(context.type, context.id, columns);
+                respuesta = {};
+                respuesta = datalookup;
+            }
+            break;
 
             default:
                 respuesta.data.message = 'Invalid Action.';
@@ -48,6 +125,8 @@ define(['./drt_cn_lib.js', 'N/file'], function (drt_cn_lib, file) {
             return respuesta;
         }
     }
+
+
 
     function _post(context) {
         try {

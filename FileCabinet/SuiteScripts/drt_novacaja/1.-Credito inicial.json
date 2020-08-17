@@ -1,0 +1,82 @@
+{
+    "recordType": "salesorder",
+    "custbody_drt_nc_identificador_folio": "drtc5",
+    "custbody_drt_nc_identificador_uuid": "drtc5",
+    "custbody_drt_nc_tipo_descuento": 2,
+    "custentity_drt_nc_curp": "curpcardin",
+    "location": "1",
+    "class": "1",
+    "total": "7120.74",
+    "trandate": "2020-08-17",
+    "empresa": {
+        "companyname": "Disruptt sa de cv",
+        "custentity_drt_nc_uuid_yuhu": "9a45ec9f-8d1f-4717-b58b-d966de8ca3a9",
+        "custentity_mx_rfc": "CFM600506V82",
+        "isperson": false,
+        "email": "disruptt@test.com",
+        "addressbook": {
+            "custrecord_streetname": "20 de Noviembre",
+            "custrecord_streetnum": "254",
+            "custrecord_unit": "411",
+            "custrecord_colonia": "Mirasol",
+            "zip": "64144",
+            "state": "JAL",
+            "custrecord_village": "Ayutla",
+            "city": "Ayutla",
+            "country": "MX"
+        }
+    },
+    "dispersion": [{
+        "monto": "7120.74",
+        "banco": "617",
+        "identificador": "7120.74"
+    }],
+    "customer": {
+        "custentity_drt_nc_uuid_yuhu": "drtjcardin",
+        "custentity_drt_nc_curp": "curpcardin",
+        "custentity_mx_rfc": "CARG691006MDZ",
+        "isperson": true,
+        "firstname": "Juan",
+        "lastname": "Cardin",
+        "email": "juancardin@test.com",
+        "addressbook": {
+            "custrecord_streetname": "Las Filosofias",
+            "custrecord_streetnum": "822",
+            "custrecord_unit": "411",
+            "custrecord_colonia": null,
+            "zip": "64144",
+            "state": "GTO",
+            "custrecord_village": "Salvatierra",
+            "city": "Salvatierra",
+            "country": "MX"
+        }
+    },
+    "item": [{
+        "num_amortizacion": 1,
+        "fecha": "2020-08-15",
+        "capital": 1482.96,
+        "interes": 767.78,
+        "iva": 122.84,
+        "total": 2373.59,
+        "custcol_drt_nc_facturado": false
+    }, {
+        "num_amortizacion": 2,
+        "fecha": "2020-08-30",
+        "capital": 1482.96,
+        "interes": 767.78,
+        "iva": 122.84,
+        "total": 2373.59,
+        "custcol_drt_nc_facturado": false
+    }, {
+        "num_amortizacion": 3,
+        "fecha": "2020-09-15",
+        "capital": 1482.96,
+        "interes": 767.78,
+        "iva": 122.84,
+        "total": 2373.59,
+        "custcol_drt_nc_facturado": false
+    }],
+    "custbody_drt_nc_total_capital": 4448.88,
+    "custbody_drt_nc_total_interes": 2303.34,
+    "custbody_drt_nc_total_iva": 368.52
+}
