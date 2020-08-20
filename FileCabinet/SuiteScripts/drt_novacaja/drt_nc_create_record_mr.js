@@ -192,6 +192,7 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
 
                     } else {
 
+                        objField_empresa.custentity_drt_nc_pendiente_enviar = "T";
                         if (parametro.empresa.isperson) {
                             objField_empresa.isperson = "T";
                             objField_empresa.firstname = parametro.empresa.firstname;
@@ -271,6 +272,7 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                 }
 
                 if (!cliente) {
+                    objField_customer.custentity_drt_nc_pendiente_enviar = "T";
                     if (parametro.customer.isperson) {
                         objField_customer.isperson = "T";
                         objField_customer.firstname = parametro.customer.firstname;
