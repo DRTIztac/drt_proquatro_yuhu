@@ -169,6 +169,13 @@ define(['N/search', 'N/render', 'N/file', 'N/record', 'N/runtime', 'N/config', '
             var jsonPayment = JSON.parse(unescape(jsonRecord.values.custrecord_drt_nc_p_context));
 
             try {
+                jsonPayment.total = parseFloat(jsonPayment.total) || 0;
+                jsonPayment.custbody_drt_nc_total_capital = parseFloat(jsonPayment.custbody_drt_nc_total_capital) || 0;
+                jsonPayment.custbody_drt_nc_total_interes = parseFloat(jsonPayment.custbody_drt_nc_total_interes) || 0;
+                jsonPayment.custbody_drt_nc_total_iva = parseFloat(jsonPayment.custbody_drt_nc_total_iva) || 0;
+                jsonPayment.excedente = parseFloat(jsonPayment.excedente) || 0;
+                jsonPayment.faltante = parseFloat(jsonPayment.faltante) || 0;
+
                 log.debug({
                     title: 'jsonPayment unescaped',
                     details: JSON.stringify(jsonPayment)
@@ -386,7 +393,6 @@ define(['N/search', 'N/render', 'N/file', 'N/record', 'N/runtime', 'N/config', '
                     ignoreMandatoryFields: true
                 });
             } catch (error) {
-                |
                 record_pagos.setValue({
                     fieldId: 'custrecord_drt_nc_p_error',
                     value: JSON.stringify(error)
@@ -518,6 +524,7 @@ define(['N/search', 'N/render', 'N/file', 'N/record', 'N/runtime', 'N/config', '
             obody_field.customer = parseInt(customer);
             obody_field.subsidiary = 1;
             obody_field[notPagoTipo] = jsonPayment[notPagoTipo];
+            obody_field.custbody_drt_nc_createdfrom = invoice;
             obody_field.account = jsonPayment.account;
             obody_field.custbody_drt_nc_identificador_uuid = jsonPayment.custbody_drt_nc_identificador_uuid;
             obody_field.custbody_drt_nc_identificador_folio = jsonPayment.custbody_drt_nc_identificador_folio;
