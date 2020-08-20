@@ -10,8 +10,8 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
 
 
                 var arrayFilter = [
-                    ['custentity_drt_nc_con_cm', search.Operator.NONEOF, '@NONE@'],
-                    'and',
+                    // ['custentity_drt_nc_con_cm', search.Operator.NONEOF, '@NONE@'],
+                    // 'and',
                     ['custentity_drt_nc_pendiente_enviar', search.Operator.IS, "T"]
                 ];
 
