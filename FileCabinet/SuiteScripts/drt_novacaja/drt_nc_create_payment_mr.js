@@ -404,6 +404,11 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                             custcol_drt_nc_monto_total: parametro.custbody_drt_nc_total_transaccion,
                         });
                         objSublist_transaction.item[0].item = 17;
+                        var loadItem = itemTransaction(record.Type.SALES_ORDER, parametro.internalid, 0);
+                        if (loadItem) {
+                            objSublist_transaction.item[0].item = loadItem.data;
+                        }
+
                         objSublist_transaction.item[0].rate = parametro.custbody_drt_nc_total_interes || 0;
                         newtransaction = drt_cn_lib.createRecord(
                             record.Type.CASH_SALE, {
@@ -435,7 +440,7 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
 
                     if (newtransaction.success) {
                         respuesta.data.transaccion = newtransaction.data;
-                        var actualizacion = updateSalesOrder(parametro.internalid, patametroActualizacionUno, patametroActualizacionDos);
+                        var actualizacion = updateSalesOrder(parametro.internalid, patametroActualizacionUno, patametroActualizacionDos, newtransaction.data);
                         if (actualizacion.success) {
                             respuesta.data.actualizacion = actualizacion.data;
                         } else {
@@ -464,7 +469,47 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
             }
         }
 
-        function updateSalesOrder(param_id, param_sublist, param_total) {
+        function itemTransaction(paramm_type, param_id, param_line) {
+            try {
+                var respuesta = {
+                    success: false,
+                    data: ''
+                };
+
+                var newRecord = record.load({
+                    type: paramm_type,
+                    id: param_id,
+                    isDynamic: true
+                });
+                var sublist = 'item';
+                var numLines = newRecord.getLineCount({
+                    sublistId: sublist
+                }) || 0;
+
+
+                if (param_line < numLines) {
+                    respuesta.data = newRecord.getSublistValue({
+                        sublistId: sublist,
+                        fieldId: 'item',
+                        line: param_line
+                    }) || '';
+                }
+                respuesta.success = respuesta.data != '';
+            } catch (error) {
+                log.error({
+                    title: 'error itemTransaction',
+                    details: JSON.stringify(error)
+                });
+            } finally {
+                log.emergency({
+                    title: 'respuesta itemTransaction',
+                    details: JSON.stringify(respuesta)
+                });
+                return respuesta;
+            }
+        }
+
+        function updateSalesOrder(param_id, param_sublist, param_total, param_transaction) {
             try {
                 var respuesta = {
                     success: false,
@@ -491,6 +536,10 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                         sublistId: sublist,
                         fieldId: 'custcol_drt_nc_num_amortizacion',
                     }) || '';
+                    var rate = newRecord.getCurrentSublistValue({
+                        sublistId: sublist,
+                        fieldId: 'rate',
+                    }) || '';
                     var facturado = newRecord.getCurrentSublistValue({
                         sublistId: sublist,
                         fieldId: 'custcol_drt_nc_facturado',
@@ -501,6 +550,12 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                             for (var articulo = 0; articulo < param_sublist.length; articulo++) {
                                 if (param_sublist[articulo].num_amortizacion == num_amortizacion) {
                                     memo +=
+                                        ' *custcol_drt_nc_num_amortizacion Antes: ' +
+                                        newRecord.getCurrentSublistValue({
+                                            sublistId: sublist,
+                                            fieldId: 'custcol_drt_nc_num_amortizacion',
+                                        }) +
+                                        ' despues: ' + param_sublist[articulo].num_amortizacion +
                                         ' *custcol_drt_nc_monto_total Antes: ' +
                                         newRecord.getCurrentSublistValue({
                                             sublistId: sublist,
@@ -513,12 +568,6 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                                             fieldId: 'custcol_drt_nc_monto_interes',
                                         }) +
                                         ' despues: ' + param_sublist[articulo].interes +
-                                        ' *custcol_drt_nc_num_amortizacion Antes: ' +
-                                        newRecord.getCurrentSublistValue({
-                                            sublistId: sublist,
-                                            fieldId: 'custcol_drt_nc_num_amortizacion',
-                                        }) +
-                                        ' despues: ' + param_sublist[articulo].num_amortizacion +
                                         '* custcol_drt_nc_monto_capital Antes: ' +
                                         newRecord.getCurrentSublistValue({
                                             sublistId: sublist,
@@ -531,11 +580,7 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                                             fieldId: 'custcol_drt_nc_monto_iva',
                                         }) +
                                         ' despues: ' + param_sublist[articulo].iva +
-                                        '* rate Antes: ' +
-                                        newRecord.getCurrentSublistValue({
-                                            sublistId: sublist,
-                                            fieldId: 'rate',
-                                        }) +
+                                        '* rate Antes: ' + rate +
                                         ' despues: ' + param_sublist[articulo].interes;
 
 
@@ -577,79 +622,41 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                                         fieldId: 'rate',
                                         value: param_sublist[articulo].interes
                                     });
+                                    newRecord.commitLine({
+                                        sublistId: sublist
+                                    });
                                 }
                             }
                         } else if (param_total) {
-
-                            memo +=
-                                // ' *custcol_drt_nc_monto_total Antes: ' +
-                                // newRecord.getCurrentSublistValue({
-                                //     sublistId: sublist,
-                                //     fieldId: 'custcol_drt_nc_monto_total',
-                                // }) +
-                                // ' despues: ' + 0 +
-                                // ' *custcol_drt_nc_monto_interes Antes: ' +
-                                // newRecord.getCurrentSublistValue({
-                                //     sublistId: sublist,
-                                //     fieldId: 'custcol_drt_nc_monto_interes',
-                                // }) +
-                                // ' despues: ' + 0 +
-                                // ' *custcol_drt_nc_num_amortizacion Antes: ' +
-                                // newRecord.getCurrentSublistValue({
-                                //     sublistId: sublist,
-                                //     fieldId: 'custcol_drt_nc_num_amortizacion',
-                                // }) +
-                                // ' despues: ' + 0 +
-                                // ' *custcol_drt_nc_monto_capital Antes: ' +
-                                // newRecord.getCurrentSublistValue({
-                                //     sublistId: sublist,
-                                //     fieldId: 'custcol_drt_nc_monto_capital',
-                                // }) +
-                                // ' despues: ' + 0 +
-                                // ' *custcol_drt_nc_monto_iva Antes: ' +
-                                // newRecord.getCurrentSublistValue({
-                                //     sublistId: sublist,
-                                //     fieldId: 'custcol_drt_nc_monto_iva',
-                                // }) +
-                                // ' despues: ' + 0 +
-                                ' *rate Antes: ' +
-                                newRecord.getCurrentSublistValue({
+                            if (rate && rate > 0) {
+                                memo +=
+                                    ' *rate Antes: ' +
+                                    newRecord.getCurrentSublistValue({
+                                        sublistId: sublist,
+                                        fieldId: 'rate',
+                                    }) +
+                                    ' despues: ' + 0;
+                                newRecord.setCurrentSublistValue({
+                                    sublistId: sublist,
+                                    fieldId: 'custcol_drt_nc_facturado',
+                                    value: true
+                                }) || '';
+                                newRecord.setCurrentSublistValue({
                                     sublistId: sublist,
                                     fieldId: 'rate',
-                                }) +
-                                ' despues: ' + 0;
-
-
-                            // newRecord.setCurrentSublistValue({
-                            //     sublistId: sublist,
-                            //     fieldId: 'custcol_drt_nc_monto_total',
-                            //     value: 0
-                            // });
-                            // newRecord.setCurrentSublistValue({
-                            //     sublistId: sublist,
-                            //     fieldId: 'custcol_drt_nc_monto_interes',
-                            //     value: 0
-                            // });
-                            // newRecord.setCurrentSublistValue({
-                            //     sublistId: sublist,
-                            //     fieldId: 'custcol_drt_nc_num_amortizacion',
-                            //     value: 0
-                            // });
-                            // newRecord.setCurrentSublistValue({
-                            //     sublistId: sublist,
-                            //     fieldId: 'custcol_drt_nc_monto_capital',
-                            //     value: 0
-                            // });
-                            // newRecord.setCurrentSublistValue({
-                            //     sublistId: sublist,
-                            //     fieldId: 'custcol_drt_nc_monto_iva',
-                            //     value: 0
-                            // });
-                            newRecord.setCurrentSublistValue({
-                                sublistId: sublist,
-                                fieldId: 'rate',
-                                value: 0
-                            });
+                                    value: 0
+                                });
+                                if (param_transaction) {
+                                    newRecord.setCurrentSublistValue({
+                                        sublistId: sublist,
+                                        fieldId: 'custcol_drt_nc_invoice',
+                                        value: param_transaction
+                                    });
+                                }
+                                newRecord.commitLine({
+                                    sublistId: sublist
+                                });
+                            }
 
                         }
                     }
