@@ -172,7 +172,7 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                 var objAddress_empresa = {};
                 var cliente = '';
                 var objField_customer = {};
-                var objSublist_customer = {};
+
                 var objField_transaction = {};
 
                 var objAddress = {};
@@ -390,6 +390,22 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                     respuesta.error.push('Hace falta identificador_folio:' + parametro.custbody_drt_nc_identificador_folio);
                 }
 
+                if (parametro.custbody_drt_nc_folio_sustitucion) {
+                    objField_transaction.custbody_drt_nc_folio_sustitucion = parametro.custbody_drt_nc_folio_sustitucion;
+                    var sustitucion = searchidentificador(search.Type.TRANSACTION, 'custbody_drt_nc_folio_sustitucion', objField_transaction.custbody_drt_nc_folio_sustitucion);
+                    if (sustitucion.success) {
+                        objField_transaction.custbody_drt_nc_createdfrom = sustitucion.data;
+                        var actualizacion = drt_cn_lib.updateSalesOrder(objField_transaction.custbody_drt_nc_createdfrom, {}, true, '');
+                        if (actualizacion.success) {
+                            respuesta.data.actualizacion = actualizacion.data;
+                        } else {
+                            respuesta.error.push('No se pudo Actualizar la orden de Venta ');
+                        }
+                    } else {
+                        respuesta.error.push('No se encontro transaccion a sustituir custbody_drt_nc_folio_sustitucion:' + objField_transaction.custbody_drt_nc_folio_sustitucion);
+                    }
+                }
+
                 if (parametro.custbody_drt_nc_identificador_uuid) {
                     objField_transaction.custbody_drt_nc_identificador_uuid = parametro.custbody_drt_nc_identificador_uuid;
                     var transaccionExistente = searchidentificador(search.Type.TRANSACTION, 'custbody_drt_nc_identificador_uuid', objField_transaction.custbody_drt_nc_identificador_uuid);
@@ -405,9 +421,6 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                     objField_transaction.custbody_drt_nc_tipo_descuento = parametro.custbody_drt_nc_tipo_descuento;
                 }
 
-                if (parametro.custbody_drt_nc_folio_sustitucion) {
-                    objField_transaction.custbody_drt_nc_folio_sustitucion = parametro.custbody_drt_nc_folio_sustitucion;
-                }
 
                 if (parametro.class) {
                     objField_transaction.class = parametro.class;
