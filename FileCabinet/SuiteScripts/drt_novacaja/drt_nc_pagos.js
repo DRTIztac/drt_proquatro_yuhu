@@ -37,50 +37,60 @@ define(['N/search', 'N/render', 'N/file', 'N/record', 'N/runtime', 'N/config', '
          * @since 2015.1
          */
         function getInputData() {
-            var customrecord_drt_nc_pagosSearchObj = search.create({
-                type: "customrecord_drt_nc_pagos",
-                filters: [
-                    ["isinactive", "is", "F"],
-                    "AND",
-                    ["custrecord_drt_nc_p_transaccion", "isempty", ""]
+            try {
+                var customrecord_drt_nc_pagosSearchObj = search.create({
+                    type: "customrecord_drt_nc_pagos",
+                    filters: [
+                        ["isinactive", "is", "F"],
+                        "AND",
+                        ["custrecord_drt_nc_p_transaccion", "isempty", ""]
 
-                ],
-                columns: [
-                    search.createColumn({
-                        name: "custrecord_drt_nc_p_conexion",
-                        sort: search.Sort.ASC,
-                        label: "Conexion"
-                    }),
-                    search.createColumn({
-                        name: "custrecord_drt_nc_p_context"
-                    }),
-                    search.createColumn({
-                        name: "custrecord_drt_nc_p_invoice"
-                    }),
-                    search.createColumn({
-                        name: "externalid",
-                        label: "External ID"
-                    }),
-                    search.createColumn({
-                        name: "isinactive",
-                        label: "Inactive"
-                    }),
-                    search.createColumn({
-                        name: "internalid",
-                        label: "Internal ID"
-                    }),
-                    search.createColumn({
-                        name: "custrecord_drt_nc_p_transaccion",
-                        label: "Transaccion"
-                    })
-                ]
-            });
-            //var searchResultCount = customrecord_drt_nc_pagosSearchObj.runPaged().count;
-            //log.debug("customrecord_drt_nc_pagosSearchObj result count",searchResultCount);
+                    ],
+                    columns: [
+                        search.createColumn({
+                            name: "custrecord_drt_nc_p_conexion",
+                            sort: search.Sort.ASC,
+                            label: "Conexion"
+                        }),
+                        search.createColumn({
+                            name: "custrecord_drt_nc_p_context"
+                        }),
+                        // search.createColumn({
+                        //     name: "custrecord_drt_nc_p_invoice"
+                        // }),
+                        // search.createColumn({
+                        //     name: "externalid",
+                        //     label: "External ID"
+                        // }),
+                        // search.createColumn({
+                        //     name: "isinactive",
+                        //     label: "Inactive"
+                        // }),
+                        search.createColumn({
+                            name: "internalid",
+                            label: "Internal ID"
+                        }),
+                        search.createColumn({
+                            name: "custrecord_drt_nc_p_transaccion",
+                            label: "Transaccion"
+                        })
+                    ]
+                }) || '';
+                //var searchResultCount = customrecord_drt_nc_pagosSearchObj.runPaged().count;
+                //log.debug("customrecord_drt_nc_pagosSearchObj result count",searchResultCount);
 
-
-            return customrecord_drt_nc_pagosSearchObj;
-
+            } catch (errorinput) {
+                log.audit({
+                    title: 'errorinput',
+                    details: JSON.stringify(errorinput)
+                });
+            } finally {
+                log.audit({
+                    title: 'customrecord_drt_nc_pagosSearchObj',
+                    details: JSON.stringify(customrecord_drt_nc_pagosSearchObj)
+                });
+                return customrecord_drt_nc_pagosSearchObj;
+            }
         }
 
         /**
@@ -136,95 +146,96 @@ define(['N/search', 'N/render', 'N/file', 'N/record', 'N/runtime', 'N/config', '
         }
 
         function map(context) {
-
-            const PAGO = {
-                NORMAL: 1,
-                MORATORIO: 2,
-                CAPITAL_PARCIAL: 3,
-                CAPITAL_TOTAL: 4
-            };
-
-            const param_record = {
-                deposito: 'check',
-                cashsale: "CASHSALE",
-                salesOrder: "SALES_ORDER",
-                journal: "journalentry"
-            };
-            const notificacionYuhu = "custbody_drt_nc_pendiente_enviar";
-
-            var jsonRecord = JSON.parse(context.value);
-
-            log.debug({
-                title: 'jsonPayment unescaped',
-                details: JSON.stringify(jsonRecord)
-            });
-
-            var record_pagos = record.load({
-                id: Number(jsonRecord.id),
-                type: jsonRecord.recordType,
-                isDynamic: true,
-            });
-
-
-            var jsonPayment = JSON.parse(unescape(jsonRecord.values.custrecord_drt_nc_p_context));
-
             try {
-                jsonPayment.total = parseFloat(jsonPayment.total) || 0;
-                jsonPayment.custbody_drt_nc_total_capital = parseFloat(jsonPayment.custbody_drt_nc_total_capital) || 0;
-                jsonPayment.custbody_drt_nc_total_interes = parseFloat(jsonPayment.custbody_drt_nc_total_interes) || 0;
-                jsonPayment.custbody_drt_nc_total_iva = parseFloat(jsonPayment.custbody_drt_nc_total_iva) || 0;
-                jsonPayment.excedente = parseFloat(jsonPayment.excedente) || 0;
-                jsonPayment.faltante = parseFloat(jsonPayment.faltante) || 0;
+
+                const PAGO = {
+                    NORMAL: 1,
+                    MORATORIO: 2,
+                    CAPITAL_PARCIAL: 3,
+                    CAPITAL_TOTAL: 4
+                };
+
+                const param_record = {
+                    deposito: 'check',
+                    cashsale: "CASHSALE",
+                    salesOrder: "SALES_ORDER",
+                    journal: "journalentry"
+                };
+                const notificacionYuhu = "custbody_drt_nc_pendiente_enviar";
+
+                var jsonRecord = JSON.parse(context.value);
 
                 log.debug({
                     title: 'jsonPayment unescaped',
-                    details: JSON.stringify(jsonPayment)
+                    details: JSON.stringify(jsonRecord)
                 });
-            } catch (error) {
-                log.debug({
-                    title: 'error',
-                    details: error
+
+                var record_pagos = record.load({
+                    id: Number(jsonRecord.id),
+                    type: jsonRecord.recordType,
+                    isDynamic: true,
                 });
-                record_pagos.setValue({
-                    fieldId: 'custrecord_drt_nc_p_error',
-                    value: error
-                });
-                var updateId = record_pagos.save({
-                    enableSourcing: true,
-                    ignoreMandatoryFields: true
-                });
-            }
-
-            try {
-                var obody_field = {};
-                var oPayment = {};
-                var arrLine = [];
-
-                var dataCustomer = getCustomerData(jsonPayment.internalid) || getOrderCustomerData(jsonPayment.record); //getCustomerData(jsonPayment.internalid)||getOrderCustomerData(jsonPayment.record);
-                var customer = dataCustomer;
-                var invoice = Number(jsonPayment.internalid);
-                var existePago = getRegistroPago(jsonPayment.custbody_drt_nc_identificador_uuid);
-                var tipo_pago = jsonPayment.custbody_drt_nc_tipo_pago;
 
 
-                obody_field.custbody_drt_nc_identificador_uuid = jsonPayment.custbody_drt_nc_identificador_uuid;
-                obody_field.custbody_drt_nc_identificador_folio = jsonPayment.custbody_drt_nc_identificador_folio;
 
-                if (!existePago) {
-                    var esTotal = false;
-                    log.debug("tipo_pago" + tipo_pago);
+                try {
+                    var jsonPayment = JSON.parse(unescape(jsonRecord.values.custrecord_drt_nc_p_context));
+                    jsonPayment.total = parseFloat(jsonPayment.total) || 0;
+                    jsonPayment.custbody_drt_nc_total_capital = parseFloat(jsonPayment.custbody_drt_nc_total_capital) || 0;
+                    jsonPayment.custbody_drt_nc_total_interes = parseFloat(jsonPayment.custbody_drt_nc_total_interes) || 0;
+                    jsonPayment.custbody_drt_nc_total_iva = parseFloat(jsonPayment.custbody_drt_nc_total_iva) || 0;
+                    jsonPayment.excedente = parseFloat(jsonPayment.excedente) || 0;
+                    jsonPayment.faltante = parseFloat(jsonPayment.faltante) || 0;
 
-                    switch (tipo_pago) {
-                        case PAGO.NORMAL:
-                            if (jsonPayment.custbody_drt_nc_total_interes > 0) {
-                                var idPago = pago_simple(customer, jsonPayment, invoice);
-                                record_pagos.setValue({
-                                    fieldId: 'custrecord_drt_nc_p_transaccion',
-                                    value: Number(idPago)
-                                });
+                    log.debug({
+                        title: 'jsonPayment unescaped',
+                        details: JSON.stringify(jsonPayment)
+                    });
+                } catch (error) {
+                    log.debug({
+                        title: 'error',
+                        details: error
+                    });
+                    record_pagos.setValue({
+                        fieldId: 'custrecord_drt_nc_p_error',
+                        value: error
+                    });
+                    var updateId = record_pagos.save({
+                        enableSourcing: true,
+                        ignoreMandatoryFields: true
+                    });
+                }
 
-                            }
-                            /*
+                try {
+                    var obody_field = {};
+                    var oPayment = {};
+                    var arrLine = [];
+
+                    var dataCustomer = getCustomerData(jsonPayment.internalid) || getOrderCustomerData(jsonPayment.record); //getCustomerData(jsonPayment.internalid)||getOrderCustomerData(jsonPayment.record);
+                    var customer = dataCustomer;
+                    var invoice = Number(jsonPayment.internalid);
+                    var existePago = getRegistroPago(jsonPayment.custbody_drt_nc_identificador_uuid);
+                    var tipo_pago = jsonPayment.custbody_drt_nc_tipo_pago;
+
+
+                    obody_field.custbody_drt_nc_identificador_uuid = jsonPayment.custbody_drt_nc_identificador_uuid;
+                    obody_field.custbody_drt_nc_identificador_folio = jsonPayment.custbody_drt_nc_identificador_folio;
+
+                    if (!existePago) {
+                        var esTotal = false;
+                        log.debug("tipo_pago" + tipo_pago);
+
+                        switch (tipo_pago) {
+                            case PAGO.NORMAL:
+                                if (jsonPayment.custbody_drt_nc_total_interes > 0) {
+                                    var idPago = pago_simple(customer, jsonPayment, invoice);
+                                    record_pagos.setValue({
+                                        fieldId: 'custrecord_drt_nc_p_transaccion',
+                                        value: Number(idPago)
+                                    });
+
+                                }
+                                /*
   
                               if (jsonPayment.custbody_drt_nc_total_capital > 0) {
   
@@ -259,160 +270,171 @@ define(['N/search', 'N/render', 'N/file', 'N/record', 'N/runtime', 'N/config', '
                                   }
   
                               */
-                            if (jsonPayment.excedente > 0) {
-                                var param_body = {
-                                    entity: customer,
-                                    account: 317,
-                                    custbody_drt_nc_pendiente_enviar: true,
+                                if (jsonPayment.excedente > 0) {
+                                    var param_body = {
+                                        entity: customer,
+                                        account: 317,
+                                        custbody_drt_nc_pendiente_enviar: true,
 
-                                }
-                                param_body[notificacionYuhu] = true;
-                                param_body[notCreado] = parseInt(idPago);
-                                param_body[notCheque] = parseInt(jsonPayment.record);
+                                    }
+                                    param_body[notificacionYuhu] = true;
+                                    param_body[notCreado] = parseInt(idPago);
+                                    param_body[notCheque] = parseInt(jsonPayment.record);
 
-                                var line_field = [{
-                                    sublist: "expense",
-                                    taxcode: 5,
-                                    account: 617,
-                                    amount: jsonPayment.excedente
+                                    var line_field = [{
+                                        sublist: "expense",
+                                        taxcode: 5,
+                                        account: 617,
+                                        amount: jsonPayment.excedente
 
-                                }];
-                                var line_field = [{
-                                    sublist: "payment",
-                                    amount: Number(jsonPayment.excedente)
-                                }];
-                                log.debug({
-                                    title: 'o',
-                                    details: JSON.stringify(param_body)
-                                });
-                                var deposit = createTransaction(param_record.deposito, {
-                                    param_body: param_body,
-                                    line_field: line_field
-                                });
-                                log.debug({
-                                    title: "createTransaction ",
-                                    details: JSON.stringify(deposit)
-                                });
-
-                            }
-                            break;
-                        case PAGO.CAPITAL_TOTAL:
-                            esTotal = true;
-
-
-                        case PAGO.CAPITAL_PARCIAL:
-
-
-
-                            try {
-
-                                if (jsonPayment.custbody_drt_nc_total_interes > 0) {
-                                    var objCashSale = createObjCashSale(customer, jsonPayment.interes);
-                                    // objCashSale.body_field[notificacionYuhu] = true;
-                                    //objCashSale.body_field[notCash] = jsonPayment.internalid;
-
-                                    var oCashSale = createTransaction(param_record.cashsale, objCashSale);
-                                }
-                                if (jsonPayment.custbody_drt_nc_total_capital > 0) {
-                                    var dateTransdate = new Date(Date.parse(jsonPayment.trandate, "YYYY-MM-dd") + 24 * 60 * 60 * 1000);
-                                    var entity = customer;
-                                    var capital = jsonPayment.custbody_drt_nc_total_capital;
-                                    var isDebit = true;
-                                    var accountDebit = jsonPayment.account;
-
+                                    }];
+                                    var line_field = [{
+                                        sublist: "payment",
+                                        amount: Number(jsonPayment.excedente)
+                                    }];
                                     log.debug({
-                                        title: "objJournal",
-                                        details: JSON.stringify(dateTransdate)
+                                        title: 'o',
+                                        details: JSON.stringify(param_body)
                                     });
-
-
-                                    var objJournal = createObjJournalEntry(dateTransdate, entity, accountDebit, capital, isDebit);
-                                    objJournal.body_field[notificacionYuhu] = true;
-                                    //objJournal.body_field[notJournal] = jsonPayment.record;
-
-                                    var journal = createTransaction(param_record.journal, objJournal);
-
+                                    var deposit = createTransaction(param_record.deposito, {
+                                        param_body: param_body,
+                                        line_field: line_field
+                                    });
                                     log.debug({
-                                        title: "objJournal",
-                                        details: JSON.stringify(journal)
+                                        title: "createTransaction ",
+                                        details: JSON.stringify(deposit)
                                     });
 
                                 }
+                                break;
+                            case PAGO.CAPITAL_TOTAL:
+                                esTotal = true;
 
 
-                                log.debug({
-                                    title: "Cambio",
-                                    details: JSON.stringify(oCashSale)
+                            case PAGO.CAPITAL_PARCIAL:
+
+
+
+                                try {
+
+                                    if (jsonPayment.custbody_drt_nc_total_interes > 0) {
+                                        var objCashSale = createObjCashSale(customer, jsonPayment.custbody_drt_nc_total_interes);
+                                        // objCashSale.body_field[notificacionYuhu] = true;
+                                        //objCashSale.body_field[notCash] = jsonPayment.internalid;
+
+                                        var oCashSale = createTransaction(param_record.cashsale, objCashSale);
+                                    }
+                                    if (jsonPayment.custbody_drt_nc_total_capital > 0) {
+                                        var dateTransdate = new Date(Date.parse(jsonPayment.trandate, "YYYY-MM-dd") + 24 * 60 * 60 * 1000);
+                                        var entity = customer;
+                                        var capital = jsonPayment.custbody_drt_nc_total_capital;
+                                        var isDebit = true;
+                                        var accountDebit = jsonPayment.account;
+
+                                        log.debug({
+                                            title: "objJournal",
+                                            details: JSON.stringify(dateTransdate)
+                                        });
+
+
+                                        var objJournal = createObjJournalEntry(dateTransdate, entity, accountDebit, capital, isDebit);
+                                        objJournal.body_field[notificacionYuhu] = true;
+                                        //objJournal.body_field[notJournal] = jsonPayment.record;
+
+                                        var journal = createTransaction(param_record.journal, objJournal);
+
+                                        log.debug({
+                                            title: "objJournal",
+                                            details: JSON.stringify(journal)
+                                        });
+
+                                    }
+
+
+                                    log.debug({
+                                        title: "Cambio",
+                                        details: JSON.stringify(oCashSale)
+                                    });
+
+                                    var ajuste = ajustar_sales_order({
+                                        esTotal: esTotal,
+                                        salesorderId: jsonPayment.internalid,
+                                        items: jsonPayment.item
+                                    });
+
+
+                                } catch (error) {
+                                    log.debug({
+                                        title: "ERROR",
+                                        details: JSON.stringify(error)
+                                    });
+                                }
+
+
+
+                                break;
+                            case PAGO.MORATORIO:
+                                var idPago = pago_simple(customer, jsonPayment, invoice);
+                                record_pagos.setValue({
+                                    fieldId: 'custrecord_drt_nc_p_transaccion',
+                                    value: Number(idPago)
                                 });
 
-                                var ajuste = ajustar_sales_order({
-                                    esTotal: esTotal,
-                                    salesorderId: jsonPayment.internalid,
-                                    items: jsonPayment.item
-                                });
+                                break;
+                            default:
 
-
-                            } catch (error) {
-                                log.debug({
-                                    title: "ERROR",
-                                    details: JSON.stringify(error)
-                                });
-                            }
+                        }
 
 
 
-                            break;
-                        case PAGO.MORATORIO:
-                            var idPago = pago_simple(customer, jsonPayment, invoice);
-                            record_pagos.setValue({
-                                fieldId: 'custrecord_drt_nc_p_transaccion',
-                                value: Number(idPago)
-                            });
 
-                            break;
-                        default:
+
+
+
+
+                    } else {
+                        record_pagos.setValue({
+                            fieldId: 'custrecord_drt_nc_p_error',
+                            value: "ya existe registro en pagos de " + jsonPayment.custbody_drt_nc_identificador_uuid
+                        });
 
                     }
-
-
-
-
-
-
-
-
-                } else {
+                    var updateId = record_pagos.save({
+                        enableSourcing: true,
+                        ignoreMandatoryFields: true
+                    });
+                } catch (error) {
+                    log.emergency({
+                        title: "Error al generar payment",
+                        details: error
+                    });
                     record_pagos.setValue({
                         fieldId: 'custrecord_drt_nc_p_error',
-                        value: "ya existe registro en pagos de " + jsonPayment.custbody_drt_nc_identificador_uuid
+                        value: JSON.stringify(error)
+                    });
+
+                } finally {
+                    log.debug("Finally");
+                    var updateId = record_pagos.save({
+                        enableSourcing: true,
+                        ignoreMandatoryFields: true
                     });
 
                 }
-                var updateId = record_pagos.save({
-                    enableSourcing: true,
-                    ignoreMandatoryFields: true
-                });
-            } catch (error) {
-                record_pagos.setValue({
-                    fieldId: 'custrecord_drt_nc_p_error',
-                    value: JSON.stringify(error)
-                });
+                //record_pagos.setValue({ fieldId: 'isinactive', value: true });
 
-                log.emergency({
-                    title: "Error al generar payment",
-                    details: error
+                log.debug("Sales Order updated", updateId);
+            } catch (errorMap) {
+                log.error({
+                    title: 'errorMap',
+                    details: JSON.stringify(errorMap)
                 });
             } finally {
-                log.debug("Finally");
-                var updateId = record_pagos.save({
-                    enableSourcing: true,
-                    ignoreMandatoryFields: true
+                log.audit({
+                    title: 'finmap',
+                    details: 'finmap'
                 });
-
             }
-            //record_pagos.setValue({ fieldId: 'isinactive', value: true });
-
-            log.debug("Sales Order updated", updateId);
         }
 
         function createObjCashSale(customer, rate) {
