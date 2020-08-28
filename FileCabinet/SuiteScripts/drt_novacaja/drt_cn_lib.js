@@ -902,6 +902,60 @@ define([
             }
         }
 
+        function searchidentificador(param_record, param_campo, param_identificador) {
+            try {
+                var respuesta = {
+                    success: false,
+                    data: ''
+                };
+                log.audit({
+                    title: 'searchidentificador ',
+                    details: ' param_record: ' + param_record +
+                        ' param_campo: ' + param_campo +
+                        ' param_identificador: ' + param_identificador
+                });
+
+
+                if (param_record && param_campo && param_identificador) {
+                    var arrayFilters = [
+                        [param_campo, search.Operator.CONTAINS, param_identificador]
+                    ];
+                    var transactionSearchObj = search.create({
+                        type: param_record,
+                        filters: arrayFilters,
+                        columns: [param_campo]
+                    });
+                    var searchResultCount = transactionSearchObj.runPaged().count;
+                    transactionSearchObj.run().each(function (result) {
+                        var identificador_encontrado = result.getValue({
+                            name: param_campo
+                        }) || '';
+                        if (identificador_encontrado && identificador_encontrado == param_identificador) {
+                            respuesta.data = result.id;
+                            respuesta[param_campo] = result.getValue({
+                                name: param_campo
+                            }) || '';
+                            return false;
+                        }
+                        return true;
+                    });
+                }
+
+                respuesta.success = respuesta.data != '';
+            } catch (error) {
+                log.error({
+                    title: 'error searchidentificador',
+                    details: JSON.stringify(error)
+                });
+            } finally {
+                log.emergency({
+                    title: 'respuesta searchidentificador',
+                    details: JSON.stringify(respuesta)
+                });
+                return respuesta;
+            }
+        }
+
         return {
             lookup: lookup,
             searchRecord: searchRecord,
@@ -913,6 +967,7 @@ define([
             bookWebhook: bookWebhook,
             updateYuhu: updateYuhu,
             formatDate: formatDate,
-            updateSalesOrder: updateSalesOrder
+            updateSalesOrder: updateSalesOrder,
+            searchidentificador: searchidentificador
         }
     });
