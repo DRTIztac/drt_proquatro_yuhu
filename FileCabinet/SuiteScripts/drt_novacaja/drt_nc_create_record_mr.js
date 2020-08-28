@@ -428,15 +428,33 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                 if (parametro.total) {
                     objField_transaction.custbody_drt_nc_total_transaccion = parametro.total;
                 }
-                var articulo_capital = runtime.getCurrentScript().getParameter({
-                    name: 'custscript_drt_nc_articulo_capital'
-                }) || '';
+
                 var articulo_interes = runtime.getCurrentScript().getParameter({
                     name: 'custscript_drt_nc_articulo_interes'
                 }) || '';
 
+                var accountDebit = 819;
+                if (parametro.custbody_drt_nc_tipo_credito) {
+                    articulo_interes = parametro.custbody_drt_nc_tipo_credito;
+                }
 
                 if (articulo_interes) {
+                    objField_transaction.custbody_drt_nc_tipo_credito = articulo_interes;
+                    var cuentaItem = drt_cn_lib.lookup(record.Type.ITEM, articulo_interes, ['custitem_drt_accounnt_capital']);
+                    if (
+                        cuentaItem.success &&
+                        cuentaItem.data.custitem_drt_accounnt_capital &&
+                        cuentaItem.data.custitem_drt_accounnt_capital[0] &&
+                        cuentaItem.data.custitem_drt_accounnt_capital[0].value
+                    ) {
+                        accountDebit = cuentaItem.data.custitem_drt_accounnt_capital[0].value;
+                    }
+
+                    log.audit({
+                        title: 'accountDebit',
+                        details: JSON.stringify(accountDebit)
+                    });
+
                     for (var liena in parametro.item) {
                         objSublist_transaction.item.push({
                             item: articulo_interes,
@@ -487,9 +505,10 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                     if (objField_transaction.trandate) {
                         objField_journal.trandate = objField_transaction.trandate;
                     }
+
                     for (var banco in parametro.dispersion) {
                         objSublist_journal.line.push({
-                            account: 819,
+                            account: accountDebit,
                             debit: parametro.dispersion[banco].monto,
                             entity: objField_transaction.entity,
                             custcol_drt_nc_identificador_uuid: parametro.dispersion[banco].identificador
