@@ -16,9 +16,16 @@ define(['N/record', 'N/search'],
          *
          * @return {Array|Object|Search|RecordRef} inputSummary
          * @since 2015.1
-        */
-        const param_record = { journal: "journalentry" };
-        const notificacion = { yuhu: "custbody_drt_nc_pendiente_enviar", conexion: "custbody_drt_nc_con_je", creadoDesde:"custbody_drt_nc_createdfrom"};
+         */
+        const param_record = {
+            journal: "journalentry"
+        };
+        const notificacion = {
+            yuhu: "custbody_drt_nc_pendiente_enviar",
+            conexion: "custbody_drt_nc_con_je",
+            creadoDesde: "custbody_drt_nc_createdfrom"
+        };
+
         function getInputData() {
 
             const param_registro = 'customsearch_drt_ss_line_salesorder';
@@ -55,13 +62,13 @@ define(['N/record', 'N/search'],
 
             const paramcol_capital = "custcol_drt_nc_monto_capital";
             const paramcol_interes = "custcol_drt_nc_monto_interes";
-            const paramcol_iva = "custcol_drt_nc_monto_iva";     
+            const paramcol_iva = "custcol_drt_nc_monto_iva";
 
             const paramcus_capital = "custbody_drt_nc_total_capital";
             const paramcus_interes = "custbody_drt_nc_total_interes";
-            const paramcus_iva = "custbody_drt_nc_total_iva";     
-            const paramcus_amortizacion = "custbody_drt_nc_num_amortizacion";     
-            
+            const paramcus_iva = "custbody_drt_nc_total_iva";
+            const paramcus_amortizacion = "custbody_drt_nc_num_amortizacion";
+
 
             const formSales2Cash = 88;
 
@@ -76,8 +83,14 @@ define(['N/record', 'N/search'],
                 rowValues = rowJson.values,
                 itemValues = rowValues.item;
 
-            log.debug({ title: "JSON DETAIL", details: JSON.stringify(rowJson) });
-            log.debug({ title: "TEST", details: "" });
+            log.debug({
+                title: "JSON DETAIL",
+                details: JSON.stringify(rowJson)
+            });
+            log.debug({
+                title: "TEST",
+                details: ""
+            });
 
             try {
                 var id = rowValues.tranid;
@@ -86,7 +99,10 @@ define(['N/record', 'N/search'],
                 var conexion = rowValues.custbody_drt_nc_con_so;
 
 
-                log.debug({ title: "id amortizacion", details: id + fecha });
+                log.debug({
+                    title: "id amortizacion",
+                    details: id + fecha
+                });
 
                 /*
                  * {"recordType":"salesorder"
@@ -96,7 +112,10 @@ define(['N/record', 'N/search'],
                  * {"value":"17","text":"ARTICULO INTERES"},"custcol2":"","custcol_drt_nc_fecha":"2020-06-19","custcol_drt_nc_num_amortizacion":"2"}}*/
 
                 var recordType = record.Type.INVOICE;
-                log.debug({ title: "recordType", details: recordType });
+                log.debug({
+                    title: "recordType",
+                    details: recordType
+                });
 
                 var currRegValue = "";
 
@@ -109,9 +128,14 @@ define(['N/record', 'N/search'],
                 });
 
 
-                var itemcount = invrec.getLineCount({ "sublistId": "item" });
+                var itemcount = invrec.getLineCount({
+                    "sublistId": "item"
+                });
 
-                log.debug({ title: "itemcount", details: itemcount });
+                log.debug({
+                    title: "itemcount",
+                    details: itemcount
+                });
                 for (var j = itemcount - 1; j >= 0; j--) {
 
 
@@ -121,7 +145,7 @@ define(['N/record', 'N/search'],
                         line: j
                     });
 
-              
+
 
                     if (amortizacion != sublistFieldValue) {
                         invrec.removeLine({
@@ -170,28 +194,49 @@ define(['N/record', 'N/search'],
                 currRegValue = invrec.getValue({
                     fieldId: notSalesOrder
                 });
-                invrec.setValue({ fieldId: notinvoice, value: currRegValue });
+                invrec.setValue({
+                    fieldId: notinvoice,
+                    value: currRegValue
+                });
 
-            
 
-                invrec.setValue({ fieldId: 'custbody_drt_nc_num_amortizacion', value: amortizacion });
-                invrec.setValue({ fieldId: notificacionYuhu, value: true });
-                invrec.setValue({ fieldId: notPendiente, value: "" });
-                invrec.setValue({ fieldId: notCreado, value: Number(rowJson.id) });
 
-                
+                invrec.setValue({
+                    fieldId: 'custbody_drt_nc_num_amortizacion',
+                    value: amortizacion
+                });
+                invrec.setValue({
+                    fieldId: notificacionYuhu,
+                    value: true
+                });
+                invrec.setValue({
+                    fieldId: notPendiente,
+                    value: ""
+                });
+                invrec.setValue({
+                    fieldId: notCreado,
+                    value: Number(rowJson.id)
+                });
 
-                
-                invrec.setValue({fieldId: notSalesOrder,value: ""});
+
+
+
+                invrec.setValue({
+                    fieldId: notSalesOrder,
+                    value: ""
+                });
 
                 var invoiceid = invrec.save({
                     'enableSourcing': true,
                     'ignoreMandatoryFields': true
                 });
 
-             
-                log.debug({ title: "generated invoice id", details: invoiceid })
-                
+
+                log.debug({
+                    title: "generated invoice id",
+                    details: invoiceid
+                })
+
                 if (rowValues.custbody_drt_nc_tipo_descuento.text == "Retención") {
 
                     //GENERA PAGO
@@ -202,22 +247,43 @@ define(['N/record', 'N/search'],
                         'isDynamic': true
                     });
 
-               
-                    payment.setValue({ fieldId: notPayment, value: currRegValue });
 
-                    payment.setValue({ fieldId: notinvoice, value: "" });
+                    payment.setValue({
+                        fieldId: notPayment,
+                        value: currRegValue
+                    });
 
-                    payment.setValue({ fieldId: 'custbody_drt_nc_num_amortizacion', value: amortizacion });
-                    payment.setValue({ fieldId: notificacionYuhu, value: true });
-                    payment.setValue({ fieldId: notPendiente, value: "" });
-                    payment.setValue({ fieldId: notCreado, value: Number(rowJson.id) });
+                    payment.setValue({
+                        fieldId: notinvoice,
+                        value: ""
+                    });
+
+                    payment.setValue({
+                        fieldId: 'custbody_drt_nc_num_amortizacion',
+                        value: amortizacion
+                    });
+                    payment.setValue({
+                        fieldId: notificacionYuhu,
+                        value: true
+                    });
+                    payment.setValue({
+                        fieldId: notPendiente,
+                        value: ""
+                    });
+                    payment.setValue({
+                        fieldId: notCreado,
+                        value: Number(rowJson.id)
+                    });
 
 
                     var paymentId = payment.save({
                         'enableSourcing': true,
                         'ignoreMandatoryFields': true
                     });
-                    log.debug({ title: "pago generado", details: paymentId })
+                    log.debug({
+                        title: "pago generado",
+                        details: paymentId
+                    })
 
 
 
@@ -229,11 +295,13 @@ define(['N/record', 'N/search'],
                     //ENTRADA DE DIARIO
                     //TRASPASO DE DEUDA A EMPRESA A TRAVES DE ENTRADA DE DIARIO
                     var total = 0;
-                    var objJournal = { line_field: [] };
+                    var objJournal = {
+                        line_field: []
+                    };
                     if (rowValues[paramcol_capital] != 0) {
                         total = Number(rowValues[paramcol_capital]);
-                        var accountCapital = 
-                        objJournal = createObjJournalEntry(rowValues["custentity_drt_nc_empresa.customer"].value, 629, rowValues[paramcol_capital], true, conexion, salesOrder);
+                        var accountCapital =
+                            objJournal = createObjJournalEntry(rowValues["custentity_drt_nc_empresa.customer"].value, 629, rowValues[paramcol_capital], true, conexion, salesOrder);
                     }
 
                     if (rowValues[paramcol_interes] != 0) {
@@ -245,21 +313,26 @@ define(['N/record', 'N/search'],
                         }
 
                         var objJournal_2 = createObjJournalEntry(rowValues["custentity_drt_nc_empresa.customer"].value, 630, (Number(rowValues[paramcol_interes]) + Number(rowValues[paramcol_iva])).toFixed(2), true, conexion, salesOrder);
-                        if (!objJournal.body_field) { objJournal = objJournal_2; }
+                        if (!objJournal.body_field) {
+                            objJournal = objJournal_2;
+                        }
                         objJournal.line_field = objJournal.line_field.concat(objJournal_2.line_field);
                         objJournal.body_field.custbody_drt_nc_total_transaccion = total.toFixed(2);
 
                     }
 
 
-                    log.debug({ title: "objJournal", details: objJournal });
+                    log.debug({
+                        title: "objJournal",
+                        details: objJournal
+                    });
                     if (objJournal.body_field) {
                         objJournal.body_field.custbody_drt_nc_identificador_folio = rowValues["custbody_drt_nc_identificador_folio"];
                         objJournal.body_field.custbody_drt_nc_identificador_uuid = rowValues["custbody_drt_nc_identificador_uuid"];
                         var journal2 = createTransaction(param_record.journal, objJournal);
 
                     }
-                    
+
 
                 }
 
@@ -271,7 +344,9 @@ define(['N/record', 'N/search'],
                     isDynamic: true
                 });
 
-                var itemcount = salesRec.getLineCount({ "sublistId": "item" });
+                var itemcount = salesRec.getLineCount({
+                    "sublistId": "item"
+                });
                 var control = false;
                 for (var i = 0; i < itemcount; i++) {
                     var intquantity = salesRec.getSublistValue({
@@ -284,12 +359,18 @@ define(['N/record', 'N/search'],
                         fieldId: 'custcol_drt_nc_invoice',
                         line: i
                     });
-                    
+
 
                     if (intquantity == 1 && drtInvoice == "") {
                         control = true;
-                        log.debug({ title: "Invoice" + invoiceid, details: "Enter on change 2" });
-                        salesRec.selectLine({ sublistId: "item", line: i });
+                        log.debug({
+                            title: "Invoice" + invoiceid,
+                            details: "Enter on change 2"
+                        });
+                        salesRec.selectLine({
+                            sublistId: "item",
+                            line: i
+                        });
 
                         salesRec.setCurrentSublistValue({
                             sublistId: 'item',
@@ -320,7 +401,10 @@ define(['N/record', 'N/search'],
                 });
 
             } catch (error) {
-                log.debug({ title: "error", details: error })
+                log.debug({
+                    title: "error",
+                    details: error
+                })
 
             }
         }
@@ -339,8 +423,7 @@ define(['N/record', 'N/search'],
         function createObjCashSale(customer, rate) {
 
 
-            var lineItem =
-            {
+            var lineItem = {
                 sublist: "item",
                 item: 17,
                 quantity: 1,
@@ -359,10 +442,14 @@ define(['N/record', 'N/search'],
             };
             lineItem.rate = rate;
             objcashSale.line_field.push(lineItem);
-            log.debug({ title: "cashsale", details: JSON.stringify(objcashSale) });
+            log.debug({
+                title: "cashsale",
+                details: JSON.stringify(objcashSale)
+            });
             return objcashSale;
 
         }
+
         function createTransaction(param_record, objParam) {
             var respuesta = {
                 success: false,
@@ -402,7 +489,10 @@ define(['N/record', 'N/search'],
 
 
 
-                        log.debug({ title: "param_line[fieldId][i]", details: param_line[fieldId][i] + "" + i });
+                        log.debug({
+                            title: "param_line[fieldId][i]",
+                            details: param_line[fieldId][i] + "" + i
+                        });
 
                         if (i != "sublist") {
                             nuevo_registro.setCurrentSublistValue({
@@ -426,7 +516,10 @@ define(['N/record', 'N/search'],
 
             } catch (error) {
                 respuesta.error = error;
-                log.debug({ title: "jsonPayment error ", details: error });
+                log.debug({
+                    title: "jsonPayment error ",
+                    details: error
+                });
 
 
             }
@@ -436,14 +529,14 @@ define(['N/record', 'N/search'],
         }
 
 
-        function createObjJournalEntry( entity, accountDebit, amount, isDebit,conexion,salesOrder ) {
+        function createObjJournalEntry(entity, accountDebit, amount, isDebit, conexion, salesOrder) {
 
             try {
 
                 var account = 617;
                 var objJournalEntry = {
                     body_field: {
-                        
+
                     },
                     line_field: []
                 };
@@ -452,16 +545,14 @@ define(['N/record', 'N/search'],
                 objJournalEntry.body_field[notificacion.conexion] = conexion;
                 objJournalEntry.body_field[notificacion.creadoDesde] = salesOrder;
 
-                var lineItem =
-                {
+                var lineItem = {
                     sublist: "line",
                     account: account,
                     debit: amount,
-                    
+
                 };
                 objJournalEntry.line_field.push(lineItem);
-                var lineItem =
-                {
+                var lineItem = {
                     sublist: "line",
                     account: accountDebit,
                     entity: entity,
