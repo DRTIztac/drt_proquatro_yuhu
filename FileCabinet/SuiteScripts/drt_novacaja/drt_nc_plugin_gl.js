@@ -48,7 +48,7 @@ function customizeGlImpact(transactionRecord, standardLines, customLines, book) 
         if (tipo_pagoText) {
             memo += ', Tipo pago ' + tipo_pagoText
         }
-
+        var entity_empresa = '';
         if (identificador_uuid && identificador_folio) {
             switch (type) {
                 case 'custinvc':
@@ -107,7 +107,20 @@ function customizeGlImpact(transactionRecord, standardLines, customLines, book) 
                         if (internalid) {
                             var record = nlapiLoadRecord('invoice', internalid) || '';
                             var record_id = record.getLineItemValue('item', 'item', 1) || '';
-                            var fields = ['custitem_drt_accounnt_capital']
+                            var record_entity = transactionRecord.getFieldValue('customer') || '';
+                            var con_cp = transactionRecord.getFieldValue('custbody_drt_nc_con_cp') || '';
+                            if (con_cp) {
+                                var rp = nlapiLookupField('customrecord_drt_nc_conect', con_cp, ['custrecord_drt_nc_c_transaccion']);
+                                if (rp.custrecord_drt_nc_c_transaccion) {
+                                    var salesorder = nlapiLookupField('salesorder', rp.custrecord_drt_nc_c_transaccion, ['custbody_drt_nc_tipo_descuento']) || '';
+                                    tipo_descuento = salesorder.custbody_drt_nc_tipo_descuento || '';
+                                }
+                                if (tipo_descuento == 1) {
+                                    var entity = nlapiLookupField('customer', record_entity, ['custentity_drt_nc_empresa']);
+                                    entity_empresa = entity.custentity_drt_nc_empresa || '';
+                                }
+                            }
+                            var fields = ['custitem_drt_accounnt_capital'];
                             if (record_id) {
                                 var columns = nlapiLookupField('item', record_id, fields);
                                 credit =
@@ -128,7 +141,8 @@ function customizeGlImpact(transactionRecord, standardLines, customLines, book) 
                 total,
                 debit,
                 credit,
-                memo
+                memo,
+                entity_empresa
             );
         }
 
@@ -137,14 +151,15 @@ function customizeGlImpact(transactionRecord, standardLines, customLines, book) 
     }
 }
 
-function lineGL(customLines, param_amount, param_account_debit, param_account_credit, param_memo) {
+function lineGL(customLines, param_amount, param_account_debit, param_account_credit, param_memo, entityIdEmpresa) {
     try {
         nlapiLogExecution('AUDIT', 'lineGL',
             // ' customLines: '+customLines+
             ' param_amount: ' + param_amount +
             ' param_account_debit: ' + param_account_debit +
             ' param_account_credit: ' + param_account_credit +
-            ' param_memo: ' + param_memo
+            ' param_memo: ' + param_memo +
+            ' entityIdEmpresa: ' + entityIdEmpresa
         );
 
         if (
@@ -154,6 +169,7 @@ function lineGL(customLines, param_amount, param_account_debit, param_account_cr
             param_account_credit
         ) {
 
+
             param_amount = parseFloat(param_amount);
             param_account_debit = parseInt(param_account_debit);
             param_account_credit = parseInt(param_account_credit);
@@ -161,21 +177,14 @@ function lineGL(customLines, param_amount, param_account_debit, param_account_cr
                 var newLineDebit = customLines.addNewLine();
                 newLineDebit.setAccountId(param_account_debit);
                 newLineDebit.setDebitAmount(param_amount);
+                if (entityIdEmpresa) {
+                    newLineDebit.setEntityId(parseInt(entityIdEmpresa));
+                }
                 newLineDebit.setMemo(param_memo);
 
                 var newLineCredit = customLines.addNewLine();
                 newLineCredit.setAccountId(param_account_credit);
                 newLineCredit.setCreditAmount(param_amount);
-                newLineCredit.setMemo(param_memo);
-            } else {
-                param_amount *= -1;
-                var newLineDebit = customLines.addNewLine();
-                newLineDebit.setAccountId(param_account_credit);
-                newLineDebit.setDebitAmount(param_amount);
-                newLineDebit.setMemo(param_memo);
-
-                var newLineCredit = customLines.addNewLine();
-                newLineCredit.setAccountId(param_account_debit);
                 newLineCredit.setCreditAmount(param_amount);
                 newLineCredit.setMemo(param_memo);
             }
