@@ -117,11 +117,11 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                                             objupdate.custrecord_drt_nc_p_transaccion = customerpayment.data.transaccion;
                                             mensajeFinal.push('Se genero ' + customerpayment.data.type_1 + ' con id: ' + objupdate.custrecord_drt_nc_p_transaccion);
                                         }
-                                        if (customerpayment.data.check) {
-                                            objupdate.custrecord_drt_nc_p_transaccion_2 = customerpayment.data.check;
-                                            mensajeFinal.push('Se genero cheque con id: ' + customerpayment.data.check);
-                                        }
-                                        if (objupdate.custrecord_drt_nc_p_transaccion && objupdate.custrecord_drt_nc_p_transaccion_2) {
+                                        // if (customerpayment.data.check) {
+                                        //     objupdate.custrecord_drt_nc_p_transaccion_2 = customerpayment.data.check;
+                                        //     mensajeFinal.push('Se genero cheque con id: ' + customerpayment.data.check);
+                                        // }
+                                        if (objupdate.custrecord_drt_nc_p_transaccion /*&& objupdate.custrecord_drt_nc_p_transaccion_2 */ ) {
                                             objupdate.custrecord_drt_nc_p_terminado = true;
                                         }
                                     }
@@ -338,42 +338,42 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                     }
                     if (newtransaction.success) {
                         respuesta.data.transaccion = newtransaction.data;
-                        if (parametro.custbody_drt_nc_monto_excedente) {
-                            var objSublist_transaction = {
-                                expense: []
-                            };
-                            objSublist_transaction.expense.push({
-                                account: 617,
-                                amount: parametro.custbody_drt_nc_monto_excedente,
-                                taxcode: 5,
-                            })
+                        // if (parametro.custbody_drt_nc_monto_excedente) {
+                        // var objSublist_transaction = {
+                        //     expense: []
+                        // };
+                        // objSublist_transaction.expense.push({
+                        //     account: parametro.account || '',
+                        //     amount: parametro.custbody_drt_nc_monto_excedente,
+                        //     taxcode: 5,
+                        // })
 
-                            var newtransaction_2 = drt_cn_lib.createRecord(
-                                record.Type.CHECK, {
-                                    entity: datosTransaction.data.entity[0].value,
-                                    trandate: format.parse({
-                                        value: parametro.trandate,
-                                        type: format.Type.DATE
-                                    }) || '',
-                                    account: parametro.account || '',
-                                    custbody_drt_nc_tipo_pago: parametro.custbody_drt_nc_tipo_pago || '',
-                                    custbody_drt_nc_total_transaccion: parametro.custbody_drt_nc_monto_excedente || '',
-                                    custbody_drt_nc_identificador_uuid: parametro.custbody_drt_nc_identificador_uuid || '',
-                                    custbody_drt_nc_identificador_folio: parametro.custbody_drt_nc_identificador_folio || '',
-                                    custbody_drt_nc_pendiente_enviar: true,
-                                    custbody_drt_nc_createdfrom: parametro.internalid,
-                                    custbody_drt_nc_con_ch: idConexion,
-                                },
-                                objSublist_transaction, {}
-                            );
-                            log.audit({
-                                title: 'newtransaction_2',
-                                details: JSON.stringify(newtransaction_2)
-                            });
-                            if (newtransaction_2.success) {
-                                respuesta.data.check = newtransaction_2.data;
-                            }
-                        }
+                        // var newtransaction_2 = drt_cn_lib.createRecord(
+                        //     record.Type.CHECK, {
+                        //         entity: datosTransaction.data.entity[0].value,
+                        //         trandate: format.parse({
+                        //             value: parametro.trandate,
+                        //             type: format.Type.DATE
+                        //         }) || '',
+                        //         account: 617,
+                        //         custbody_drt_nc_tipo_pago: parametro.custbody_drt_nc_tipo_pago || '',
+                        //         custbody_drt_nc_total_transaccion: parametro.custbody_drt_nc_monto_excedente || '',
+                        //         custbody_drt_nc_identificador_uuid: parametro.custbody_drt_nc_identificador_uuid || '',
+                        //         custbody_drt_nc_identificador_folio: parametro.custbody_drt_nc_identificador_folio || '',
+                        //         custbody_drt_nc_pendiente_enviar: true,
+                        //         custbody_drt_nc_createdfrom: parametro.internalid,
+                        //         custbody_drt_nc_con_ch: idConexion,
+                        //     },
+                        //     objSublist_transaction, {}
+                        // );
+                        // log.audit({
+                        //     title: 'newtransaction_2',
+                        //     details: JSON.stringify(newtransaction_2)
+                        // });
+                        // if (newtransaction_2.success) {
+                        //     respuesta.data.check = newtransaction_2.data;
+                        // }
+                        // }
                     }
                 }
 
