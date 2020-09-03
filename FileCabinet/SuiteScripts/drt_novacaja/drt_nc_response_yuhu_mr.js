@@ -78,6 +78,8 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                 var respuesta = search.create({
                     type: search.Type.TRANSACTION,
                     columns: [{
+                            name: 'custbody_drt_nc_identificador_pago'
+                        }, {
                             name: 'trandate'
                         },
                         {
