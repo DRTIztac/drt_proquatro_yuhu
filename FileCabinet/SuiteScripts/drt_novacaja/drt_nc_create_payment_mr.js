@@ -115,11 +115,11 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                                     if (customerpayment.success) {
                                         if (customerpayment.data.transaccion) {
                                             objupdate.custrecord_drt_nc_p_transaccion = customerpayment.data.transaccion;
-                                            mensajeFinal.push('Se genero el pago de cliente con id: ' + objupdate.custrecord_drt_nc_p_transaccion);
+                                            mensajeFinal.push('Se genero ' + customerpayment.data.type_1 + ' con id: ' + objupdate.custrecord_drt_nc_p_transaccion);
                                         }
-                                        if (customerpayment.data.journal) {
-                                            objupdate.custrecord_drt_nc_p_transaccion_2 = customerpayment.data.journal;
-                                            mensajeFinal.push('Se genero entrada de diario con id: ' + customerpayment.data.journal);
+                                        if (customerpayment.data.check) {
+                                            objupdate.custrecord_drt_nc_p_transaccion_2 = customerpayment.data.check;
+                                            mensajeFinal.push('Se genero cheque con id: ' + customerpayment.data.check);
                                         }
                                         if (objupdate.custrecord_drt_nc_p_transaccion && objupdate.custrecord_drt_nc_p_transaccion_2) {
                                             objupdate.custrecord_drt_nc_p_terminado = true;
@@ -265,10 +265,13 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                     //         respuesta.error.push('Tipo de pago no valido: ' + parametro.custbody_drt_nc_tipo_pago);
                     //         break;
                     // }
+                    var montoPago = parseFloat(parametro.custbody_drt_nc_total_interes) + parseFloat(parametro.custbody_drt_nc_total_iva);
                     if (
+                        montoPago > 0 &&
                         parametro.custbody_drt_nc_total_interes > 0 &&
                         parametro.custbody_drt_nc_total_iva > 0
                     ) {
+                        respuesta.data.type_1 = 'el pago de cliente';
                         newtransaction = createPayment(record.transform({
                             fromType: record.Type.INVOICE,
                             fromId: parametro.internalid,
@@ -294,7 +297,7 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                             custbody_drt_nc_monto_excedente: parametro.custbody_drt_nc_monto_excedente,
                             custbody_drt_nc_monto_faltante: parametro.custbody_drt_nc_monto_faltante,
                             custbody_drt_nc_identificador_pago: parametro.custbody_drt_nc_identificador_pago,
-                        }, parametro.internalid, parseFloat(parametro.custbody_drt_nc_total_interes) + parseFloat(parametro.custbody_drt_nc_total_iva))
+                        }, parametro.internalid, montoPago)
                     } else if (parametro.custbody_drt_nc_total_capital > 0) {
                         // respuesta.error.push('Solo se paga capital');
 
@@ -311,11 +314,11 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                         });
                         objSublist_transaction.expense.push({
                             entity: datosTransaction.data.entity[0].value,
-                            taxcode: 5,
                             account: 617,
-                            amount: parametro.excedente
+                            amount: parametro.excedente,
+                            taxcode: 5,
                         })
-
+                        respuesta.data.type_1 = 'entrada de diario';
                         newtransaction = drt_cn_lib.createRecord(
                             record.Type.JOURNAL_ENTRY, {
                                 trandate: format.parse({
@@ -340,9 +343,9 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                                 expense: []
                             };
                             objSublist_transaction.expense.push({
-                                taxcode: 5,
                                 account: 617,
-                                amount: parametro.excedente
+                                amount: parametro.custbody_drt_nc_monto_excedente,
+                                taxcode: 5,
                             })
 
                             var newtransaction_2 = drt_cn_lib.createRecord(
@@ -354,7 +357,7 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                                     }) || '',
                                     account: parametro.account || '',
                                     custbody_drt_nc_tipo_pago: parametro.custbody_drt_nc_tipo_pago || '',
-                                    custbody_drt_nc_total_transaccion: parametro.excedente || '',
+                                    custbody_drt_nc_total_transaccion: parametro.custbody_drt_nc_monto_excedente || '',
                                     custbody_drt_nc_identificador_uuid: parametro.custbody_drt_nc_identificador_uuid || '',
                                     custbody_drt_nc_identificador_folio: parametro.custbody_drt_nc_identificador_folio || '',
                                     custbody_drt_nc_pendiente_enviar: true,
@@ -363,6 +366,13 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                                 },
                                 objSublist_transaction, {}
                             );
+                            log.audit({
+                                title: 'newtransaction_2',
+                                details: JSON.stringify(newtransaction_2)
+                            });
+                            if (newtransaction_2.success) {
+                                respuesta.data.check = newtransaction_2.data;
+                            }
                         }
                     }
                 }
@@ -594,7 +604,10 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                     success: false,
                     data: {}
                 };
-
+                log.audit({
+                    title: 'param_amount',
+                    details: JSON.stringify(param_amount)
+                });
                 for (var field in param_field_value) {
                     if (param_field_value[field]) {
                         newRecord.setValue({
