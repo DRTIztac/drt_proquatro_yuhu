@@ -727,166 +727,184 @@ define([
                     success: false,
                     data: ''
                 };
-                var newRecord = record.load({
-                    type: record.Type.SALES_ORDER,
-                    id: param_id,
-                    isDynamic: true
+                log.audit({
+                    title: 'updateSalesOrder',
+                    details: ' param_id: ' + param_id +
+                        ' param_sublist: ' + JSON.stringify(param_sublist) +
+                        ' param_total: ' + param_total +
+                        ' param_transaction: ' + param_transaction
                 });
-                var memo = 'Actualizacin de amortizacion: ';
-                var sublist = 'item';
-                var numLines = newRecord.getLineCount({
-                    sublistId: sublist
-                }) || 0;
-
-                for (var line = 0; line < numLines; line++) {
-                    newRecord.selectLine({
-                        sublistId: sublist,
-                        line: line
+                if (param_id) {
+                    var newRecord = record.load({
+                        type: record.Type.SALES_ORDER,
+                        id: param_id,
+                        isDynamic: true
                     });
+                    var memo = 'Actualizacin de amortizacion: ';
+                    var sublist = 'item';
+                    var numLines = newRecord.getLineCount({
+                        sublistId: sublist
+                    }) || 0;
 
-                    var num_amortizacion = newRecord.getCurrentSublistValue({
-                        sublistId: sublist,
-                        fieldId: 'custcol_drt_nc_num_amortizacion',
-                    }) || '';
-                    var rate = newRecord.getCurrentSublistValue({
-                        sublistId: sublist,
-                        fieldId: 'rate',
-                    }) || '';
-                    var facturado = newRecord.getCurrentSublistValue({
-                        sublistId: sublist,
-                        fieldId: 'custcol_drt_nc_facturado',
-                    }) || '';
+                    for (var line = 0; line < numLines; line++) {
+                        newRecord.selectLine({
+                            sublistId: sublist,
+                            line: line
+                        });
 
-                    if (num_amortizacion && !facturado) {
-                        if (param_sublist.length > 0 && !param_total) {
-                            for (var articulo = 0; articulo < param_sublist.length; articulo++) {
-                                if (param_sublist[articulo].num_amortizacion == num_amortizacion) {
-                                    memo +=
-                                        ' *custcol_drt_nc_num_amortizacion Antes: ' +
-                                        newRecord.getCurrentSublistValue({
+                        var num_amortizacion = newRecord.getCurrentSublistValue({
+                            sublistId: sublist,
+                            fieldId: 'custcol_drt_nc_num_amortizacion',
+                        }) || '';
+                        var rate = newRecord.getCurrentSublistValue({
+                            sublistId: sublist,
+                            fieldId: 'rate',
+                        }) || '';
+                        var quantitybilled = newRecord.getCurrentSublistValue({
+                            sublistId: sublist,
+                            fieldId: 'quantitybilled',
+                        }) || '0';
+                        var facturado = newRecord.getCurrentSublistValue({
+                            sublistId: sublist,
+                            fieldId: 'custcol_drt_nc_facturado',
+                        }) || '';
+                        log.audit({
+                            title: 'line',
+                            details: ' num_amortizacion: ' + num_amortizacion +
+                                ' rate: ' + rate +
+                                ' quantitybilled: ' + quantitybilled +
+                                ' facturado: ' + facturado
+                        });
+                        if (num_amortizacion && !facturado && parseInt(quantitybilled) == 0) {
+                            if (param_sublist.length > 0 && !param_total) {
+                                for (var articulo = 0; articulo < param_sublist.length; articulo++) {
+                                    if (param_sublist[articulo].num_amortizacion == num_amortizacion) {
+                                        memo +=
+                                            ' *custcol_drt_nc_num_amortizacion Antes: ' +
+                                            newRecord.getCurrentSublistValue({
+                                                sublistId: sublist,
+                                                fieldId: 'custcol_drt_nc_num_amortizacion',
+                                            }) +
+                                            ' despues: ' + param_sublist[articulo].num_amortizacion +
+                                            ' *custcol_drt_nc_monto_total Antes: ' +
+                                            newRecord.getCurrentSublistValue({
+                                                sublistId: sublist,
+                                                fieldId: 'custcol_drt_nc_monto_total',
+                                            }) +
+                                            ' despues: ' + param_sublist[articulo].total +
+                                            ' *custcol_drt_nc_monto_interes Antes: ' +
+                                            newRecord.getCurrentSublistValue({
+                                                sublistId: sublist,
+                                                fieldId: 'custcol_drt_nc_monto_interes',
+                                            }) +
+                                            ' despues: ' + param_sublist[articulo].interes +
+                                            '* custcol_drt_nc_monto_capital Antes: ' +
+                                            newRecord.getCurrentSublistValue({
+                                                sublistId: sublist,
+                                                fieldId: 'custcol_drt_nc_monto_capital',
+                                            }) +
+                                            ' despues: ' + param_sublist[articulo].capital +
+                                            '* custcol_drt_nc_monto_iva Antes: ' +
+                                            newRecord.getCurrentSublistValue({
+                                                sublistId: sublist,
+                                                fieldId: 'custcol_drt_nc_monto_iva',
+                                            }) +
+                                            ' despues: ' + param_sublist[articulo].iva +
+                                            '* rate Antes: ' + rate +
+                                            ' despues: ' + param_sublist[articulo].interes;
+
+
+                                        newRecord.setCurrentSublistValue({
                                             sublistId: sublist,
-                                            fieldId: 'custcol_drt_nc_num_amortizacion',
-                                        }) +
-                                        ' despues: ' + param_sublist[articulo].num_amortizacion +
-                                        ' *custcol_drt_nc_monto_total Antes: ' +
-                                        newRecord.getCurrentSublistValue({
+                                            fieldId: 'custcol_drt_nc_fecha',
+                                            value: format.parse({
+                                                value: param_sublist[articulo].fecha,
+                                                type: format.Type.DATE
+                                            })
+                                        });
+                                        newRecord.setCurrentSublistValue({
                                             sublistId: sublist,
                                             fieldId: 'custcol_drt_nc_monto_total',
-                                        }) +
-                                        ' despues: ' + param_sublist[articulo].total +
-                                        ' *custcol_drt_nc_monto_interes Antes: ' +
-                                        newRecord.getCurrentSublistValue({
+                                            value: param_sublist[articulo].total
+                                        });
+                                        newRecord.setCurrentSublistValue({
                                             sublistId: sublist,
                                             fieldId: 'custcol_drt_nc_monto_interes',
-                                        }) +
-                                        ' despues: ' + param_sublist[articulo].interes +
-                                        '* custcol_drt_nc_monto_capital Antes: ' +
-                                        newRecord.getCurrentSublistValue({
+                                            value: param_sublist[articulo].interes
+                                        });
+                                        newRecord.setCurrentSublistValue({
+                                            sublistId: sublist,
+                                            fieldId: 'custcol_drt_nc_num_amortizacion',
+                                            value: param_sublist[articulo].num_amortizacion
+                                        });
+                                        newRecord.setCurrentSublistValue({
                                             sublistId: sublist,
                                             fieldId: 'custcol_drt_nc_monto_capital',
-                                        }) +
-                                        ' despues: ' + param_sublist[articulo].capital +
-                                        '* custcol_drt_nc_monto_iva Antes: ' +
-                                        newRecord.getCurrentSublistValue({
+                                            value: param_sublist[articulo].capital
+                                        });
+                                        newRecord.setCurrentSublistValue({
                                             sublistId: sublist,
                                             fieldId: 'custcol_drt_nc_monto_iva',
+                                            value: param_sublist[articulo].iva
+                                        });
+                                        newRecord.setCurrentSublistValue({
+                                            sublistId: sublist,
+                                            fieldId: 'rate',
+                                            value: param_sublist[articulo].interes
+                                        });
+                                        newRecord.commitLine({
+                                            sublistId: sublist
+                                        });
+                                    }
+                                }
+                            } else if (param_total) {
+                                if (rate && parseFloat(rate) > 0) {
+                                    memo +=
+                                        ' *rate Antes: ' +
+                                        newRecord.getCurrentSublistValue({
+                                            sublistId: sublist,
+                                            fieldId: 'rate',
                                         }) +
-                                        ' despues: ' + param_sublist[articulo].iva +
-                                        '* rate Antes: ' + rate +
-                                        ' despues: ' + param_sublist[articulo].interes;
-
-
+                                        ' despues: ' + 0;
                                     newRecord.setCurrentSublistValue({
                                         sublistId: sublist,
-                                        fieldId: 'custcol_drt_nc_fecha',
-                                        value: format.parse({
-                                            value: param_sublist[articulo].fecha,
-                                            type: format.Type.DATE
-                                        })
-                                    });
-                                    newRecord.setCurrentSublistValue({
-                                        sublistId: sublist,
-                                        fieldId: 'custcol_drt_nc_monto_total',
-                                        value: param_sublist[articulo].total
-                                    });
-                                    newRecord.setCurrentSublistValue({
-                                        sublistId: sublist,
-                                        fieldId: 'custcol_drt_nc_monto_interes',
-                                        value: param_sublist[articulo].interes
-                                    });
-                                    newRecord.setCurrentSublistValue({
-                                        sublistId: sublist,
-                                        fieldId: 'custcol_drt_nc_num_amortizacion',
-                                        value: param_sublist[articulo].num_amortizacion
-                                    });
-                                    newRecord.setCurrentSublistValue({
-                                        sublistId: sublist,
-                                        fieldId: 'custcol_drt_nc_monto_capital',
-                                        value: param_sublist[articulo].capital
-                                    });
-                                    newRecord.setCurrentSublistValue({
-                                        sublistId: sublist,
-                                        fieldId: 'custcol_drt_nc_monto_iva',
-                                        value: param_sublist[articulo].iva
-                                    });
+                                        fieldId: 'custcol_drt_nc_facturado',
+                                        value: true
+                                    }) || '';
                                     newRecord.setCurrentSublistValue({
                                         sublistId: sublist,
                                         fieldId: 'rate',
-                                        value: param_sublist[articulo].interes
+                                        value: 0
                                     });
+                                    if (param_transaction) {
+                                        newRecord.setCurrentSublistValue({
+                                            sublistId: sublist,
+                                            fieldId: 'custcol_drt_nc_invoice',
+                                            value: param_transaction
+                                        });
+                                    }
                                     newRecord.commitLine({
                                         sublistId: sublist
                                     });
                                 }
-                            }
-                        } else if (param_total) {
-                            if (rate && rate > 0) {
-                                memo +=
-                                    ' *rate Antes: ' +
-                                    newRecord.getCurrentSublistValue({
-                                        sublistId: sublist,
-                                        fieldId: 'rate',
-                                    }) +
-                                    ' despues: ' + 0;
-                                newRecord.setCurrentSublistValue({
-                                    sublistId: sublist,
-                                    fieldId: 'custcol_drt_nc_facturado',
-                                    value: true
-                                }) || '';
-                                newRecord.setCurrentSublistValue({
-                                    sublistId: sublist,
-                                    fieldId: 'rate',
-                                    value: 0
-                                });
-                                if (param_transaction) {
-                                    newRecord.setCurrentSublistValue({
-                                        sublistId: sublist,
-                                        fieldId: 'custcol_drt_nc_invoice',
-                                        value: param_transaction
-                                    });
-                                }
-                                newRecord.commitLine({
-                                    sublistId: sublist
-                                });
-                            }
 
+                            }
                         }
+
                     }
-
+                    log.audit({
+                        title: 'memo',
+                        details: JSON.stringify(memo)
+                    });
+                    newRecord.setValue({
+                        fieldId: 'custbody_drt_nc_memo',
+                        value: memo
+                    });
+                    respuesta.data = newRecord.save({
+                        enableSourcing: false,
+                        ignoreMandatoryFields: true
+                    }) || '';
                 }
-                log.audit({
-                    title: 'memo',
-                    details: JSON.stringify(memo)
-                });
-                newRecord.setValue({
-                    fieldId: 'custbody_drt_nc_memo',
-                    value: memo
-                });
-                respuesta.data = newRecord.save({
-                    enableSourcing: false,
-                    ignoreMandatoryFields: true
-                }) || '';
-
                 respuesta.success = respuesta.data != '';
             } catch (error) {
                 log.error({
