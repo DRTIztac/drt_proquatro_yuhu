@@ -128,6 +128,20 @@ function customizeGlImpact(transactionRecord, standardLines, customLines, book) 
                                     columns[fields[0]] || '';
                             }
                         }
+                        var excedente = transactionRecord.getFieldValue('custbody_drt_nc_monto_excedente') || '';
+
+                        if (debit && excedente) {
+
+                            lineGL(
+                                customLines,
+                                excedente,
+                                debit,
+                                438,
+                                memo + ', Excedente',
+                                transactionRecord.getFieldValue('customer') || ''
+                            );
+                            memo += ', Cargo'
+                        }
                     }
                     break;
 
@@ -185,7 +199,9 @@ function lineGL(customLines, param_amount, param_account_debit, param_account_cr
                 var newLineCredit = customLines.addNewLine();
                 newLineCredit.setAccountId(param_account_credit);
                 newLineCredit.setCreditAmount(param_amount);
-                newLineCredit.setCreditAmount(param_amount);
+                // if (entityIdEmpresa) {
+                //     newLineCredit.setEntityId(parseInt(entityIdEmpresa));
+                // }
                 newLineCredit.setMemo(param_memo);
             }
         }
