@@ -472,22 +472,38 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                     });
 
                     for (var liena in parametro.item) {
-                        objSublist_transaction.item.push({
+                        var objPush = {
                             item: articulo_interes,
                             price: "-1",
                             quantity: 1,
-                            rate: parametro.item[liena].interes,
-                            custcol_drt_nc_fecha: format.parse({
+                            rate: parametro.item[liena].interes
+                        };
+                        objPush.isclosed = parametro.item[liena].isclosed == 'T' || parametro.item[liena].isclosed == true;
+                        if (parametro.item[liena].custcol_drt_nc_fecha_vencimiento) {
+                            objPush.custcol_drt_nc_fecha_vencimiento = format.parse({
+                                value: parametro.item[liena].custcol_drt_nc_fecha_vencimiento,
+                                type: format.Type.DATE
+                            });
+                        }
+                        if (parametro.item[liena].custcol_drt_nc_fecha_vencimiento) {
+                            objPush.custcol_drt_nc_fecha = format.parse({
                                 value: parametro.item[liena].fecha,
                                 type: format.Type.DATE
-                            }),
-                            custcol_drt_nc_facturado: parametro.item[liena].custcol_drt_nc_facturado == 'T' || parametro.item[liena].custcol_drt_nc_facturado == true,
-                            custcol_drt_nc_monto_total: parametro.item[liena].total,
-                            custcol_drt_nc_monto_interes: parametro.item[liena].interes,
-                            custcol_drt_nc_num_amortizacion: parametro.item[liena].num_amortizacion,
-                            custcol_drt_nc_monto_capital: parametro.item[liena].capital,
-                            custcol_drt_nc_monto_iva: parametro.item[liena].iva
+                            });
+
+                        }
+                        objPush.custcol_drt_nc_facturado = parametro.item[liena].custcol_drt_nc_facturado == 'T' || parametro.item[liena].custcol_drt_nc_facturado == true;
+                        objPush.custcol_drt_nc_monto_total = parametro.item[liena].total;
+                        objPush.custcol_drt_nc_monto_interes = parametro.item[liena].interes;
+                        objPush.custcol_drt_nc_num_amortizacion = parametro.item[liena].num_amortizacion;
+                        objPush.custcol_drt_nc_monto_capital = parametro.item[liena].capital;
+                        objPush.custcol_drt_nc_monto_iva = parametro.item[liena].iva;
+
+                        log.audit({
+                            title: 'objPush',
+                            details: JSON.stringify(objPush)
                         });
+                        objSublist_transaction.item.push(objPush);
                     }
                 } else {
                     respuesta.error.push('Error en la lectura de articulo de interes: ' + articulo_interes);
