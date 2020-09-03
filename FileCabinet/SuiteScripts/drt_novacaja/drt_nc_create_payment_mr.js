@@ -106,7 +106,7 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                                     success: false
                                 };
                                 if (data.values.custbody_drt_nc_identificador_pago) {
-                                    existPaymen = searchidentificador(record.Type.CUSTOMER_PAYMENT, 'custbody_drt_nc_identificador_pago', data.values.custbody_drt_nc_identificador_pago) || {
+                                    existPaymen = drt_cn_lib.searchidentificador(record.Type.CUSTOMER_PAYMENT, 'custbody_drt_nc_identificador_pago', data.values.custbody_drt_nc_identificador_pago) || {
                                         success: false
                                     };
                                 }
@@ -291,6 +291,9 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                             custbody_drt_nc_identificador_uuid: parametro.custbody_drt_nc_identificador_uuid || '',
                             custbody_drt_nc_identificador_folio: parametro.custbody_drt_nc_identificador_folio || '',
                             custbody_drt_nc_createdfrom: parametro.internalid,
+                            custbody_drt_nc_monto_excedente: parametro.custbody_drt_nc_monto_excedente,
+                            custbody_drt_nc_monto_faltante: parametro.custbody_drt_nc_monto_faltante,
+                            custbody_drt_nc_identificador_pago: parametro.custbody_drt_nc_identificador_pago,
                         }, parametro.internalid, parseFloat(parametro.custbody_drt_nc_total_interes) + parseFloat(parametro.custbody_drt_nc_total_iva))
                     } else if (parametro.custbody_drt_nc_total_capital > 0) {
                         // respuesta.error.push('Solo se paga capital');
@@ -332,7 +335,7 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                     }
                     if (newtransaction.success) {
                         respuesta.data.transaccion = newtransaction.data;
-                        if (parametro.excedente) {
+                        if (parametro.custbody_drt_nc_monto_excedente) {
                             var objSublist_transaction = {
                                 expense: []
                             };
@@ -345,7 +348,6 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                             var newtransaction_2 = drt_cn_lib.createRecord(
                                 record.Type.CHECK, {
                                     entity: datosTransaction.data.entity[0].value,
-                                    location: datosTransaction.data.location[0].value,
                                     trandate: format.parse({
                                         value: parametro.trandate,
                                         type: format.Type.DATE
