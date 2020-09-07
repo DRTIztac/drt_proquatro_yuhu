@@ -7,16 +7,16 @@ define(
         'N/ui/serverWidget',
         'N/record',
         'N/redirect',
-        'N/https',
-        'N/search',
+        'N/config',
+        'N/transaction',
         './drt_cn_lib'
     ],
     function (
         serverWidget,
         record,
         redirect,
-        https,
-        search,
+        config,
+        transaction,
         drt_cn_lib
     ) {
         function onRequest(context) {
@@ -58,7 +58,8 @@ define(
                 });
 
                 var custpage_id_so = parseInt(context.request.parameters.custpage_id_so) || '';
-                var actualizacion = updateSalesOrder(custpage_id_so, [], true, '');
+                // var actualizacion = updateSalesOrder(custpage_id_so, [], true, '');
+                var actualizacion = voidTransaction(transaction.Type.SALES_ORDER, custpage_id_so);
 
                 var objField = [{
                         id: 'custpage_result',
@@ -129,6 +130,60 @@ define(
                     details: JSON.stringify(respuesta)
                 });
                 context.response.writePage(form);
+                return respuesta;
+            }
+        }
+
+        function voidTransaction(param_transaction, param_id) {
+            try {
+                var respuesta = {
+                    success: false,
+                    data: ''
+                };
+                log.audit({
+                    title: 'voidTransaction',
+                    details: ' param_transaction: ' + param_transaction +
+                        ' param_id: ' + param_id
+                });
+                var configRecObj = config.load({
+                    type: config.Type.ACCOUNTING_PREFERENCES
+                });
+                var revVoid = configRecObj.getValue('REVERSALVOIDING');
+                if (revVoid) {
+                    configRecObj.setValue({
+                        fieldId: 'REVERSALVOIDING',
+                        value: false
+                    });
+                    configRecObj.save();
+                }
+                if (param_transaction && param_id) {
+                    respuesta.data = transaction.void({
+                        type: param_transaction, //transaction.Type.SALES_ORDER,
+                        id: parseInt(param_id) //salesOrderId
+                    });
+                }
+                var configRecObj = config.load({
+                    type: config.Type.ACCOUNTING_PREFERENCES
+                });
+                var revVoid = configRecObj.getValue('REVERSALVOIDING');
+                if (revVoid) {
+                    configRecObj.setValue({
+                        fieldId: 'REVERSALVOIDING',
+                        value: false
+                    });
+                    configRecObj.save();
+                }
+                respuesta.success = respuesta.data != '';
+            } catch (error) {
+                log.error({
+                    title: 'error voidTransaction',
+                    details: JSON.stringify(error)
+                });
+            } finally {
+                log.emergency({
+                    title: 'respuesta voidTransaction',
+                    details: JSON.stringify(respuesta)
+                });
                 return respuesta;
             }
         }
