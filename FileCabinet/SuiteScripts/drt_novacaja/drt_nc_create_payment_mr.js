@@ -301,40 +301,56 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                     } else if (parametro.custbody_drt_nc_total_capital > 0) {
                         // respuesta.error.push('Solo se paga capital');
 
+                        var accountDebit = 819;
+                        var cuentaItem = drt_cn_lib.lookup(search.Type.ITEM, loadItem.data, ['custitem_drt_accounnt_capital']);
+                        if (
+                            cuentaItem.success &&
+                            cuentaItem.data.custitem_drt_accounnt_capital &&
+                            cuentaItem.data.custitem_drt_accounnt_capital[0] &&
+                            cuentaItem.data.custitem_drt_accounnt_capital[0].value
+                        ) {
+                            accountDebit = cuentaItem.data.custitem_drt_accounnt_capital[0].value;
+                        }
+                        log.audit({
+                            title: 'accountDebit',
+                            details: JSON.stringify(accountDebit)
+                        });
                         var objSublist_journal = {
                             line: [],
                         };
-                        objSublist_journal.line.push({
-                            account: 819,
-                            debit: parametro.dispersion[banco].monto,
-                        });
-                        objSublist_journal.line.push({
-                            account: parametro.dispersion[banco].banco,
-                            credit: parametro.dispersion[banco].monto,
-                        });
-                        objSublist_transaction.expense.push({
-                            entity: datosTransaction.data.entity[0].value,
-                            account: 617,
-                            amount: parametro.excedente,
-                            taxcode: 5,
-                        })
-                        respuesta.data.type_1 = 'entrada de diario';
-                        newtransaction = drt_cn_lib.createRecord(
-                            record.Type.JOURNAL_ENTRY, {
-                                trandate: format.parse({
-                                    value: parametro.trandate,
-                                    type: format.Type.DATE
-                                }) || '',
-                                custbody_drt_nc_total_transaccion: parametro.custbody_drt_nc_total_capital || '',
-                                custbody_drt_nc_identificador_uuid: parametro.custbody_drt_nc_identificador_uuid || '',
-                                custbody_drt_nc_identificador_folio: parametro.custbody_drt_nc_identificador_folio || '',
-                                custbody_drt_nc_pendiente_enviar: true,
-                                custbody_drt_nc_createdfrom: parametro.internalid,
-                                custbody_drt_nc_con_je: idConexion,
-                            },
-                            objSublist_journal, {}
-                        );
+                        var objField_journal = {};
 
+                        if (parametro.custbody_drt_nc_identificador_folio) {
+                            objField_journal.custbody_drt_nc_identificador_folio = parametro.custbody_drt_nc_identificador_folio;
+                        }
+                        if (parametro.custbody_drt_nc_identificador_uuid) {
+                            objField_journal.custbody_drt_nc_identificador_uuid = parametro.custbody_drt_nc_identificador_uuid;
+                        }
+                        if (parametro.custbody_drt_nc_identificador_pago) {
+                            objField_journal.custbody_drt_nc_identificador_pago = parametro.custbody_drt_nc_identificador_pago;
+                        }
+                        objField_journal.custbody_drt_nc_con_je = parseInt(parametro.record);
+                        objField_journal.custbody_drt_nc_createdfrom = parametro.internalid;
+                        objField_journal.custbody_drt_nc_pendiente_enviar = true;
+                        if (parametro.trandate) {
+                            objField_journal.trandate = format.parse({
+                                value: parametro.trandate,
+                                type: format.Type.DATE
+                            }) || '';
+                        }
+
+                        objSublist_journal.line.push({
+                            account: parametro.account,
+                            debit: parametro.custbody_drt_nc_total_capital,
+                            entity: datosTransaction.data.entity[0].value,
+                        });
+                        objSublist_journal.line.push({
+                            account: accountDebit,
+                            credit: parametro.custbody_drt_nc_total_capital,
+                        });
+
+
+                        newtransaction = drt_cn_lib.createRecord(record.Type.JOURNAL_ENTRY, objField_journal, objSublist_journal, {});
                     }
                     if (newtransaction.success) {
                         respuesta.data.transaccion = newtransaction.data;
@@ -431,6 +447,11 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                     } else {
                         respuesta.error.push('No se tiene cliente ');
                     }
+                    if (datosTransaction.data.location && datosTransaction.data.location[0] && datosTransaction.data.location[0].value) {
+
+                    } else {
+                        respuesta.error.push('No se tiene Ubicacion ');
+                    }
                 } else {
                     respuesta.error.push('No se tiene datos de transaccion');
                 }
@@ -443,6 +464,7 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                                 !patametroActualizacionUno[iv].total ||
                                 !patametroActualizacionUno[iv].num_amortizacion ||
                                 !patametroActualizacionUno[iv].capital ||
+                                !patametroActualizacionUno[iv].custcol_drt_nc_fecha ||
                                 !patametroActualizacionUno[iv].iva
                             ) {
                                 respuesta.error.push('Falta informacion en la linea de amortizacion: ' + JSON.stringify(patametroActualizacionUno[iv]));
@@ -470,6 +492,7 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                         parametro.custbody_drt_nc_total_transaccion = parseFloat(parametro.total);
                     }
 
+                    var loadItem = itemTransaction(record.Type.SALES_ORDER, parametro.internalid, 0);
 
                     if (
                         parametro.custbody_drt_nc_total_interes > 0
@@ -493,8 +516,7 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                             custcol_drt_nc_monto_total: parametro.custbody_drt_nc_total_transaccion,
                         });
                         objSublist_transaction.item[0].item = 17;
-                        var loadItem = itemTransaction(record.Type.SALES_ORDER, parametro.internalid, 0);
-                        if (loadItem) {
+                        if (loadItem.success) {
                             objSublist_transaction.item[0].item = loadItem.data;
                         }
 
@@ -514,6 +536,7 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                                 custbody_drt_nc_total_iva: parametro.custbody_drt_nc_total_iva || '',
                                 custbody_drt_nc_total_transaccion: parametro.custbody_drt_nc_total_transaccion || '',
                                 custbody_drt_nc_identificador_uuid: parametro.custbody_drt_nc_identificador_uuid || '',
+                                custbody_drt_nc_identificador_pago: parametro.custbody_drt_nc_identificador_pago || '',
                                 custbody_drt_nc_identificador_folio: parametro.custbody_drt_nc_identificador_folio || '',
                                 custbody_drt_nc_pendiente_enviar: true,
                                 custbody_drt_nc_createdfrom: parametro.internalid,
@@ -523,9 +546,59 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                         );
 
                     } else if (parametro.custbody_drt_nc_total_capital > 0) {
-                        respuesta.error.push('Solo se paga capital');
-                    }
+                        // respuesta.error.push('Solo se paga capital');
+                        var accountDebit = 819;
+                        var cuentaItem = drt_cn_lib.lookup(search.Type.ITEM, loadItem.data, ['custitem_drt_accounnt_capital']);
+                        if (
+                            cuentaItem.success &&
+                            cuentaItem.data.custitem_drt_accounnt_capital &&
+                            cuentaItem.data.custitem_drt_accounnt_capital[0] &&
+                            cuentaItem.data.custitem_drt_accounnt_capital[0].value
+                        ) {
+                            accountDebit = cuentaItem.data.custitem_drt_accounnt_capital[0].value;
+                        }
+                        log.audit({
+                            title: 'accountDebit',
+                            details: JSON.stringify(accountDebit)
+                        });
+                        var objSublist_journal = {
+                            line: [],
+                        };
+                        var objField_journal = {};
 
+                        if (parametro.custbody_drt_nc_identificador_folio) {
+                            objField_journal.custbody_drt_nc_identificador_folio = parametro.custbody_drt_nc_identificador_folio;
+                        }
+                        if (parametro.custbody_drt_nc_identificador_uuid) {
+                            objField_journal.custbody_drt_nc_identificador_uuid = parametro.custbody_drt_nc_identificador_uuid;
+                        }
+                        if (parametro.custbody_drt_nc_identificador_pago) {
+                            objField_journal.custbody_drt_nc_identificador_pago = parametro.custbody_drt_nc_identificador_pago;
+                        }
+                        objField_journal.custbody_drt_nc_con_je = parseInt(parametro.record);
+                        objField_journal.custbody_drt_nc_createdfrom = parametro.internalid;
+                        objField_journal.custbody_drt_nc_pendiente_enviar = true;
+                        if (parametro.trandate) {
+                            objField_journal.trandate = format.parse({
+                                value: parametro.trandate,
+                                type: format.Type.DATE
+                            }) || '';
+                        }
+
+                        objSublist_journal.line.push({
+                            account: parametro.account,
+                            debit: parametro.custbody_drt_nc_total_capital,
+                            entity: datosTransaction.data.entity[0].value,
+                        });
+                        objSublist_journal.line.push({
+                            account: accountDebit,
+                            credit: parametro.custbody_drt_nc_total_capital,
+                        });
+
+
+                        newtransaction = drt_cn_lib.createRecord(record.Type.JOURNAL_ENTRY, objField_journal, objSublist_journal, {});
+
+                    }
 
                     if (newtransaction.success) {
                         respuesta.data.transaccion = newtransaction.data;

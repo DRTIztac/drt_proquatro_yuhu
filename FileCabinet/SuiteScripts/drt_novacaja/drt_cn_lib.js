@@ -775,7 +775,7 @@ define([
                                 ' quantitybilled: ' + quantitybilled +
                                 ' facturado: ' + facturado
                         });
-                        if (num_amortizacion && !facturado && parseInt(quantitybilled) == 0) {
+                        if (num_amortizacion && !facturado /* && parseInt(quantitybilled) == 0 */ ) {
                             if (param_sublist.length > 0 && !param_total) {
                                 for (var articulo = 0; articulo < param_sublist.length; articulo++) {
                                     if (param_sublist[articulo].num_amortizacion == num_amortizacion) {
@@ -812,8 +812,16 @@ define([
                                             ' despues: ' + param_sublist[articulo].iva +
                                             '* rate Antes: ' + rate +
                                             ' despues: ' + param_sublist[articulo].interes;
-
-
+                                        if (param_sublist[articulo].custcol_drt_nc_fecha_vencimiento) {
+                                            newRecord.setCurrentSublistValue({
+                                                sublistId: sublist,
+                                                fieldId: 'custcol_drt_nc_fecha_vencimiento',
+                                                value: format.parse({
+                                                    value: param_sublist[articulo].custcol_drt_nc_fecha_vencimiento,
+                                                    type: format.Type.DATE
+                                                })
+                                            });
+                                        }
                                         newRecord.setCurrentSublistValue({
                                             sublistId: sublist,
                                             fieldId: 'custcol_drt_nc_fecha',
@@ -858,7 +866,7 @@ define([
                                     }
                                 }
                             } else if (param_total) {
-                                if (rate && parseFloat(rate) > 0) {
+                                {
                                     memo +=
                                         ' *rate Antes: ' +
                                         newRecord.getCurrentSublistValue({
@@ -866,6 +874,11 @@ define([
                                             fieldId: 'rate',
                                         }) +
                                         ' despues: ' + 0;
+                                    newRecord.setCurrentSublistValue({
+                                        sublistId: sublist,
+                                        fieldId: 'isclosed',
+                                        value: true
+                                    }) || '';
                                     newRecord.setCurrentSublistValue({
                                         sublistId: sublist,
                                         fieldId: 'custcol_drt_nc_facturado',
