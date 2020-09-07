@@ -485,7 +485,7 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                                 type: format.Type.DATE
                             });
                         }
-                        if (parametro.item[liena].custcol_drt_nc_fecha_vencimiento) {
+                        if (parametro.item[liena].fecha) {
                             objPush.custcol_drt_nc_fecha = format.parse({
                                 value: parametro.item[liena].fecha,
                                 type: format.Type.DATE
