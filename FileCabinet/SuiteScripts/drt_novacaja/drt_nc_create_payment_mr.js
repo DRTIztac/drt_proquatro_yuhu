@@ -267,9 +267,7 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                     // }
                     var montoPago = parseFloat(parametro.custbody_drt_nc_total_interes) + parseFloat(parametro.custbody_drt_nc_total_iva);
                     if (
-                        montoPago > 0 &&
-                        parametro.custbody_drt_nc_total_interes > 0 &&
-                        parametro.custbody_drt_nc_total_iva > 0
+                        montoPago > 0
                     ) {
                         respuesta.data.type_1 = 'el pago de cliente';
                         newtransaction = createPayment(record.transform({
@@ -302,6 +300,8 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                         // respuesta.error.push('Solo se paga capital');
 
                         var accountDebit = 819;
+                        var loadItem = itemTransaction(record.Type.INVOICE, parametro.internalid, 0);
+
                         var cuentaItem = drt_cn_lib.lookup(search.Type.ITEM, loadItem.data, ['custitem_drt_accounnt_capital']);
                         if (
                             cuentaItem.success &&
