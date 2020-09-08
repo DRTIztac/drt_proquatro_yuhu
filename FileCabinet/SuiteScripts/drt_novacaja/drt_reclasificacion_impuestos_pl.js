@@ -28,6 +28,9 @@ function customizeGlImpact(transactionRecord, standardLines, customLines, book) 
     var numberOfApply = transactionRecord.getLineItemCount('apply') || '';
     var subsidiary = transactionRecord.getFieldValue('subsidiary') || '';
     exchangerate = parseFloat(exchangerate);
+    var custbody_drt_nc_total_iva = transactionRecord.getFieldValue('custbody_drt_nc_total_iva') || '';
+    var custbody_drt_nc_con_cp = transactionRecord.getFieldValue('custbody_drt_nc_con_cp') || '';
+
     nlapiLogExecution('AUDIT', 'id', id);
     nlapiLogExecution('AUDIT', 'type', type);
     nlapiLogExecution('AUDIT', 'exchangerate', exchangerate);
@@ -93,6 +96,15 @@ function customizeGlImpact(transactionRecord, standardLines, customLines, book) 
                                 dataTran.data[transaccion][impuesto].netamountnotax *
                                 porcentaje
                             );
+                    }
+                }
+            }
+            if (custbody_drt_nc_con_cp) {
+                for (var taxCon in configuration.data) {
+                    if (
+                        configuration.data[taxCon]
+                    ) {
+                        configuration.data[taxCon].total = parseFloat(custbody_drt_nc_total_iva);
                     }
                 }
             }

@@ -142,6 +142,18 @@ function customizeGlImpact(transactionRecord, standardLines, customLines, book) 
                             );
                             memo += ', Cargo'
                         }
+                        if (!total_interes && total_iva) {
+
+                            lineGL(
+                                customLines,
+                                total_iva,
+                                transactionRecord.getFieldValue('aracct') || '',
+                                transactionRecord.getFieldValue('account') || '',
+                                memo + ', Pago sin interes ',
+                                ''
+                            );
+                            memo += ', Cargo'
+                        }
                     }
                     break;
 
