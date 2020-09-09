@@ -31,6 +31,7 @@ function customizeGlImpact(transactionRecord, standardLines, customLines, book) 
         var identificador_uuid = transactionRecord.getFieldValue('custbody_drt_nc_identificador_uuid') || '';
         var identificador_folio = transactionRecord.getFieldValue('custbody_drt_nc_identificador_folio') || '';
         var total_capital = transactionRecord.getFieldValue('custbody_drt_nc_total_capital') || '';
+        var total_transaccion = transactionRecord.getFieldValue('custbody_drt_nc_total_transaccion') || '';
         var total_interes = transactionRecord.getFieldValue('custbody_drt_nc_total_interes') || '';
         var total_iva = transactionRecord.getFieldValue('custbody_drt_nc_total_iva') || '';
         nlapiLogExecution('AUDIT', 'id', id);
@@ -118,6 +119,26 @@ function customizeGlImpact(transactionRecord, standardLines, customLines, book) 
                                 if (tipo_descuento == 1) {
                                     var entity = nlapiLookupField('customer', record_entity, ['custentity_drt_nc_empresa']);
                                     entity_empresa = entity.custentity_drt_nc_empresa || '';
+                                    var totalR = (parseFloat(total_interes) + parseFloat(total_iva));
+                                    if (totalR) {
+                                        lineGL(
+                                            customLines,
+                                            totalR,
+                                            transactionRecord.getFieldValue('aracct') || '',
+                                            transactionRecord.getFieldValue('account') || '',
+                                            memo + ', Deuda Empresa ',
+                                            ''
+                                        );
+
+                                        lineGL(
+                                            customLines,
+                                            totalR,
+                                            transactionRecord.getFieldValue('account') || '',
+                                            transactionRecord.getFieldValue('aracct') || '',
+                                            memo + ', Pago de Cliente ',
+                                            entity_empresa
+                                        );
+                                    }
                                 }
                             }
                             var fields = ['custitem_drt_accounnt_capital'];
@@ -142,18 +163,7 @@ function customizeGlImpact(transactionRecord, standardLines, customLines, book) 
                             );
                             memo += ', Cargo'
                         }
-                        if (!total_interes && total_iva) {
 
-                            lineGL(
-                                customLines,
-                                total_iva,
-                                transactionRecord.getFieldValue('aracct') || '',
-                                transactionRecord.getFieldValue('account') || '',
-                                memo + ', Pago sin interes ',
-                                ''
-                            );
-                            memo += ', Cargo'
-                        }
                     }
                     break;
 
