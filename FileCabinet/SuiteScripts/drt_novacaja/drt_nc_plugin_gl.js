@@ -73,16 +73,16 @@ function customizeGlImpact(transactionRecord, standardLines, customLines, book) 
                     var LineItemCount = transactionRecord.getLineItemCount('item') || '';
                     if (LineItemCount) {
                         total = total_capital;
+                        var fields = ['custitem_drt_accounnt_capital']
+                        var record_id = transactionRecord.getLineItemValue('item', 'item', 1) || '';
+                        var columns = nlapiLookupField('item', record_id, fields);
                         credit =
                             // 317;
-                            transactionRecord.getFieldValue('account') || '';
-                        var record_id = transactionRecord.getLineItemValue('item', 'item', 1) || '';
-                        var fields = ['custitem_drt_accounnt_capital']
+                            columns[fields[0]] || '';
                         if (record_id) {
-                            var columns = nlapiLookupField('item', record_id, fields);
                             debit =
                                 // 327;
-                                columns[fields[0]] || '';
+                                transactionRecord.getFieldValue('account') || '';
                         }
                         if (total && debit && credit && tipo_descuento == 1) {
 
