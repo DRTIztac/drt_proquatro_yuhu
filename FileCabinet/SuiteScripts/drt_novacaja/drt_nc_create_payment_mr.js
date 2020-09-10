@@ -729,29 +729,38 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                         var objSublist_transaction = {
                             item: [],
                         };
-                        objSublist_transaction.item.push({
-                            item: 0,
-                            price: "-1",
-                            quantity: 1,
-                            rate: 0,
-                            custcol_drt_nc_fecha: format.parse({
-                                value: parametro.trandate,
-                                type: format.Type.DATE
-                            }),
-                            custcol_drt_nc_facturado: true,
-                            custcol_drt_nc_monto_capital: parametro.custbody_drt_nc_total_capital,
-                            custcol_drt_nc_monto_interes: parametro.custbody_drt_nc_total_interes,
-                            custcol_drt_nc_monto_iva: parametro.custbody_drt_nc_total_iva,
-                            custcol_drt_nc_monto_total: parametro.custbody_drt_nc_total_transaccion,
-                        });
-                        objSublist_transaction.item[0].item = 17;
+                        var itemDefecto = 17;
                         if (parametro.custbody_drt_nc_tipo_credito) {
-                            objSublist_transaction.item[0].item = parametro.custbody_drt_nc_tipo_credito;
+                            itemDefecto = parametro.custbody_drt_nc_tipo_credito;
                         } else {
                             var loadItem = itemTransaction(record.Type.SALES_ORDER, parametro.internalid, 0);
                             if (loadItem.success) {
-                                objSublist_transaction.item[0].item = loadItem.data;
+                                itemDefecto = loadItem.data;
                             }
+                        }
+
+                        for (var fi in parametro.item) {
+                            objSublist_transaction.item.push({
+                                item: itemDefecto,
+                                price: "-1",
+                                quantity: 1,
+                                rate: 0,
+                                custcol_drt_nc_fecha: format.parse({
+                                    value: parametro.item[fi].trandate,
+                                    type: format.Type.DATE
+                                }),
+                                custcol_drt_nc_fecha_vencimiento: format.parse({
+                                    value: parametro.item[fi].custcol_drt_nc_fecha_vencimiento,
+                                    type: format.Type.DATE
+                                }),
+                                custcol_drt_nc_facturado: true,
+                                custcol_drt_nc_monto_capital: parametro.item[fi].custbody_drt_nc_total_capital,
+                                custcol_drt_nc_monto_interes: parametro.item[fi].custbody_drt_nc_total_interes,
+                                custcol_drt_nc_monto_iva: parametro.item[fi].custbody_drt_nc_total_iva,
+                                custcol_drt_nc_monto_total: parametro.item[fi].custbody_drt_nc_total_transaccion,
+                                custcol_drt_nc_num_amortizacion: parametro.item[fi].num_amortizacion,
+                            });
+
                         }
                         objSublist_transaction.item[0].rate = parametro.custbody_drt_nc_total_interes || 0;
                         newtransaction = drt_cn_lib.createRecord(
