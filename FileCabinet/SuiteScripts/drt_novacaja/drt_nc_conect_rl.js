@@ -162,11 +162,14 @@ define(['./drt_cn_lib.js', 'N/file'], function (drt_cn_lib, file) {
                     }
                     break;
                 case 'invoice': {
-                    respuesta.recordType = 'customrecord_drt_nc_mora';
-                    field_respuesta = 'custrecord_drt_nc_m_respuesta';
-                    field_error = 'custrecord_drt_nc_m_error';
-                    field_context = 'custrecord_drt_nc_m_context';
+                    respuesta.recordType = 'customrecord_drt_nc_pagos';
+                    field_respuesta = 'custrecord_drt_nc_p_respuesta';
+                    field_error = 'custrecord_drt_nc_p_error';
+                    field_context = 'custrecord_drt_nc_p_context';
                     field_json = '';
+                    if (context.record) {
+                        objCreate.custrecord_drt_nc_p_conexion = context.record;
+                    }
 
                 }
                 break;
