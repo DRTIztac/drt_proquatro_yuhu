@@ -476,7 +476,8 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                             item: articulo_interes,
                             price: "-1",
                             quantity: 1,
-                            rate: parametro.item[liena].interes
+                            rate: parametro.item[liena].interes,
+                            tax1amt: parametro.item[liena].iva
                         };
                         objPush.isclosed = parametro.item[liena].isclosed == 'T' || parametro.item[liena].isclosed == true;
                         if (parametro.item[liena].custcol_drt_nc_fecha_vencimiento) {
