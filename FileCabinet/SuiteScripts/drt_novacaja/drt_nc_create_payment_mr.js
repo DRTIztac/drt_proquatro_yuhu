@@ -155,6 +155,23 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                                 }
 
                                 break;
+                            case 'invoice':
+                                var invoiceTransaction = procesarInvoice(parametro, data.values.custrecord_drt_nc_p_conexion.value);
+                                if (invoiceTransaction.success) {
+                                    if (invoiceTransaction.data.transaccion) {
+                                        objupdate.custrecord_drt_nc_p_transaccion = invoiceTransaction.data.transaccion;
+                                        mensajeFinal.push('Se genero la factura de venta con id: ' + objupdate.custrecord_drt_nc_p_transaccion);
+                                        objupdate.custrecord_drt_nc_p_terminado = true;
+                                    }
+
+                                }
+                                if (invoiceTransaction.error && invoiceTransaction.error.length > 0) {
+                                    objupdate.custrecord_drt_nc_p_error = JSON.stringify(invoiceTransaction.error);
+                                    mensajeFinal.push('Error: ' + objupdate.custrecord_drt_nc_p_error);
+                                }
+
+                                break;
+
                             default:
                                 mensajeFinal.push('Opción no valida: ' + parametro.recordtype);
                                 break;
@@ -464,7 +481,7 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                                 !patametroActualizacionUno[iv].total ||
                                 !patametroActualizacionUno[iv].num_amortizacion ||
                                 !patametroActualizacionUno[iv].capital ||
-                                !patametroActualizacionUno[iv].custcol_drt_nc_fecha ||
+                                !patametroActualizacionUno[iv].custcol_drt_nc_fecha_vencimiento ||
                                 !patametroActualizacionUno[iv].iva
                             ) {
                                 respuesta.error.push('Falta informacion en la linea de amortizacion: ' + JSON.stringify(patametroActualizacionUno[iv]));
@@ -625,6 +642,202 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
             } finally {
                 log.emergency({
                     title: 'respuesta procesarCashsale',
+                    details: JSON.stringify(respuesta)
+                });
+                return respuesta;
+            }
+        }
+
+        function procesarInvoice(parametro) {
+            try {
+                var respuesta = {
+                    success: false,
+                    data: {},
+                    error: []
+                };
+                var newtransaction = {};
+
+                var errorDatosFaltantes = validateData(
+                    parametro, [
+                        "record",
+                        "internalid",
+                        "custbody_drt_nc_total_capital",
+                        "custbody_drt_nc_total_interes",
+                        "custbody_drt_nc_total_iva",
+                        "total",
+                        "recordType",
+                        "custbody_drt_in_tipo_pago",
+                        "custbody_drt_nc_identificador_uuid",
+                        "custbody_drt_nc_identificador_folio",
+                        "trandate",
+                    ]);
+                if (errorDatosFaltantes.success) {
+                    respuesta.error.concat(errorDatosFaltantes.data);
+                }
+                var datosTransaction = drt_cn_lib.lookup(record.Type.SALES_ORDER, parametro.internalid, ['entity', 'location']) || '';
+                if (datosTransaction.success) {
+                    if (datosTransaction.data.entity && datosTransaction.data.entity[0] && datosTransaction.data.entity[0].value) {} else {
+                        respuesta.error.push('No se tiene cliente ');
+                    }
+                    if (datosTransaction.data.location && datosTransaction.data.location[0] && datosTransaction.data.location[0].value) {
+
+                    } else {
+                        respuesta.error.push('No se tiene Ubicacion ');
+                    }
+                } else {
+                    respuesta.error.push('No se tiene datos de transaccion');
+                }
+
+                if (respuesta.error.length > 0) {
+                    respuesta.error.push('No se pueden generar la transacción.');
+                } else {
+                    parametro.custbody_drt_in_tipo_pago = parseFloat(parametro.custbody_drt_in_tipo_pago);
+                    parametro.custbody_drt_nc_total_capital = parseFloat(parametro.custbody_drt_nc_total_capital);
+                    parametro.custbody_drt_nc_total_interes = parseFloat(parametro.custbody_drt_nc_total_interes);
+                    parametro.custbody_drt_nc_total_iva = parseFloat(parametro.custbody_drt_nc_total_iva);
+                    if (parametro.custbody_drt_nc_total_transaccion) {
+                        parametro.custbody_drt_nc_total_transaccion = parseFloat(parametro.custbody_drt_nc_total_transaccion);
+                    } else {
+                        parametro.custbody_drt_nc_total_transaccion = parseFloat(parametro.total);
+                    }
+
+                    if (
+                        parametro.custbody_drt_nc_total_interes > 0
+                    ) {
+                        var objSublist_transaction = {
+                            item: [],
+                        };
+                        objSublist_transaction.item.push({
+                            item: 0,
+                            price: "-1",
+                            quantity: 1,
+                            rate: 0,
+                            custcol_drt_nc_fecha: format.parse({
+                                value: parametro.trandate,
+                                type: format.Type.DATE
+                            }),
+                            custcol_drt_nc_facturado: true,
+                            custcol_drt_nc_monto_capital: parametro.custbody_drt_nc_total_capital,
+                            custcol_drt_nc_monto_interes: parametro.custbody_drt_nc_total_interes,
+                            custcol_drt_nc_monto_iva: parametro.custbody_drt_nc_total_iva,
+                            custcol_drt_nc_monto_total: parametro.custbody_drt_nc_total_transaccion,
+                        });
+                        objSublist_transaction.item[0].item = 17;
+                        if (parametro.custbody_drt_nc_tipo_credito) {
+                            objSublist_transaction.item[0].item = parametro.custbody_drt_nc_tipo_credito;
+                        } else {
+                            var loadItem = itemTransaction(record.Type.SALES_ORDER, parametro.internalid, 0);
+                            if (loadItem.success) {
+                                objSublist_transaction.item[0].item = loadItem.data;
+                            }
+                        }
+                        objSublist_transaction.item[0].rate = parametro.custbody_drt_nc_total_interes || 0;
+                        newtransaction = drt_cn_lib.createRecord(
+                            record.Type.INVOICE, {
+                                entity: datosTransaction.data.entity[0].value,
+                                location: datosTransaction.data.location[0].value,
+                                trandate: format.parse({
+                                    value: parametro.trandate,
+                                    type: format.Type.DATE
+                                }) || '',
+                                class: parametro.class || '',
+                                custbody_drt_in_tipo_pago: parametro.custbody_drt_in_tipo_pago || '',
+                                custbody_drt_nc_total_capital: parametro.custbody_drt_nc_total_capital || '',
+                                custbody_drt_nc_total_interes: parametro.custbody_drt_nc_total_interes || '',
+                                custbody_drt_nc_tipo_credito: parametro.custbody_drt_nc_tipo_credito || '',
+                                custbody_drt_nc_total_iva: parametro.custbody_drt_nc_total_iva || '',
+                                custbody_drt_nc_total_transaccion: parametro.custbody_drt_nc_total_transaccion || '',
+                                custbody_drt_nc_identificador_uuid: parametro.custbody_drt_nc_identificador_uuid || '',
+                                custbody_drt_nc_tipo_pago: parametro.custbody_drt_nc_tipo_pago || '',
+                                custbody_drt_nc_identificador_pago: parametro.custbody_drt_nc_identificador_pago || '',
+                                custbody_drt_nc_tipo_descuento: parametro.custbody_drt_nc_tipo_descuento || '',
+                                custbody_drt_nc_identificador_folio: parametro.custbody_drt_nc_identificador_folio || '',
+                                custbody_drt_nc_num_amortizacion: parametro.custbody_drt_nc_num_amortizacion || '',
+                                custbody_drt_nc_pendiente_enviar: true,
+                                custbody_drt_nc_createdfrom: parametro.internalid,
+                                custbody_drt_nc_con_in: parametro.record,
+                            },
+                            objSublist_transaction, {}
+                        );
+
+                    } else if (parametro.custbody_drt_nc_total_capital > 0) {
+                        // respuesta.error.push('Solo se paga capital');
+                        var accountDebit = 819;
+                        var cuentaItem = drt_cn_lib.lookup(search.Type.ITEM, loadItem.data, ['custitem_drt_accounnt_capital']);
+                        if (
+                            cuentaItem.success &&
+                            cuentaItem.data.custitem_drt_accounnt_capital &&
+                            cuentaItem.data.custitem_drt_accounnt_capital[0] &&
+                            cuentaItem.data.custitem_drt_accounnt_capital[0].value
+                        ) {
+                            accountDebit = cuentaItem.data.custitem_drt_accounnt_capital[0].value;
+                        }
+                        log.audit({
+                            title: 'accountDebit',
+                            details: JSON.stringify(accountDebit)
+                        });
+                        var objSublist_journal = {
+                            line: [],
+                        };
+                        var objField_journal = {};
+
+                        if (parametro.total) {
+                            objField_journal.custbody_drt_nc_total_transaccion = parametro.total;
+                        }
+                        if (parametro.custbody_drt_nc_total_capital) {
+                            objField_journal.custbody_drt_nc_total_capital = parametro.custbody_drt_nc_total_capital;
+                        }
+                        if (parametro.custbody_drt_nc_total_interes) {
+                            objField_journal.custbody_drt_nc_total_interes = parametro.custbody_drt_nc_total_interes;
+                        }
+                        if (parametro.custbody_drt_nc_total_iva) {
+                            objField_journal.custbody_drt_nc_total_iva = parametro.custbody_drt_nc_total_iva;
+                        }
+                        if (parametro.custbody_drt_nc_identificador_folio) {
+                            objField_journal.custbody_drt_nc_identificador_folio = parametro.custbody_drt_nc_identificador_folio;
+                        }
+                        if (parametro.custbody_drt_nc_identificador_uuid) {
+                            objField_journal.custbody_drt_nc_identificador_uuid = parametro.custbody_drt_nc_identificador_uuid;
+                        }
+                        if (parametro.custbody_drt_nc_identificador_pago) {
+                            objField_journal.custbody_drt_nc_identificador_pago = parametro.custbody_drt_nc_identificador_pago;
+                        }
+                        objField_journal.custbody_drt_nc_con_je = parseInt(parametro.record);
+                        objField_journal.custbody_drt_nc_createdfrom = parametro.internalid;
+                        objField_journal.custbody_drt_nc_pendiente_enviar = true;
+                        if (parametro.trandate) {
+                            objField_journal.trandate = format.parse({
+                                value: parametro.trandate,
+                                type: format.Type.DATE
+                            }) || '';
+                        }
+
+                        objSublist_journal.line.push({
+                            account: accountDebit,
+                            debit: parametro.custbody_drt_nc_total_capital,
+                            entity: datosTransaction.data.entity[0].value,
+                        });
+                        objSublist_journal.line.push({
+                            account: accountDebit,
+                            credit: parametro.custbody_drt_nc_total_capital,
+                        });
+
+
+                        newtransaction = drt_cn_lib.createRecord(record.Type.JOURNAL_ENTRY, objField_journal, objSublist_journal, {});
+
+                    }
+                }
+
+                respuesta.success = Object.keys(respuesta.data).length > 0;
+            } catch (error) {
+                log.error({
+                    title: 'error procesarInvoice',
+                    details: JSON.stringify(error)
+                });
+                respuesta.error = error;
+            } finally {
+                log.emergency({
+                    title: 'respuesta procesarInvoice',
                     details: JSON.stringify(respuesta)
                 });
                 return respuesta;
