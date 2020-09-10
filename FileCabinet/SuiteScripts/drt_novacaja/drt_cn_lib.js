@@ -108,21 +108,13 @@ define([
                 //     }
                 // }
                 log.audit({
-                    title: 'param_type',
-                    details: JSON.stringify(param_type)
+                    title: 'createRecord',
+                    details: ' param_type: ' + param_type +
+                        ' param_field_value: ' + JSON.stringify(param_field_value) +
+                        ' param_obj_sublist: ' + JSON.stringify(param_obj_sublist) +
+                        ' param_obj_subrecord: ' + JSON.stringify(param_obj_subrecord)
                 });
-                log.audit({
-                    title: 'param_field_value',
-                    details: JSON.stringify(param_field_value)
-                });
-                log.audit({
-                    title: 'param_obj_sublist',
-                    details: JSON.stringify(param_obj_sublist)
-                });
-                log.audit({
-                    title: 'param_obj_subrecord',
-                    details: JSON.stringify(param_obj_subrecord)
-                });
+
                 var newRecord = record.create({
                     type: param_type,
                     isDynamic: true
