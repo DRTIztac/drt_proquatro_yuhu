@@ -822,6 +822,16 @@ define([
                                                 })
                                             });
                                         }
+                                        if (param_sublist[articulo].fecha) {
+                                            newRecord.setCurrentSublistValue({
+                                                sublistId: sublist,
+                                                fieldId: 'custcol_drt_nc_fecha',
+                                                value: format.parse({
+                                                    value: param_sublist[articulo].fecha,
+                                                    type: format.Type.DATE
+                                                })
+                                            });
+                                        }
                                         newRecord.setCurrentSublistValue({
                                             sublistId: sublist,
                                             fieldId: 'custcol_drt_nc_fecha',
