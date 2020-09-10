@@ -93,11 +93,11 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                             custrecord_drt_nc_p_error: ''
                         };
                         var data = JSON.parse(recordData[ids]);
-                        log.emergency({
-                            title: 'data',
-                            details: JSON.stringify(data)
-                        });
 
+                        log.audit({
+                            title: 'parametro.recordType',
+                            details: JSON.stringify(parametro)
+                        });
                         var parametro = JSON.parse(data.values.custrecord_drt_nc_p_context);
                         var mensajeFinal = [];
                         switch (parametro.recordType) {
@@ -105,8 +105,8 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                                 var existPaymen = {
                                     success: false
                                 };
-                                if (data.values.custbody_drt_nc_identificador_pago) {
-                                    existPaymen = drt_cn_lib.searchidentificador(record.Type.CUSTOMER_PAYMENT, 'custbody_drt_nc_identificador_pago', data.values.custbody_drt_nc_identificador_pago) || {
+                                if (parametro.custbody_drt_nc_identificador_pago) {
+                                    existPaymen = drt_cn_lib.searchidentificador(record.Type.CUSTOMER_PAYMENT, 'custbody_drt_nc_identificador_pago', parametro.custbody_drt_nc_identificador_pago) || {
                                         success: false
                                     };
                                 }
@@ -130,46 +130,68 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                                         mensajeFinal.push('Error: ' + objupdate.custrecord_drt_nc_p_error);
                                     }
                                 } else {
-                                    mensajeFinal.push('Error existe  unn pago con custbody_drt_nc_identificador_pago: ' + data.values.custbody_drt_nc_identificador_pago + ' ' + existPaymen.data);
+                                    objupdate.custrecord_drt_nc_p_error = 'Error existe  unn pago con custbody_drt_nc_identificador_pago: ' + parametro.custbody_drt_nc_identificador_pago + ' ' + existPaymen.data;
                                 }
                                 break;
                             case 'cashsale':
-                                var cashsaleTransaction = procesarCashsale(parametro, data.values.custrecord_drt_nc_p_conexion.value);
-                                if (cashsaleTransaction.success) {
-                                    if (cashsaleTransaction.data.transaccion) {
-                                        objupdate.custrecord_drt_nc_p_transaccion = cashsaleTransaction.data.transaccion;
-                                        mensajeFinal.push('Se genero la venta en efectivo con id: ' + objupdate.custrecord_drt_nc_p_transaccion);
-                                    }
-                                    if (cashsaleTransaction.data.actualizacion) {
-                                        objupdate.custrecord_drt_nc_p_transaccion_2 = cashsaleTransaction.data.actualizacion;
-                                        mensajeFinal.push('Se actualizo la orden de venta: ' + cashsaleTransaction.data.actualizacion);
-                                    }
-                                    if (objupdate.custrecord_drt_nc_p_transaccion && objupdate.custrecord_drt_nc_p_transaccion_2) {
-                                        objupdate.custrecord_drt_nc_p_terminado = true;
-                                    }
-
+                                var existTransaction = {
+                                    success: false
+                                };
+                                if (parametro.custbody_drt_nc_identificador_pago) {
+                                    existTransaction = drt_cn_lib.searchidentificador(record.Type.CASH_SALE, 'custbody_drt_nc_identificador_pago', parametro.custbody_drt_nc_identificador_pago) || {
+                                        success: false
+                                    };
                                 }
-                                if (cashsaleTransaction.error && cashsaleTransaction.error.length > 0) {
-                                    objupdate.custrecord_drt_nc_p_error = JSON.stringify(cashsaleTransaction.error);
-                                    mensajeFinal.push('Error: ' + objupdate.custrecord_drt_nc_p_error);
-                                }
+                                if (!existTransaction.success) {
+                                    var cashsaleTransaction = procesarCashsale(parametro, parametro.custrecord_drt_nc_p_conexion.value);
+                                    if (cashsaleTransaction.success) {
+                                        if (cashsaleTransaction.data.transaccion) {
+                                            objupdate.custrecord_drt_nc_p_transaccion = cashsaleTransaction.data.transaccion;
+                                            mensajeFinal.push('Se genero la venta en efectivo con id: ' + objupdate.custrecord_drt_nc_p_transaccion);
+                                        }
+                                        if (cashsaleTransaction.data.actualizacion) {
+                                            objupdate.custrecord_drt_nc_p_transaccion_2 = cashsaleTransaction.data.actualizacion;
+                                            mensajeFinal.push('Se actualizo la orden de venta: ' + cashsaleTransaction.data.actualizacion);
+                                        }
+                                        if (objupdate.custrecord_drt_nc_p_transaccion && objupdate.custrecord_drt_nc_p_transaccion_2) {
+                                            objupdate.custrecord_drt_nc_p_terminado = true;
+                                        }
 
+                                    }
+                                    if (cashsaleTransaction.error && cashsaleTransaction.error.length > 0) {
+                                        objupdate.custrecord_drt_nc_p_error = JSON.stringify(cashsaleTransaction.error);
+                                        mensajeFinal.push('Error: ' + objupdate.custrecord_drt_nc_p_error);
+                                    }
+                                } else {
+                                    objupdate.custrecord_drt_nc_p_error = 'Error existe una venta en efectivo con custbody_drt_nc_identificador_pago: ' + parametro.custbody_drt_nc_identificador_pago + ' ' + existTransaction.data;
+                                }
                                 break;
                             case 'invoice':
-                                var invoiceTransaction = procesarInvoice(parametro, data.values.custrecord_drt_nc_p_conexion.value);
-                                if (invoiceTransaction.success) {
-                                    if (invoiceTransaction.data.transaccion) {
-                                        objupdate.custrecord_drt_nc_p_transaccion = invoiceTransaction.data.transaccion;
-                                        mensajeFinal.push('Se genero la factura de venta con id: ' + objupdate.custrecord_drt_nc_p_transaccion);
-                                        objupdate.custrecord_drt_nc_p_terminado = true;
+                                var existTransaction = {
+                                    success: false
+                                };
+                                if (parametro.custbody_drt_nc_identificador_pago) {
+                                    existTransaction = drt_cn_lib.searchidentificador(record.Type.INVOICE, 'custbody_drt_nc_identificador_pago', parametro.custbody_drt_nc_identificador_pago) || {
+                                        success: false
+                                    };
+                                }
+                                if (!existTransaction.success) {
+                                    var invoiceTransaction = procesarInvoice(parametro, data.values.custrecord_drt_nc_p_conexion.value);
+                                    if (invoiceTransaction.success) {
+                                        if (invoiceTransaction.data.transaccion) {
+                                            objupdate.custrecord_drt_nc_p_transaccion = invoiceTransaction.data.transaccion;
+                                            mensajeFinal.push('Se genero la factura de venta con id: ' + objupdate.custrecord_drt_nc_p_transaccion);
+                                            objupdate.custrecord_drt_nc_p_terminado = true;
+                                        }
+
                                     }
-
+                                    if (invoiceTransaction.error && invoiceTransaction.error.length > 0) {
+                                        objupdate.custrecord_drt_nc_p_error = JSON.stringify(invoiceTransaction.error);
+                                        mensajeFinal.push('Error: ' + objupdate.custrecord_drt_nc_p_error);
+                                    }
+                                } else {
+                                    objupdate.custrecord_drt_nc_p_error = 'Error existe una factura de venta con custbody_drt_nc_identificador_pago: ' + parametro.custbody_drt_nc_identificador_pago + ' ' + existTransaction.data;
                                 }
-                                if (invoiceTransaction.error && invoiceTransaction.error.length > 0) {
-                                    objupdate.custrecord_drt_nc_p_error = JSON.stringify(invoiceTransaction.error);
-                                    mensajeFinal.push('Error: ' + objupdate.custrecord_drt_nc_p_error);
-                                }
-
                                 break;
 
                             default:
@@ -666,7 +688,7 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                         "custbody_drt_nc_total_iva",
                         "total",
                         "recordType",
-                        "custbody_drt_in_tipo_pago",
+                        "custbody_drt_nc_tipo_pago",
                         "custbody_drt_nc_identificador_uuid",
                         "custbody_drt_nc_identificador_folio",
                         "trandate",
@@ -691,7 +713,7 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                 if (respuesta.error.length > 0) {
                     respuesta.error.push('No se pueden generar la transacción.');
                 } else {
-                    parametro.custbody_drt_in_tipo_pago = parseFloat(parametro.custbody_drt_in_tipo_pago);
+                    parametro.custbody_drt_nc_tipo_pago = parseFloat(parametro.custbody_drt_nc_tipo_pago);
                     parametro.custbody_drt_nc_total_capital = parseFloat(parametro.custbody_drt_nc_total_capital);
                     parametro.custbody_drt_nc_total_interes = parseFloat(parametro.custbody_drt_nc_total_interes);
                     parametro.custbody_drt_nc_total_iva = parseFloat(parametro.custbody_drt_nc_total_iva);
@@ -741,7 +763,7 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                                     type: format.Type.DATE
                                 }) || '',
                                 class: parametro.class || '',
-                                custbody_drt_in_tipo_pago: parametro.custbody_drt_in_tipo_pago || '',
+                                custbody_drt_nc_tipo_pago: parametro.custbody_drt_nc_tipo_pago || '',
                                 custbody_drt_nc_total_capital: parametro.custbody_drt_nc_total_capital || '',
                                 custbody_drt_nc_total_interes: parametro.custbody_drt_nc_total_interes || '',
                                 custbody_drt_nc_tipo_credito: parametro.custbody_drt_nc_tipo_credito || '',
@@ -826,6 +848,9 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                         newtransaction = drt_cn_lib.createRecord(record.Type.JOURNAL_ENTRY, objField_journal, objSublist_journal, {});
 
                     }
+                    if (newtransaction.success) {
+                        respuesta.data.transaccion = newtransaction.data;
+                    }
                 }
 
                 respuesta.success = Object.keys(respuesta.data).length > 0;
@@ -834,7 +859,7 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                     title: 'error procesarInvoice',
                     details: JSON.stringify(error)
                 });
-                respuesta.error = error;
+                respuesta.error.push(error);
             } finally {
                 log.emergency({
                     title: 'respuesta procesarInvoice',
