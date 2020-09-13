@@ -586,11 +586,11 @@ define([
                     details: JSON.stringify(param_context)
                 });
 
-                if (param_context && param_context.recordtype && param_context.id) {
+                if (param_context && param_context.recordType && param_context.id) {
 
                     if (Object.keys(param_context.body).length > 0) {
                         var newRecord = record.load({
-                            type: param_context.recordtype,
+                            type: param_context.recordType,
                             id: param_context.id,
                             isDynamic: true
                         });
@@ -611,7 +611,7 @@ define([
                         respuesta.error.push('Es necesaria informacion para actualizar {id:valor} ' + JSON.stringify(param_context.body));
                     }
                 } else {
-                    respuesta.error.push('Es necesario id ' + param_context.id + ' y recordtype ' + param_context.recordtype);
+                    respuesta.error.push('Es necesario id ' + param_context.id + ' y recordType ' + param_context.recordType);
                 }
 
                 respuesta.success = respuesta.data != '';
