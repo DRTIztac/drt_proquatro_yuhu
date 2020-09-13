@@ -193,6 +193,33 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                                     objupdate.custrecord_drt_nc_p_error = 'Error existe una factura de venta con custbody_drt_nc_identificador_pago: ' + parametro.custbody_drt_nc_identificador_pago + ' ' + existTransaction.data;
                                 }
                                 break;
+                            case 'journalentry':
+                                var existTransaction = {
+                                    success: false
+                                };
+                                if (parametro.custbody_drt_nc_identificador_pago) {
+                                    existTransaction = drt_cn_lib.searchidentificador(record.Type.INVOICE, 'custbody_drt_nc_identificador_pago', parametro.custbody_drt_nc_identificador_pago) || {
+                                        success: false
+                                    };
+                                }
+                                if (!existTransaction.success) {
+                                    var invoiceTransaction = procesarJournal(parametro, data.values.custrecord_drt_nc_p_conexion.value);
+                                    if (invoiceTransaction.success) {
+                                        if (invoiceTransaction.data.transaccion) {
+                                            objupdate.custrecord_drt_nc_p_transaccion = invoiceTransaction.data.transaccion;
+                                            mensajeFinal.push('Se genero entrada de diario con id: ' + objupdate.custrecord_drt_nc_p_transaccion);
+                                            objupdate.custrecord_drt_nc_p_terminado = true;
+                                        }
+
+                                    }
+                                    if (invoiceTransaction.error && invoiceTransaction.error.length > 0) {
+                                        objupdate.custrecord_drt_nc_p_error = JSON.stringify(invoiceTransaction.error);
+                                        mensajeFinal.push('Error: ' + objupdate.custrecord_drt_nc_p_error);
+                                    }
+                                } else {
+                                    objupdate.custrecord_drt_nc_p_error = 'Error existe una factura de venta con custbody_drt_nc_identificador_pago: ' + parametro.custbody_drt_nc_identificador_pago + ' ' + existTransaction.data;
+                                }
+                                break;
 
                             default:
                                 mensajeFinal.push('Opción no valida: ' + parametro.recordtype);
@@ -872,6 +899,145 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
             } finally {
                 log.emergency({
                     title: 'respuesta procesarInvoice',
+                    details: JSON.stringify(respuesta)
+                });
+                return respuesta;
+            }
+        }
+
+        function procesarJournal(parametro) {
+            try {
+                var respuesta = {
+                    success: false,
+                    data: {},
+                    error: []
+                };
+                var newtransaction = {};
+
+                var errorDatosFaltantes = validateData(
+                    parametro, [
+                        "record",
+                        "internalid",
+                        "custbody_drt_nc_total_capital",
+                        "custbody_drt_nc_total_interes",
+                        "custbody_drt_nc_total_iva",
+                        "total",
+                        "recordType",
+                        "custbody_drt_nc_tipo_pago",
+                        "custbody_drt_nc_identificador_uuid",
+                        "custbody_drt_nc_identificador_folio",
+                        "trandate",
+                    ]);
+                if (errorDatosFaltantes.success) {
+                    respuesta.error.concat(errorDatosFaltantes.data);
+                }
+                var datosTransaction = drt_cn_lib.lookup(record.Type.SALES_ORDER, parametro.internalid, ['entity', 'location']) || '';
+                if (datosTransaction.success) {
+                    if (datosTransaction.data.entity && datosTransaction.data.entity[0] && datosTransaction.data.entity[0].value) {} else {
+                        respuesta.error.push('No se tiene cliente ');
+                    }
+                    if (datosTransaction.data.location && datosTransaction.data.location[0] && datosTransaction.data.location[0].value) {
+
+                    } else {
+                        respuesta.error.push('No se tiene Ubicacion ');
+                    }
+                } else {
+                    respuesta.error.push('No se tiene datos de transaccion.');
+                }
+
+                if (respuesta.error.length > 0) {
+                    respuesta.error.push('No se pueden generar la transacción.');
+                } else {
+                    parametro.custbody_drt_nc_tipo_pago = parseFloat(parametro.custbody_drt_nc_tipo_pago);
+                    parametro.custbody_drt_nc_total_capital = parseFloat(parametro.custbody_drt_nc_total_capital);
+                    parametro.custbody_drt_nc_total_interes = parseFloat(parametro.custbody_drt_nc_total_interes);
+                    parametro.custbody_drt_nc_total_iva = parseFloat(parametro.custbody_drt_nc_total_iva);
+                    if (parametro.custbody_drt_nc_total_transaccion) {
+                        parametro.custbody_drt_nc_total_transaccion = parseFloat(parametro.custbody_drt_nc_total_transaccion);
+                    } else {
+                        parametro.custbody_drt_nc_total_transaccion = parseFloat(parametro.total);
+                    }
+
+                    if (parametro.custbody_drt_nc_total_capital > 0) {
+                        var accountDebit = 819;
+                        var cuentaItem = drt_cn_lib.lookup(search.Type.ITEM, loadItem.data, ['custitem_drt_accounnt_capital']);
+                        if (
+                            cuentaItem.success &&
+                            cuentaItem.data.custitem_drt_accounnt_capital &&
+                            cuentaItem.data.custitem_drt_accounnt_capital[0] &&
+                            cuentaItem.data.custitem_drt_accounnt_capital[0].value
+                        ) {
+                            accountDebit = cuentaItem.data.custitem_drt_accounnt_capital[0].value;
+                        }
+                        log.audit({
+                            title: 'accountDebit',
+                            details: JSON.stringify(accountDebit)
+                        });
+                        var objSublist_journal = {
+                            line: [],
+                        };
+                        var objField_journal = {};
+
+                        if (parametro.total) {
+                            objField_journal.custbody_drt_nc_total_transaccion = parametro.total;
+                        }
+                        if (parametro.custbody_drt_nc_total_capital) {
+                            objField_journal.custbody_drt_nc_total_capital = parametro.custbody_drt_nc_total_capital;
+                        }
+                        if (parametro.custbody_drt_nc_total_interes) {
+                            objField_journal.custbody_drt_nc_total_interes = parametro.custbody_drt_nc_total_interes;
+                        }
+                        if (parametro.custbody_drt_nc_total_iva) {
+                            objField_journal.custbody_drt_nc_total_iva = parametro.custbody_drt_nc_total_iva;
+                        }
+                        if (parametro.custbody_drt_nc_identificador_folio) {
+                            objField_journal.custbody_drt_nc_identificador_folio = parametro.custbody_drt_nc_identificador_folio;
+                        }
+                        if (parametro.custbody_drt_nc_identificador_uuid) {
+                            objField_journal.custbody_drt_nc_identificador_uuid = parametro.custbody_drt_nc_identificador_uuid;
+                        }
+                        if (parametro.custbody_drt_nc_identificador_pago) {
+                            objField_journal.custbody_drt_nc_identificador_pago = parametro.custbody_drt_nc_identificador_pago;
+                        }
+                        objField_journal.custbody_drt_nc_con_je = parseInt(parametro.record);
+                        objField_journal.custbody_drt_nc_createdfrom = parametro.internalid;
+                        objField_journal.custbody_drt_nc_pendiente_enviar = true;
+                        if (parametro.trandate) {
+                            objField_journal.trandate = format.parse({
+                                value: parametro.trandate,
+                                type: format.Type.DATE
+                            }) || '';
+                        }
+
+                        objSublist_journal.line.push({
+                            account: accountDebit,
+                            debit: parametro.custbody_drt_nc_total_capital,
+                            entity: datosTransaction.data.entity[0].value,
+                        });
+                        objSublist_journal.line.push({
+                            account: accountDebit,
+                            credit: parametro.custbody_drt_nc_total_capital,
+                        });
+
+
+                        newtransaction = drt_cn_lib.createRecord(record.Type.JOURNAL_ENTRY, objField_journal, objSublist_journal, {});
+
+                    }
+                    if (newtransaction.success) {
+                        respuesta.data.transaccion = newtransaction.data;
+                    }
+                }
+
+                respuesta.success = Object.keys(respuesta.data).length > 0;
+            } catch (error) {
+                log.error({
+                    title: 'error procesarJournal',
+                    details: JSON.stringify(error)
+                });
+                respuesta.error.push(error);
+            } finally {
+                log.emergency({
+                    title: 'respuesta procesarJournal',
                     details: JSON.stringify(respuesta)
                 });
                 return respuesta;
