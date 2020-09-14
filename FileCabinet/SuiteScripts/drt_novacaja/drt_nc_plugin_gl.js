@@ -97,7 +97,7 @@ function customizeGlImpact(transactionRecord, standardLines, customLines, book) 
                         }
                     }
                     break;
-                case 'custpymt':
+                case 'custpymt_sin_impacto_gl':
                     var LineItemCount = transactionRecord.getLineItemCount('apply') || '';
                     if (LineItemCount) {
                         total = total_capital;
