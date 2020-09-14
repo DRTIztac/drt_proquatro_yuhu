@@ -732,7 +732,14 @@ define([
                         id: param_id,
                         isDynamic: true
                     });
-                    var memo = 'Actualizacin de amortizacion: ';
+                    var memo = '';
+                    if (param_sublist) {
+                        memo = 'Actualizacion de credito por ' + param_transaction;
+                    } else if (param_total) {
+                        memo = 'Se paga todo el credito en' + param_transaction;
+                    } else {
+                        memo = 'Se genera mora ' + param_transaction;
+                    }
                     var sublist = 'item';
                     var numLines = newRecord.getLineCount({
                         sublistId: sublist
