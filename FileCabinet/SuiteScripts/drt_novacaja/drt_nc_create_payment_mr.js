@@ -491,9 +491,9 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                     parametro, [
                         "record",
                         "internalid",
-                        "custbody_drt_nc_total_capital",
-                        "custbody_drt_nc_total_interes",
-                        "custbody_drt_nc_total_iva",
+                        // "custbody_drt_nc_total_capital",
+                        // "custbody_drt_nc_total_interes",
+                        // "custbody_drt_nc_total_iva",
                         "total",
                         "account",
                         "recordType",
@@ -522,6 +522,9 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                     respuesta.error.push('No se tiene datos de transaccion');
                 }
                 switch (parametro.custbody_drt_nc_tipo_pago) {
+                    case 4: //Mora
+                        patametroActualizacionDos = false;
+                        break;
                     case 3: //Capital Parcial
                         patametroActualizacionUno = parametro.item;
                         for (var iv = 0; iv < patametroActualizacionUno.length; iv++) {
@@ -566,27 +569,55 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                         var objSublist_transaction = {
                             item: [],
                         };
-                        objSublist_transaction.item.push({
-                            item: 0,
-                            price: "-1",
-                            quantity: 1,
-                            rate: 0,
-                            custcol_drt_nc_fecha: format.parse({
-                                value: parametro.trandate,
-                                type: format.Type.DATE
-                            }),
-                            custcol_drt_nc_facturado: true,
-                            custcol_drt_nc_monto_capital: parametro.custbody_drt_nc_total_capital,
-                            custcol_drt_nc_monto_interes: parametro.custbody_drt_nc_total_interes,
-                            custcol_drt_nc_monto_iva: parametro.custbody_drt_nc_total_iva,
-                            custcol_drt_nc_monto_total: parametro.custbody_drt_nc_total_transaccion,
-                        });
-                        objSublist_transaction.item[0].item = 17;
-                        if (loadItem.success) {
-                            objSublist_transaction.item[0].item = loadItem.data;
-                        }
+                        if (parametro.item) {
+                            for (var itemi in parametro.item) {
+                                var valorUnitario = 0;
+                                var valorImpuesto = 0;
+                                var valorCantidad = 0;
+                                if (parametro.item[itemi].rate) {
+                                    valorUnitario = parseFloat(parametro.item[itemi].rate);
+                                }
 
-                        objSublist_transaction.item[0].rate = parametro.custbody_drt_nc_total_interes || 0;
+                                if (parametro.item[itemi].iva) {
+                                    valorImpuesto = parseFloat(parametro.item[itemi].iva);
+                                }
+
+                                if (parametro.item[itemi].quantity) {
+                                    valorCantidad = parseFloat(parametro.item[itemi].quantity);
+                                }
+
+                                objSublist_transaction.item.push({
+                                    item: parametro.item[itemi].item,
+                                    price: "-1",
+                                    quantity: valorCantidad,
+                                    rate: valorUnitario,
+                                    tax1amt: valorImpuesto,
+                                    description: parametro.item[itemi].description,
+                                });
+                            }
+                        } else {
+                            objSublist_transaction.item.push({
+                                item: 17,
+                                price: "-1",
+                                quantity: 1,
+                                rate: 0,
+                                custcol_drt_nc_fecha: format.parse({
+                                    value: parametro.trandate,
+                                    type: format.Type.DATE
+                                }),
+                                custcol_drt_nc_facturado: true,
+                                custcol_drt_nc_monto_capital: parametro.custbody_drt_nc_total_capital,
+                                custcol_drt_nc_monto_interes: parametro.custbody_drt_nc_total_interes,
+                                custcol_drt_nc_monto_iva: parametro.custbody_drt_nc_total_iva,
+                                custcol_drt_nc_monto_total: parametro.custbody_drt_nc_total_transaccion,
+                            });
+                            // objSublist_transaction.item[0].item = 17;
+                            if (loadItem.success) {
+                                objSublist_transaction.item[0].item = loadItem.data;
+                            }
+
+                            objSublist_transaction.item[0].rate = parametro.custbody_drt_nc_total_interes || 0;
+                        }
                         newtransaction = drt_cn_lib.createRecord(
                             record.Type.CASH_SALE, {
                                 entity: datosTransaction.data.entity[0].value,
