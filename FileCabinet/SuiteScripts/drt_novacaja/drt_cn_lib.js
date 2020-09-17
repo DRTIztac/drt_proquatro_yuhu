@@ -5,6 +5,7 @@
  */
 
 define([
+        'N/transaction',
         'N/log',
         'N/search',
         'N/record',
@@ -12,6 +13,7 @@ define([
         'N/format'
     ],
     function (
+        transaction,
         log,
         search,
         record,
@@ -996,7 +998,38 @@ define([
             }
         }
 
+
+        function voidTransaction(param_transaction, param_id) {
+            try {
+                var respuesta = {
+                    success: false,
+                    data: ''
+                };
+                log.audit({
+                    title: 'voidTransaction',
+                    details: ' param_transaction: ' + param_transaction +
+                        ' param_id: ' + param_id
+                });
+                respuesta.data = transaction.void({
+                    type: param_transaction, //transaction.Type.SALES_ORDER,
+                    id: parseInt(param_id) //salesOrderId
+                });
+                respuesta.success = respuesta.data != '';
+            } catch (error) {
+                log.error({
+                    title: 'error voidTransaction',
+                    details: JSON.stringify(error)
+                });
+            } finally {
+                log.emergency({
+                    title: 'respuesta voidTransaction',
+                    details: JSON.stringify(respuesta)
+                });
+                return respuesta;
+            }
+        }
         return {
+            voidTransaction: voidTransaction,
             lookup: lookup,
             searchRecord: searchRecord,
             createRecord: createRecord,

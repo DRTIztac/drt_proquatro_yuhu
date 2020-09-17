@@ -146,98 +146,113 @@ define(['./drt_cn_lib.js', 'N/file'], function (drt_cn_lib, file) {
             var field_error = '';
             var field_context = '';
             var field_json = '';
-            if (context.data == "update") {
-                var update = drt_cn_lib.updateYuhu(context);
-                respuesta = {};
-                respuesta = update;
+            switch (context.data) {
+                case 'update':
+                    var update = drt_cn_lib.updateYuhu(context);
+                    respuesta = {};
+                    respuesta = update;
+                    break;
 
-            } else {
-                switch (context.recordType) {
-                    case 'salesorder': {
-                        respuesta.recordType = 'customrecord_drt_nc_conect';
-                        field_respuesta = 'custrecord_drt_nc_c_respuesta';
-                        field_error = 'custrecord_drt_nc_c_error';
-                        field_context = 'custrecord_drt_nc_c_context';
+                case 'void':
+                    if (context && context.recordType && context.id) {
+                        var voidTransaction = drt_cn_lib.voidTransaction(context.recordType, context.id);
+                        respuesta = {};
+                        respuesta = voidTransaction;
+                    } else {
+                        respuesta.error.message = 'Los parametros recordType, id son necesarios para hacer void una transaccion ' + JSON.stringify(context);
+                    }
+                    break;
+
+                default: {
+                    switch (context.recordType) {
+                        case 'salesorder': {
+                            respuesta.recordType = 'customrecord_drt_nc_conect';
+                            field_respuesta = 'custrecord_drt_nc_c_respuesta';
+                            field_error = 'custrecord_drt_nc_c_error';
+                            field_context = 'custrecord_drt_nc_c_context';
+                            field_json = '';
+                        }
+                        break;
+                    case 'invoice': {
+                        respuesta.recordType = 'customrecord_drt_nc_pagos';
+                        field_respuesta = 'custrecord_drt_nc_p_respuesta';
+                        field_error = 'custrecord_drt_nc_p_error';
+                        field_context = 'custrecord_drt_nc_p_context';
                         field_json = '';
+                        if (context.record) {
+                            objCreate.custrecord_drt_nc_p_conexion = context.record;
+                        }
+
+                    }
+                    case 'journalentry': {
+                        respuesta.recordType = 'customrecord_drt_nc_pagos';
+                        field_respuesta = 'custrecord_drt_nc_p_respuesta';
+                        field_error = 'custrecord_drt_nc_p_error';
+                        field_context = 'custrecord_drt_nc_p_context';
+                        field_json = '';
+                        if (context.record) {
+                            objCreate.custrecord_drt_nc_p_conexion = context.record;
+                        }
+
                     }
                     break;
-                case 'invoice': {
-                    respuesta.recordType = 'customrecord_drt_nc_pagos';
-                    field_respuesta = 'custrecord_drt_nc_p_respuesta';
-                    field_error = 'custrecord_drt_nc_p_error';
-                    field_context = 'custrecord_drt_nc_p_context';
-                    field_json = '';
-                    if (context.record) {
-                        objCreate.custrecord_drt_nc_p_conexion = context.record;
+                    case 'customerpayment': {
+                        respuesta.recordType = 'customrecord_drt_nc_pagos';
+                        field_respuesta = 'custrecord_drt_nc_p_respuesta';
+                        field_error = 'custrecord_drt_nc_p_error';
+                        field_context = 'custrecord_drt_nc_p_context';
+                        field_json = '';
+                        if (context.record) {
+                            objCreate.custrecord_drt_nc_p_conexion = context.record;
+                        }
                     }
-
-                }
-                case 'journalentry': {
-                    respuesta.recordType = 'customrecord_drt_nc_pagos';
-                    field_respuesta = 'custrecord_drt_nc_p_respuesta';
-                    field_error = 'custrecord_drt_nc_p_error';
-                    field_context = 'custrecord_drt_nc_p_context';
-                    field_json = '';
-                    if (context.record) {
-                        objCreate.custrecord_drt_nc_p_conexion = context.record;
-                    }
-
-                }
-                break;
-                case 'customerpayment': {
-                    respuesta.recordType = 'customrecord_drt_nc_pagos';
-                    field_respuesta = 'custrecord_drt_nc_p_respuesta';
-                    field_error = 'custrecord_drt_nc_p_error';
-                    field_context = 'custrecord_drt_nc_p_context';
-                    field_json = '';
-                    if (context.record) {
-                        objCreate.custrecord_drt_nc_p_conexion = context.record;
-                    }
-                }
-                break;
-                case 'cashsale': {
-                    respuesta.recordType = 'customrecord_drt_nc_pagos';
-                    field_respuesta = 'custrecord_drt_nc_p_respuesta';
-                    field_error = 'custrecord_drt_nc_p_error';
-                    field_context = 'custrecord_drt_nc_p_context';
-                    field_json = '';
-                    if (context.record) {
-                        objCreate.custrecord_drt_nc_p_conexion = context.record;
-                    }
-                }
-                break;
-                case 'check': {
-                    respuesta.recordType = 'customrecord_drt_nc_pagos';
-                    field_respuesta = 'custrecord_drt_nc_p_respuesta';
-                    field_error = 'custrecord_drt_nc_p_error';
-                    field_context = 'custrecord_drt_nc_p_context';
-                    field_json = '';
-                    if (context.record) {
-                        objCreate.custrecord_drt_nc_p_conexion = context.record;
-                    }
-                }
-                break;
-
-                default:
-                    respuesta.data.message = 'Invalid Action.';
                     break;
-                }
-                if (JSON.stringify(context).length < 1000000 && field_context) {
-                    objCreate[field_context] = JSON.stringify(context);
-
-                } else if (field_json) {
-                    context.custbody_drt_nc_identificador_folio
-                }
-                if (respuesta.recordType && Object.keys(objCreate).length > 0) {
-                    var recordLog = drt_cn_lib.createRecord(respuesta.recordType, objCreate);
-                    if (recordLog.success) {
-                        respuesta.data = recordLog.data;
-                        respuesta.record = recordLog.data;
-
+                    case 'cashsale': {
+                        respuesta.recordType = 'customrecord_drt_nc_pagos';
+                        field_respuesta = 'custrecord_drt_nc_p_respuesta';
+                        field_error = 'custrecord_drt_nc_p_error';
+                        field_context = 'custrecord_drt_nc_p_context';
+                        field_json = '';
+                        if (context.record) {
+                            objCreate.custrecord_drt_nc_p_conexion = context.record;
+                        }
                     }
+                    break;
+                    case 'check': {
+                        respuesta.recordType = 'customrecord_drt_nc_pagos';
+                        field_respuesta = 'custrecord_drt_nc_p_respuesta';
+                        field_error = 'custrecord_drt_nc_p_error';
+                        field_context = 'custrecord_drt_nc_p_context';
+                        field_json = '';
+                        if (context.record) {
+                            objCreate.custrecord_drt_nc_p_conexion = context.record;
+                        }
+                    }
+                    break;
+
+                    default:
+                        respuesta.data.message = 'Invalid Action.';
+                        break;
+                    }
+                    if (JSON.stringify(context).length < 1000000 && field_context) {
+                        objCreate[field_context] = JSON.stringify(context);
+
+                    } else if (field_json) {
+                        context.custbody_drt_nc_identificador_folio
+                    }
+                    if (respuesta.recordType && Object.keys(objCreate).length > 0) {
+                        var recordLog = drt_cn_lib.createRecord(respuesta.recordType, objCreate);
+                        if (recordLog.success) {
+                            respuesta.data = recordLog.data;
+                            respuesta.record = recordLog.data;
+
+                        }
+                    }
+                    respuesta.success = respuesta.record != '';
                 }
-                respuesta.success = respuesta.record != '';
+                break;
             }
+
 
         } catch (error) {
             log.audit({
