@@ -25,15 +25,27 @@ function customizeGlImpact(transactionRecord, standardLines, customLines, book) 
             check: 3
         };
 
+        var objField = {};
+        objField.trandate = transactionRecord.getFieldValue('trandate') || '';
+        objField.custbody_drt_nc_identificador_folio = transactionRecord.getFieldValue('custbody_drt_nc_identificador_folio') || '';
+        objField.custbody_drt_nc_identificador_uuid = transactionRecord.getFieldValue('custbody_drt_nc_identificador_uuid') || '';
+        objField.custbody_drt_nc_createdfrom = transactionRecord.getFieldValue('custbody_drt_nc_createdfrom') || '';
+        objField.custbody_drt_nc_pendiente_enviar = transactionRecord.getFieldValue('custbody_drt_nc_pendiente_enviar') || '';
+
+
         var id = transactionRecord.getFieldValue('id');
         var type = transactionRecord.getFieldValue('type');
-
+        var line = 0;
+        var objSublist = {
+            line: {}
+        };
         var identificador_uuid = transactionRecord.getFieldValue('custbody_drt_nc_identificador_uuid') || '';
         var identificador_folio = transactionRecord.getFieldValue('custbody_drt_nc_identificador_folio') || '';
         var total_capital = transactionRecord.getFieldValue('custbody_drt_nc_total_capital') || '';
         var total_transaccion = transactionRecord.getFieldValue('custbody_drt_nc_total_transaccion') || '';
         var total_interes = transactionRecord.getFieldValue('custbody_drt_nc_total_interes') || '';
         var total_iva = transactionRecord.getFieldValue('custbody_drt_nc_total_iva') || '';
+        var transaccion_ajuste = transactionRecord.getFieldValue('custbody_drt_nc_transaccion_ajuste') || '';
         nlapiLogExecution('AUDIT', 'id', id);
         nlapiLogExecution('AUDIT', 'type', type);
         var total = '';
@@ -50,7 +62,7 @@ function customizeGlImpact(transactionRecord, standardLines, customLines, book) 
             memo += ', Tipo pago ' + tipo_pagoText
         }
         var entity_empresa = '';
-        if (identificador_uuid && identificador_folio) {
+        if (identificador_uuid && identificador_folio && !transaccion_ajuste) {
             switch (type) {
                 case 'custinvc':
                     // var LineItemCount = transactionRecord.getLineItemCount('item') || '';
@@ -70,8 +82,11 @@ function customizeGlImpact(transactionRecord, standardLines, customLines, book) 
                     // }
                     break;
                 case 'cashsale':
+
+                    objField.custbody_drt_nc_createdfrom = transactionRecord.getLineItemValue('apply', 'internalid', 1) || '';
                     var LineItemCount = transactionRecord.getLineItemCount('item') || '';
                     if (LineItemCount) {
+                        objField.custbody_drt_nc_con_je = transactionRecord.getFieldValue('custbody_drt_nc_con_cs') || '';
                         total = total_capital;
                         var fields = ['custitem_drt_accounnt_capital']
                         var record_id = transactionRecord.getLineItemValue('item', 'item', 1) || '';
@@ -93,11 +108,26 @@ function customizeGlImpact(transactionRecord, standardLines, customLines, book) 
                                 debit,
                                 memo + ', Abono'
                             );
-                            memo += ', Cargo'
+                            line++;
+                            objSublist.line[line] = {};
+                            objSublist.line[line].account = parseInt(credit);
+                            objSublist.line[line].debit = parseFloat(total);
+                            objSublist.line[line].entity = '';
+                            objSublist.line[line].custcol_drt_nc_identificador_uuid = objField.custbody_drt_nc_identificador_uuid;
+                            objSublist.line[line].memo = memo + ', Abono ';
+
+                            line++;
+                            objSublist.line[line] = [];
+                            objSublist.line[line].account = parseInt(debit);
+                            objSublist.line[line].credit = parseFloat(total);
+                            objSublist.line[line].entity = '';
+                            objSublist.line[line].custcol_drt_nc_identificador_uuid = objField.custbody_drt_nc_identificador_uuid;
+                            objSublist.line[line].memo = memo + ', Abono ';
                         }
                     }
                     break;
-                case 'custpymt_sin_impacto_gl':
+                case 'custpymt':
+                    objField.custbody_drt_nc_con_je = transactionRecord.getFieldValue('custbody_drt_nc_con_cp') || '';
                     var LineItemCount = transactionRecord.getLineItemCount('apply') || '';
                     if (LineItemCount) {
                         total = total_capital;
@@ -129,6 +159,21 @@ function customizeGlImpact(transactionRecord, standardLines, customLines, book) 
                                             memo + ', Deuda Empresa ',
                                             ''
                                         );
+                                        line++;
+                                        objSublist.line[line] = {};
+                                        objSublist.line[line].account = parseInt(transactionRecord.getFieldValue('aracct') || '');
+                                        objSublist.line[line].debit = parseFloat(totalR);
+                                        objSublist.line[line].entity = record_entity;
+                                        objSublist.line[line].custcol_drt_nc_identificador_uuid = objField.custbody_drt_nc_identificador_uuid;
+                                        objSublist.line[line].memo = memo + ', Deuda Empresa ';
+
+                                        line++;
+                                        objSublist.line[line] = [];
+                                        objSublist.line[line].account = parseInt(transactionRecord.getFieldValue('account') || '');
+                                        objSublist.line[line].credit = parseFloat(totalR);
+                                        objSublist.line[line].entity = record_entity;
+                                        objSublist.line[line].custcol_drt_nc_identificador_uuid = objField.custbody_drt_nc_identificador_uuid;
+                                        objSublist.line[line].memo = memo + ', Deuda Empresa ';
 
                                         lineGL(
                                             customLines,
@@ -138,6 +183,40 @@ function customizeGlImpact(transactionRecord, standardLines, customLines, book) 
                                             memo + ', Pago de Cliente ',
                                             entity_empresa
                                         );
+                                        line++;
+                                        objSublist.line[line] = {};
+                                        objSublist.line[line].account = parseInt( /*transactionRecord.getFieldValue('account') || {{}} */ 31142);
+                                        objSublist.line[line].debit = parseFloat(totalR);
+                                        objSublist.line[line].entity = entity_empresa;
+                                        objSublist.line[line].custcol_drt_nc_identificador_uuid = objField.custbody_drt_nc_identificador_uuid;
+                                        objSublist.line[line].memo = memo + ', Pago de Cliente ';
+
+                                        line++;
+                                        objSublist.line[line] = [];
+                                        objSublist.line[line].account = parseInt(transactionRecord.getFieldValue('aracct') || '');
+                                        objSublist.line[line].credit = parseFloat(totalR);
+                                        objSublist.line[line].entity = record_entity;
+                                        objSublist.line[line].custcol_drt_nc_identificador_uuid = objField.custbody_drt_nc_identificador_uuid;
+                                        objSublist.line[line].memo = memo + ', Pago de Cliente ';
+
+
+                                        line++;
+                                        objSublist.line[line] = {};
+                                        objSublist.line[line].account = parseInt(31142);
+                                        objSublist.line[line].debit = parseFloat(total);
+                                        objSublist.line[line].entity = entity_empresa;
+                                        objSublist.line[line].custcol_drt_nc_identificador_uuid = objField.custbody_drt_nc_identificador_uuid;
+                                        objSublist.line[line].memo = memo;
+
+                                        line++;
+                                        objSublist.line[line] = [];
+                                        objSublist.line[line].account = parseInt(debit);
+                                        objSublist.line[line].credit = parseFloat(total);
+                                        objSublist.line[line].entity = record_entity;
+                                        objSublist.line[line].custcol_drt_nc_identificador_uuid = objField.custbody_drt_nc_identificador_uuid;
+                                        objSublist.line[line].memo = memo;
+
+                                        total = '';
                                     }
                                 }
                             }
@@ -161,6 +240,22 @@ function customizeGlImpact(transactionRecord, standardLines, customLines, book) 
                                 memo + ', Excedente',
                                 transactionRecord.getFieldValue('customer') || ''
                             );
+                            line++;
+                            objSublist.line[line] = {};
+                            objSublist.line[line].account = parseInt(debit);
+                            objSublist.line[line].debit = parseFloat(excedente);
+                            objSublist.line[line].entity = transactionRecord.getFieldValue('customer') || '';
+                            objSublist.line[line].custcol_drt_nc_identificador_uuid = objField.custbody_drt_nc_identificador_uuid;
+                            objSublist.line[line].memo = memo;
+
+                            line++;
+                            objSublist.line[line] = [];
+                            objSublist.line[line].account = parseInt(438);
+                            objSublist.line[line].credit = parseFloat(excedente);
+                            objSublist.line[line].entity = transactionRecord.getFieldValue('customer') || '';
+                            objSublist.line[line].custcol_drt_nc_identificador_uuid = objField.custbody_drt_nc_identificador_uuid;
+                            objSublist.line[line].memo = memo;
+
                             memo += ', Cargo'
                         }
 
@@ -172,6 +267,7 @@ function customizeGlImpact(transactionRecord, standardLines, customLines, book) 
             }
         }
         if (total && debit && credit) {
+
             lineGL(
                 customLines,
                 total,
@@ -180,6 +276,32 @@ function customizeGlImpact(transactionRecord, standardLines, customLines, book) 
                 memo,
                 entity_empresa
             );
+
+
+
+            line++;
+            objSublist.line[line] = {};
+            objSublist.line[line].account = parseInt(debit);
+            objSublist.line[line].debit = parseFloat(total);
+            objSublist.line[line].entity = entity_empresa;
+            objSublist.line[line].custcol_drt_nc_identificador_uuid = objField.custbody_drt_nc_identificador_uuid;
+            objSublist.line[line].memo = memo;
+
+            line++;
+            objSublist.line[line] = [];
+            objSublist.line[line].account = parseInt(debit);
+            objSublist.line[line].credit = parseFloat(total);
+            objSublist.line[line].entity = record_entity;
+            objSublist.line[line].custcol_drt_nc_identificador_uuid = objField.custbody_drt_nc_identificador_uuid;
+            objSublist.line[line].memo = memo;
+
+            var idRecord = createRecord('journalentry', objField, objSublist);
+            nlapiLogExecution('AUDIT', 'idRecord', JSON.stringify(idRecord));
+
+            if (idRecord.success) {
+                nlapiSubmitField(typeRecord[type.toLowerCase()], id, 'custbody_drt_nc_transaccion_ajuste', idRecord.data);
+            }
+
         }
 
     } catch (error) {
@@ -187,9 +309,58 @@ function customizeGlImpact(transactionRecord, standardLines, customLines, book) 
     }
 }
 
+function createRecord(param_type, param_field, param_sublist) {
+    try {
+        var respuesta = {
+            success: false,
+            data: ''
+        };
+        nlapiLogExecution('AUDIT', 'createRecord',
+            ' param_type: ' + JSON.stringify(param_type) +
+            ' param_field: ' + JSON.stringify(param_field) +
+            ' param_sublist: ' + JSON.stringify(param_sublist)
+        );
+        if (param_type) {
+            var recordCreate = nlapiCreateRecord(param_type);
+            if (param_field) {
+                for (var f in param_field) {
+                    recordCreate.setFieldValue(f, param_field[f]);
+                }
+            }
+            if (param_sublist) {
+                for (var sublist in param_sublist) {
+                    for (var line in param_sublist[sublist]) {
+                        recordCreate.selectNewLineItem(sublist);
+                        for (var field in param_sublist[sublist][line]) {
+                            nlapiLogExecution('AUDIT', 'param_sublist[' + sublist + '][' + line + '][' + field + ']', JSON.stringify(param_sublist[sublist][line][field]));
+                            if (
+                                param_sublist[sublist][line][field]
+                            ) {
+                                recordCreate.setCurrentLineItemValue(sublist, field, param_sublist[sublist][line][field]);
+                            }
+                        }
+                        recordCreate.commitLineItem(sublist);
+                    }
+                }
+            }
+            respuesta.data = nlapiSubmitRecord(recordCreate, true) || '';
+        }
+        respuesta.success = respuesta.data != '';
+
+    } catch (error) {
+        nlapiLogExecution('AUDIT', 'error', JSON.stringify(error));
+
+    } finally {
+        nlapiLogExecution('AUDIT', 'respuesta', JSON.stringify(respuesta));
+
+        return respuesta;
+    }
+}
+
 function lineGL(customLines, param_amount, param_account_debit, param_account_credit, param_memo, entityIdEmpresa) {
     try {
-        nlapiLogExecution('AUDIT', 'lineGL',
+        /**
+          nlapiLogExecution('AUDIT', 'lineGL',
             // ' customLines: '+customLines+
             ' param_amount: ' + param_amount +
             ' param_account_debit: ' + param_account_debit +
@@ -227,151 +398,8 @@ function lineGL(customLines, param_amount, param_account_debit, param_account_cr
                 newLineCredit.setMemo(param_memo);
             }
         }
+         */
     } catch (error) {
         nlapiLogExecution('ERROR', 'error', JSON.stringify(error));
-    }
-}
-
-function amountTransaction(param_array_id, param_recordtype, param_array_tax_item) {
-    try {
-        var objReturn = {
-            success: false,
-            data: {}
-        };
-        nlapiLogExecution('AUDIT', 'amountTransaction', 'param_array_id: ' + param_array_id + ' param_recordtype: ' + param_recordtype + ' param_array_tax_item: ' + JSON.stringify(param_array_tax_item));
-        if (param_array_id && param_recordtype) {
-            var filters = [];
-            filters.push(['internalid', 'anyof', param_array_id]);
-            filters.push('AND');
-            filters.push(['taxline', 'is', 'T']);
-            filters.push('AND');
-            filters.push(["accounttype", "noneof", "@NONE@"]);
-            filters.push('AND');
-            filters.push(["amount", "notequalto", "0.00"]);
-            filters.push('AND');
-            filters.push(["hasnullamount", "is", "F"]);
-
-            var columns = [
-                new nlobjSearchColumn("internalid", "taxCode", null),
-                new nlobjSearchColumn("account"),
-                new nlobjSearchColumn("amount"),
-                new nlobjSearchColumn("debitamount"),
-                new nlobjSearchColumn("creditamount"),
-                new nlobjSearchColumn('exchangerate')
-            ];
-
-
-            var detalles = nlapiSearchRecord(param_recordtype, null, filters, columns) || [];
-            nlapiLogExecution('AUDIT', 'detalles', JSON.stringify(detalles));
-
-            for (var a = 0; a < detalles.length; a++) {
-                var netamountnotax = detalles[a].getValue('amount') || 0;
-                var total = detalles[a].getValue('amount') || 0;
-                var fxamount = detalles[a].getValue('amount') || 0;
-                var taxtotal = detalles[a].getValue('amount') || 0;
-                var taxitem = detalles[a].getValue("internalid", "taxCode", null) || '';
-                var exchangerate = detalles[a].getValue('exchangerate') || 1;
-
-
-                if (taxitem) {
-                    if (!objReturn.data[detalles[a].id]) {
-                        objReturn.data[detalles[a].id] = {}
-                    }
-                    if (!objReturn.data[detalles[a].id][taxitem]) {
-                        objReturn.data[detalles[a].id][taxitem] = {
-                            total: total * 1,
-                            taxtotal: taxtotal * 1,
-                            exchangerate: exchangerate * 1,
-                            taxitem: taxitem,
-                            total_e: (total * 1) / exchangerate,
-                            fxamount: fxamount * 1,
-                            netamountnotax: netamountnotax * 1,
-                            tax: 0
-                        };
-                    }
-
-                    if (
-                        objReturn.data[detalles[a].id][taxitem].fxamount &&
-                        objReturn.data[detalles[a].id][taxitem].exchangerate
-                    ) {
-                        objReturn.data[detalles[a].id][taxitem].tax =
-                            objReturn.data[detalles[a].id][taxitem].fxamount *
-                            objReturn.data[detalles[a].id][taxitem].exchangerate;
-                    }
-                }
-            }
-        }
-        objReturn.success = Object.keys(objReturn.data).length > 0;
-    } catch (error) {
-        nlapiLogExecution('ERROR', 'error amountTransaction', JSON.stringify(error));
-    } finally {
-        nlapiLogExecution('AUDIT', 'objReturn amountTransaction', JSON.stringify(objReturn));
-        return objReturn;
-    }
-}
-
-function getConfiguracion(param_subsidiary, param_recordtype) {
-    try {
-        var objReturn = {
-            success: false,
-            data: {},
-            array_tax: []
-        };
-        nlapiLogExecution('AUDIT', 'getConfiguracion', 'param_subsidiary: ' + param_subsidiary + ' param_recordtype: ', param_recordtype);
-        var filters = [
-            ['isinactive', 'is', 'F']
-        ];
-        if (param_subsidiary) {
-            filters.push('AND');
-            filters.push(['custrecord_ddt_setup_r_subsidiary', 'anyof', param_subsidiary]);
-        }
-        if (param_recordtype) {
-            filters.push('AND');
-            filters.push(['custrecord_ddt_setup_ra_setup.custrecord_ddt_setup_ra_typetran', 'is', param_recordtype]);
-        }
-
-        var columns = [
-            new nlobjSearchColumn('custrecord_ddt_setup_ra_typetran', 'custrecord_ddt_setup_ra_setup'),
-            new nlobjSearchColumn('custrecord_ddt_setup_ra_impuesto', 'custrecord_ddt_setup_ra_setup'),
-            new nlobjSearchColumn('custrecord_ddt_setup_ra_debito', 'custrecord_ddt_setup_ra_setup'),
-            new nlobjSearchColumn('custrecord_ddt_setup_ra_credito', 'custrecord_ddt_setup_ra_setup'),
-            new nlobjSearchColumn('custrecord_ddt_setup_ra_perdida_ganancia', 'custrecord_ddt_setup_ra_setup'),
-            new nlobjSearchColumn('custrecord_ddt_setup_ra_setup_credito', 'custrecord_ddt_setup_ra_setup')
-        ];
-
-        var searchSetup = nlapiSearchRecord('customrecord_ddt_setup_reclasificacion', null, filters, columns) || [];
-        // nlapiLogExecution('AUDIT','searchSetup',JSON.stringify(searchSetup));
-        objReturn.data = searchSetup.reduce(function (curr, next) {
-            var trantype = next.getValue('custrecord_ddt_setup_ra_typetran', 'custrecord_ddt_setup_ra_setup') || '';
-            var taxcode = next.getValue('custrecord_ddt_setup_ra_impuesto', 'custrecord_ddt_setup_ra_setup') || '';
-            var taxcode_text = next.getText('custrecord_ddt_setup_ra_impuesto', 'custrecord_ddt_setup_ra_setup') || '';
-            var debit = parseFloat(next.getValue('custrecord_ddt_setup_ra_debito', 'custrecord_ddt_setup_ra_setup')) || '';
-            var credit = parseFloat(next.getValue('custrecord_ddt_setup_ra_credito', 'custrecord_ddt_setup_ra_setup')) || '';
-            var perdida_ganancia = parseFloat(next.getValue('custrecord_ddt_setup_ra_perdida_ganancia', 'custrecord_ddt_setup_ra_setup')) || '';
-            var perdida_credit = parseFloat(next.getValue('custrecord_ddt_setup_ra_setup_credito', 'custrecord_ddt_setup_ra_setup')) || '';
-
-            // if(!curr[trantype]){
-            //     curr[trantype]={};
-            // }
-            if (!curr /* [trantype] */ [taxcode]) {
-                curr /* [trantype] */ [taxcode] = {
-                    taxcode_text: taxcode_text,
-                    debit: debit,
-                    credit: credit,
-                    perdida_ganancia: perdida_ganancia,
-                    perdida_credit: perdida_credit,
-                    total: 0,
-                    diferencia: 0,
-                };
-                objReturn.array_tax.push(taxcode);
-            }
-            return curr;
-        }, {});
-        objReturn.success = Object.keys(objReturn.data).length > 0;
-    } catch (error) {
-        nlapiLogExecution('ERROR', 'error getConfiguracion', JSON.stringify(error));
-    } finally {
-        nlapiLogExecution('AUDIT', 'objReturn getConfiguracion', JSON.stringify(objReturn));
-        return objReturn;
     }
 }
