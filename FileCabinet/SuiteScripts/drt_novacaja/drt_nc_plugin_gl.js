@@ -29,9 +29,12 @@ function customizeGlImpact(transactionRecord, standardLines, customLines, book) 
         objField.trandate = transactionRecord.getFieldValue('trandate') || '';
         objField.custbody_drt_nc_identificador_folio = transactionRecord.getFieldValue('custbody_drt_nc_identificador_folio') || '';
         objField.custbody_drt_nc_identificador_uuid = transactionRecord.getFieldValue('custbody_drt_nc_identificador_uuid') || '';
-        objField.custbody_drt_nc_createdfrom = transactionRecord.getFieldValue('custbody_drt_nc_createdfrom') || '';
         objField.custbody_drt_nc_pendiente_enviar = transactionRecord.getFieldValue('custbody_drt_nc_pendiente_enviar') || '';
-
+        objField.custbody_drt_nc_tipo_descuento = transactionRecord.getFieldValue('custbody_drt_nc_tipo_descuento') || '';
+        objField.custbody_drt_nc_total_capital = transactionRecord.getFieldValue('custbody_drt_nc_total_capital') || '';
+        objField.custbody_drt_nc_total_transaccion = transactionRecord.getFieldValue('custbody_drt_nc_total_transaccion') || '';
+        objField.custbody_drt_nc_total_interes = transactionRecord.getFieldValue('custbody_drt_nc_total_interes') || '';
+        objField.custbody_drt_nc_total_iva = transactionRecord.getFieldValue('custbody_drt_nc_total_iva') || '';
 
         var id = transactionRecord.getFieldValue('id');
         var type = transactionRecord.getFieldValue('type');
@@ -39,6 +42,8 @@ function customizeGlImpact(transactionRecord, standardLines, customLines, book) 
         var objSublist = {
             line: {}
         };
+
+        var record_entity = '';
         var identificador_uuid = transactionRecord.getFieldValue('custbody_drt_nc_identificador_uuid') || '';
         var identificador_folio = transactionRecord.getFieldValue('custbody_drt_nc_identificador_folio') || '';
         var total_capital = transactionRecord.getFieldValue('custbody_drt_nc_total_capital') || '';
@@ -82,8 +87,9 @@ function customizeGlImpact(transactionRecord, standardLines, customLines, book) 
                     // }
                     break;
                 case 'cashsale':
+                    record_entity = transactionRecord.getFieldValue('entity') || '';
 
-                    objField.custbody_drt_nc_createdfrom = transactionRecord.getLineItemValue('apply', 'internalid', 1) || '';
+                    objField.custbody_drt_nc_createdfrom = transactionRecord.getFieldValue('custbody_drt_nc_createdfrom') || '';
                     var LineItemCount = transactionRecord.getLineItemCount('item') || '';
                     if (LineItemCount) {
                         objField.custbody_drt_nc_con_je = transactionRecord.getFieldValue('custbody_drt_nc_con_cs') || '';
@@ -112,7 +118,7 @@ function customizeGlImpact(transactionRecord, standardLines, customLines, book) 
                             objSublist.line[line] = {};
                             objSublist.line[line].account = parseInt(credit);
                             objSublist.line[line].debit = parseFloat(total);
-                            objSublist.line[line].entity = '';
+                            objSublist.line[line].entity = parseInt(record_entity);
                             objSublist.line[line].custcol_drt_nc_identificador_uuid = objField.custbody_drt_nc_identificador_uuid;
                             objSublist.line[line].memo = memo + ', Abono ';
 
@@ -120,13 +126,31 @@ function customizeGlImpact(transactionRecord, standardLines, customLines, book) 
                             objSublist.line[line] = [];
                             objSublist.line[line].account = parseInt(debit);
                             objSublist.line[line].credit = parseFloat(total);
-                            objSublist.line[line].entity = '';
+                            objSublist.line[line].entity = parseInt(record_entity);
                             objSublist.line[line].custcol_drt_nc_identificador_uuid = objField.custbody_drt_nc_identificador_uuid;
                             objSublist.line[line].memo = memo + ', Abono ';
                         }
+
+                        line++;
+                        objSublist.line[line] = {};
+                        objSublist.line[line].account = parseInt(debit);
+                        objSublist.line[line].debit = parseFloat(total);
+                        objSublist.line[line].entity = parseInt(entity_empresa);
+                        objSublist.line[line].custcol_drt_nc_identificador_uuid = objField.custbody_drt_nc_identificador_uuid;
+                        objSublist.line[line].memo = memo;
+
+                        line++;
+                        objSublist.line[line] = [];
+                        objSublist.line[line].account = parseInt(debit);
+                        objSublist.line[line].credit = parseFloat(total);
+                        objSublist.line[line].entity = parseInt(record_entity);
+                        objSublist.line[line].custcol_drt_nc_identificador_uuid = objField.custbody_drt_nc_identificador_uuid;
+                        objSublist.line[line].memo = memo;
                     }
                     break;
                 case 'custpymt':
+                    record_entity = transactionRecord.getFieldValue('customer') || '';
+                    objField.custbody_drt_nc_createdfrom = transactionRecord.getLineItemValue('apply', 'internalid', 1) || '';
                     objField.custbody_drt_nc_con_je = transactionRecord.getFieldValue('custbody_drt_nc_con_cp') || '';
                     var LineItemCount = transactionRecord.getLineItemCount('apply') || '';
                     if (LineItemCount) {
@@ -138,7 +162,7 @@ function customizeGlImpact(transactionRecord, standardLines, customLines, book) 
                         if (internalid) {
                             var record = nlapiLoadRecord('invoice', internalid) || '';
                             var record_id = record.getLineItemValue('item', 'item', 1) || '';
-                            var record_entity = transactionRecord.getFieldValue('customer') || '';
+
                             var con_cp = transactionRecord.getFieldValue('custbody_drt_nc_con_cp') || '';
                             if (con_cp) {
                                 var rp = nlapiLookupField('customrecord_drt_nc_conect', con_cp, ['custrecord_drt_nc_c_transaccion']);
@@ -163,7 +187,7 @@ function customizeGlImpact(transactionRecord, standardLines, customLines, book) 
                                         objSublist.line[line] = {};
                                         objSublist.line[line].account = parseInt(transactionRecord.getFieldValue('aracct') || '');
                                         objSublist.line[line].debit = parseFloat(totalR);
-                                        objSublist.line[line].entity = record_entity;
+                                        objSublist.line[line].entity = parseInt(record_entity);
                                         objSublist.line[line].custcol_drt_nc_identificador_uuid = objField.custbody_drt_nc_identificador_uuid;
                                         objSublist.line[line].memo = memo + ', Deuda Empresa ';
 
@@ -171,7 +195,7 @@ function customizeGlImpact(transactionRecord, standardLines, customLines, book) 
                                         objSublist.line[line] = [];
                                         objSublist.line[line].account = parseInt(transactionRecord.getFieldValue('account') || '');
                                         objSublist.line[line].credit = parseFloat(totalR);
-                                        objSublist.line[line].entity = record_entity;
+                                        objSublist.line[line].entity = parseInt(record_entity);
                                         objSublist.line[line].custcol_drt_nc_identificador_uuid = objField.custbody_drt_nc_identificador_uuid;
                                         objSublist.line[line].memo = memo + ', Deuda Empresa ';
 
@@ -185,9 +209,9 @@ function customizeGlImpact(transactionRecord, standardLines, customLines, book) 
                                         );
                                         line++;
                                         objSublist.line[line] = {};
-                                        objSublist.line[line].account = parseInt( /*transactionRecord.getFieldValue('account') || {{}} */ 31142);
+                                        objSublist.line[line].account = parseInt( /*transactionRecord.getFieldValue('account') || {{}} */ 347);
                                         objSublist.line[line].debit = parseFloat(totalR);
-                                        objSublist.line[line].entity = entity_empresa;
+                                        objSublist.line[line].entity = parseInt(entity_empresa);
                                         objSublist.line[line].custcol_drt_nc_identificador_uuid = objField.custbody_drt_nc_identificador_uuid;
                                         objSublist.line[line].memo = memo + ', Pago de Cliente ';
 
@@ -195,16 +219,16 @@ function customizeGlImpact(transactionRecord, standardLines, customLines, book) 
                                         objSublist.line[line] = [];
                                         objSublist.line[line].account = parseInt(transactionRecord.getFieldValue('aracct') || '');
                                         objSublist.line[line].credit = parseFloat(totalR);
-                                        objSublist.line[line].entity = record_entity;
+                                        objSublist.line[line].entity = parseInt(record_entity);
                                         objSublist.line[line].custcol_drt_nc_identificador_uuid = objField.custbody_drt_nc_identificador_uuid;
                                         objSublist.line[line].memo = memo + ', Pago de Cliente ';
 
 
                                         line++;
                                         objSublist.line[line] = {};
-                                        objSublist.line[line].account = parseInt(31142);
+                                        objSublist.line[line].account = parseInt(347);
                                         objSublist.line[line].debit = parseFloat(total);
-                                        objSublist.line[line].entity = entity_empresa;
+                                        objSublist.line[line].entity = parseInt(entity_empresa);
                                         objSublist.line[line].custcol_drt_nc_identificador_uuid = objField.custbody_drt_nc_identificador_uuid;
                                         objSublist.line[line].memo = memo;
 
@@ -212,7 +236,7 @@ function customizeGlImpact(transactionRecord, standardLines, customLines, book) 
                                         objSublist.line[line] = [];
                                         objSublist.line[line].account = parseInt(debit);
                                         objSublist.line[line].credit = parseFloat(total);
-                                        objSublist.line[line].entity = record_entity;
+                                        objSublist.line[line].entity = parseInt(record_entity);
                                         objSublist.line[line].custcol_drt_nc_identificador_uuid = objField.custbody_drt_nc_identificador_uuid;
                                         objSublist.line[line].memo = memo;
 
@@ -244,7 +268,7 @@ function customizeGlImpact(transactionRecord, standardLines, customLines, book) 
                             objSublist.line[line] = {};
                             objSublist.line[line].account = parseInt(debit);
                             objSublist.line[line].debit = parseFloat(excedente);
-                            objSublist.line[line].entity = transactionRecord.getFieldValue('customer') || '';
+                            objSublist.line[line].entity = parseInt(transactionRecord.getFieldValue('customer') || '');
                             objSublist.line[line].custcol_drt_nc_identificador_uuid = objField.custbody_drt_nc_identificador_uuid;
                             objSublist.line[line].memo = memo;
 
@@ -252,11 +276,10 @@ function customizeGlImpact(transactionRecord, standardLines, customLines, book) 
                             objSublist.line[line] = [];
                             objSublist.line[line].account = parseInt(438);
                             objSublist.line[line].credit = parseFloat(excedente);
-                            objSublist.line[line].entity = transactionRecord.getFieldValue('customer') || '';
+                            objSublist.line[line].entity = parseInt(transactionRecord.getFieldValue('customer') || '');
                             objSublist.line[line].custcol_drt_nc_identificador_uuid = objField.custbody_drt_nc_identificador_uuid;
                             objSublist.line[line].memo = memo;
 
-                            memo += ', Cargo'
                         }
 
                     }
@@ -266,35 +289,7 @@ function customizeGlImpact(transactionRecord, standardLines, customLines, book) 
                     break;
             }
         }
-        if (total && debit && credit) {
-
-            lineGL(
-                customLines,
-                total,
-                debit,
-                credit,
-                memo,
-                entity_empresa
-            );
-
-
-
-            line++;
-            objSublist.line[line] = {};
-            objSublist.line[line].account = parseInt(debit);
-            objSublist.line[line].debit = parseFloat(total);
-            objSublist.line[line].entity = entity_empresa;
-            objSublist.line[line].custcol_drt_nc_identificador_uuid = objField.custbody_drt_nc_identificador_uuid;
-            objSublist.line[line].memo = memo;
-
-            line++;
-            objSublist.line[line] = [];
-            objSublist.line[line].account = parseInt(debit);
-            objSublist.line[line].credit = parseFloat(total);
-            objSublist.line[line].entity = record_entity;
-            objSublist.line[line].custcol_drt_nc_identificador_uuid = objField.custbody_drt_nc_identificador_uuid;
-            objSublist.line[line].memo = memo;
-
+        if (Object.keys(objField).length > 0 && Object.keys(objSublist).length > 0) {
             var idRecord = createRecord('journalentry', objField, objSublist);
             nlapiLogExecution('AUDIT', 'idRecord', JSON.stringify(idRecord));
 
