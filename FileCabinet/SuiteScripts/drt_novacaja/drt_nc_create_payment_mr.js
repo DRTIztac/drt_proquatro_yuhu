@@ -984,6 +984,9 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                     parametro.custbody_drt_nc_total_capital = parseFloat(parametro.custbody_drt_nc_total_capital);
                     parametro.custbody_drt_nc_total_interes = parseFloat(parametro.custbody_drt_nc_total_interes);
                     parametro.custbody_drt_nc_total_iva = parseFloat(parametro.custbody_drt_nc_total_iva);
+                    parametro.custbody_drt_nc_monto_excedente = parseFloat(parametro.custbody_drt_nc_monto_excedente);
+                    parametro.custbody_drt_nc_monto_faltante = parseFloat(parametro.custbody_drt_nc_monto_faltante);
+
                     if (parametro.custbody_drt_nc_total_transaccion) {
                         parametro.custbody_drt_nc_total_transaccion = parseFloat(parametro.custbody_drt_nc_total_transaccion);
                     } else {
@@ -1031,6 +1034,9 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                     if (parametro.custbody_drt_nc_identificador_pago) {
                         objField_journal.custbody_drt_nc_identificador_pago = parametro.custbody_drt_nc_identificador_pago;
                     }
+                    if (parametro.custbody_drt_nc_monto_faltante) {
+                        objField_journal.custbody_drt_nc_monto_faltante = parametro.custbody_drt_nc_monto_faltante;
+                    }
                     objField_journal.custbody_drt_nc_con_je = parseInt(parametro.record);
                     objField_journal.custbody_drt_nc_createdfrom = parametro.internalid;
                     objField_journal.custbody_drt_nc_pendiente_enviar = true;
@@ -1050,7 +1056,22 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                         credit: parametro.total,
                         entity: datosTransaction.data.entity[0].value
                     });
+                    if (parametro.custbody_drt_nc_monto_excedente) {
+                        objField_journal.custbody_drt_nc_monto_excedente = parametro.custbody_drt_nc_monto_excedente;
 
+                        objSublist_journal.line.push({
+                            account: parametro.account,
+                            debit: objField_journal.custbody_drt_nc_monto_excedente,
+                            entity: datosTransaction.data.entity[0].value,
+                            memo: ' Monto Excedente '
+                        });
+                        objSublist_journal.line.push({
+                            account: 438,
+                            credit: objField_journal.custbody_drt_nc_monto_excedente,
+                            entity: datosTransaction.data.entity[0].value,
+                            memo: ' Monto Excedente '
+                        });
+                    }
 
                     newtransaction = drt_cn_lib.createRecord(record.Type.JOURNAL_ENTRY, objField_journal, objSublist_journal, {});
 
