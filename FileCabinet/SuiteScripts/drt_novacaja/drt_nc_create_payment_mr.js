@@ -198,7 +198,7 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                                     success: false
                                 };
                                 if (parametro.custbody_drt_nc_identificador_pago) {
-                                    existTransaction = drt_cn_lib.searchidentificador(record.Type.INVOICE, 'custbody_drt_nc_identificador_pago', parametro.custbody_drt_nc_identificador_pago) || {
+                                    existTransaction = drt_cn_lib.searchidentificador(record.Type.JOURNAL_ENTRY, 'custbody_drt_nc_identificador_pago', parametro.custbody_drt_nc_identificador_pago) || {
                                         success: false
                                     };
                                 }
@@ -217,7 +217,7 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                                         mensajeFinal.push('Error: ' + objupdate.custrecord_drt_nc_p_error);
                                     }
                                 } else {
-                                    objupdate.custrecord_drt_nc_p_error = 'Error existe una factura de venta con custbody_drt_nc_identificador_pago: ' + parametro.custbody_drt_nc_identificador_pago + ' ' + existTransaction.data;
+                                    objupdate.custrecord_drt_nc_p_error = 'Error existe una Entrada de diario con custbody_drt_nc_identificador_pago: ' + parametro.custbody_drt_nc_identificador_pago + ' ' + existTransaction.data;
                                 }
                                 break;
 
@@ -944,7 +944,7 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                     error: []
                 };
                 var newtransaction = {};
-
+                var entityLine = '';
                 var errorDatosFaltantes = validateData(
                     parametro, [
                         "record",
@@ -963,9 +963,11 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                 if (errorDatosFaltantes.success) {
                     respuesta.error.concat(errorDatosFaltantes.data);
                 }
-                var datosTransaction = drt_cn_lib.lookup(record.Type.SALES_ORDER, parametro.internalid, ['entity', 'location']) || '';
+                var datosTransaction = drt_cn_lib.lookup(record.Type.INVOICE, parametro.internalid, ['entity', 'location']) || '';
                 if (datosTransaction.success) {
-                    if (datosTransaction.data.entity && datosTransaction.data.entity[0] && datosTransaction.data.entity[0].value) {} else {
+                    if (datosTransaction.data.entity && datosTransaction.data.entity[0] && datosTransaction.data.entity[0].value) {
+                        entityLine = datosTransaction.data.entity[0].value;
+                    } else {
                         respuesta.error.push('No se tiene cliente ');
                     }
                     if (datosTransaction.data.location && datosTransaction.data.location[0] && datosTransaction.data.location[0].value) {
@@ -977,6 +979,25 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                     respuesta.error.push('No se tiene datos de transaccion.');
                 }
 
+                if (parametro.custbody_drt_nc_tipo_descuento) {
+                    objField_journal.custbody_drt_nc_tipo_descuento = parametro.custbody_drt_nc_tipo_descuento;
+                    if (objField_journal.custbody_drt_nc_tipo_descuento == 1) {
+                        entityLine = '';
+                        var datosEmpleado = drt_cn_lib.lookup(record.Type.CUSTOMER, datosTransaction.data.entity[0].value, ['custentity_drt_nc_empresa']) || '';
+                        if (datosEmpleado.success) {
+                            if (datosEmpleado.data.custentity_drt_nc_empresa && datosEmpleado.data.custentity_drt_nc_empresa[0] && datosEmpleado.data.custentity_drt_nc_empresa[0].value) {
+                                entityLine = datosEmpleado.data.custentity_drt_nc_empresa[0].value;
+                            } else {
+                                respuesta.error.push('No se tiene la Empresa ');
+                            }
+                        } else {
+                            respuesta.error.push('No se tiene datos del Empleado.');
+                        }
+                    }
+                }
+                if (!entityLine) {
+                    respuesta.error.push('No se Nombre para impacto.');
+                }
                 if (respuesta.error.length > 0) {
                     respuesta.error.push('No se pueden generar la transacción.');
                 } else {
@@ -991,6 +1012,10 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                         parametro.custbody_drt_nc_total_transaccion = parseFloat(parametro.custbody_drt_nc_total_transaccion);
                     } else {
                         parametro.custbody_drt_nc_total_transaccion = parseFloat(parametro.total);
+                    }
+                    var loadItem = itemTransaction(record.Type.INVOICE, parametro.internalid, 0);
+                    if (loadItem.success) {
+                        itemDefecto = loadItem.data;
                     }
 
                     var accountDebit = 819;
@@ -1051,10 +1076,11 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                         account: parametro.account,
                         debit: parametro.total
                     });
+
                     objSublist_journal.line.push({
-                        account: accountDeudores,
+                        account: accountDebit,
                         credit: parametro.total,
-                        entity: datosTransaction.data.entity[0].value
+                        entity: entityLine
                     });
                     if (parametro.custbody_drt_nc_monto_excedente) {
                         objField_journal.custbody_drt_nc_monto_excedente = parametro.custbody_drt_nc_monto_excedente;
@@ -1062,13 +1088,13 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                         objSublist_journal.line.push({
                             account: parametro.account,
                             debit: objField_journal.custbody_drt_nc_monto_excedente,
-                            entity: datosTransaction.data.entity[0].value,
+                            entity: entityLine,
                             memo: ' Monto Excedente '
                         });
                         objSublist_journal.line.push({
                             account: 438,
                             credit: objField_journal.custbody_drt_nc_monto_excedente,
-                            entity: datosTransaction.data.entity[0].value,
+                            entity: entityLine,
                             memo: ' Monto Excedente '
                         });
                     }
