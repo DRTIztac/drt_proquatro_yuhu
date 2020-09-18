@@ -59,16 +59,19 @@ define(['N/record', 'N/search'],
             const notSalesOrder = "custbody_drt_nc_con_so";
             const notCashSale = "custbody_drt_nc_con_cs";
             const notPayment = "custbody_drt_nc_con_cp";
+            const notFolio = "custbody_drt_nc_identificador_folio";
+            const notUUID = "custbody_drt_nc_identificador_uuid";
 
             const paramcol_capital = "custcol_drt_nc_monto_capital";
             const paramcol_interes = "custcol_drt_nc_monto_interes";
             const paramcol_iva = "custcol_drt_nc_monto_iva";
+            const paramcol_total = "custcol_drt_nc_monto_total";
 
             const paramcus_capital = "custbody_drt_nc_total_capital";
             const paramcus_interes = "custbody_drt_nc_total_interes";
             const paramcus_iva = "custbody_drt_nc_total_iva";
             const paramcus_amortizacion = "custbody_drt_nc_num_amortizacion";
-
+            const paramcus_total = "custbody_drt_nc_total_transaccion";
 
             const formSales2Cash = 88;
 
@@ -97,6 +100,13 @@ define(['N/record', 'N/search'],
                 var fecha = rowValues.custcol_drt_nc_fecha;
                 var amortizacion = rowValues.custcol_drt_nc_num_amortizacion;
                 var conexion = rowValues.custbody_drt_nc_con_so;
+
+                var col_capital;
+                var col_interes;
+                var col_iva;
+                var col_total;
+                var cus_folio;
+                var cus_UUID;
 
 
                 log.debug({
@@ -153,22 +163,35 @@ define(['N/record', 'N/search'],
                             line: j
                         });
                     } else {
-                        var col_capital = invrec.getSublistValue({
+                        col_capital = invrec.getSublistValue({
                             sublistId: 'item',
                             fieldId: paramcol_capital,
                             line: j
                         });
 
-                        var col_interes = invrec.getSublistValue({
+                        col_interes = invrec.getSublistValue({
                             sublistId: 'item',
                             fieldId: paramcol_interes,
                             line: j
                         });
-                        var col_iva = invrec.getSublistValue({
+                        col_iva = invrec.getSublistValue({
                             sublistId: 'item',
                             fieldId: paramcol_iva,
                             line: j
                         });
+                        col_total = invrec.getSublistValue({
+                            sublistId: 'item',
+                            fieldId: paramcol_total,
+                            line: j
+                        });
+
+                        cus_folio = invrec.getValue({
+                            fieldId: notFolio
+                        });
+                        cus_UUID = invrec.getValue({
+                            fieldId: notUUID
+                        });
+
 
 
                         invrec.setValue({
@@ -184,10 +207,16 @@ define(['N/record', 'N/search'],
                             value: col_iva
                         });
                         invrec.setValue({
+                            fieldId: paramcus_total,
+                            value: col_total
+
+                        });
+                        invrec.setValue({
                             fieldId: paramcus_amortizacion,
                             value: amortizacion
 
                         });
+
 
                     }
                 }
@@ -249,15 +278,6 @@ define(['N/record', 'N/search'],
 
 
                     payment.setValue({
-                        fieldId: 'account',
-                        value: 1040
-                    });
-
-                    payment.setValue({
-                        fieldId: 'custbody_drt_nc_tipo_descuento',
-                        value: 1
-                    });
-                    payment.setValue({
                         fieldId: notPayment,
                         value: currRegValue
                     });
@@ -283,6 +303,34 @@ define(['N/record', 'N/search'],
                         fieldId: notCreado,
                         value: Number(rowJson.id)
                     });
+                    payment.setValue({
+                        fieldId: notFolio,
+                        value: cus_folio
+                    });
+                    payment.setValue({
+                        fieldId: notUUID,
+                        value: cus_UUID
+                    });
+
+
+
+                    payment.setValue({
+                        fieldId: paramcus_capital,
+                        value: col_capital
+                    });
+                    payment.setValue({
+                        fieldId: paramcus_interes,
+                        value: col_interes
+                    });
+                    payment.setValue({
+                        fieldId: paramcus_iva,
+                        value: col_iva
+                    });
+                    payment.setValue({
+                        fieldId: paramcus_total,
+                        value: col_total
+
+                    });
 
 
                     var paymentId = payment.save({
@@ -298,49 +346,49 @@ define(['N/record', 'N/search'],
 
                     //GENERA ENTRADA DE DIARIO Y PAGO A INVOICE
 
-                    // var conexion = Number(rowValues[notSalesOrder].value);
-                    // var salesOrder = Number(rowJson.id);
+                    var conexion = Number(rowValues[notSalesOrder].value);
+                    var salesOrder = Number(rowJson.id);
 
                     //ENTRADA DE DIARIO
                     //TRASPASO DE DEUDA A EMPRESA A TRAVES DE ENTRADA DE DIARIO
-                    // var total = 0;
-                    // var objJournal = {
-                    //     line_field: []
-                    // };
-                    // if (rowValues[paramcol_capital] != 0) {
-                    //     total = Number(rowValues[paramcol_capital]);
-                    //     var accountCapital =
-                    //         objJournal = createObjJournalEntry(rowValues["custentity_drt_nc_empresa.customer"].value, 629, rowValues[paramcol_capital], true, conexion, salesOrder);
-                    // }
+                    var total = 0;
+                    var objJournal = {
+                        line_field: []
+                    };
+                    if (rowValues[paramcol_capital] != 0) {
+                        total = Number(rowValues[paramcol_capital]);
+                        var accountCapital =
+                            objJournal = createObjJournalEntry(rowValues["custentity_drt_nc_empresa.customer"].value, 629, rowValues[paramcol_capital], true, conexion, salesOrder);
+                    }
 
-                    // if (rowValues[paramcol_interes] != 0) {
-                    //     if (Number(rowValues[paramcol_iva])) {
-                    //         total += Number(rowValues[paramcol_iva]);
-                    //     }
-                    //     if (Number(rowValues[paramcol_interes])) {
-                    //         total += Number(rowValues[paramcol_interes]);
-                    //     }
+                    if (rowValues[paramcol_interes] != 0) {
+                        if (Number(rowValues[paramcol_iva])) {
+                            total += Number(rowValues[paramcol_iva]);
+                        }
+                        if (Number(rowValues[paramcol_interes])) {
+                            total += Number(rowValues[paramcol_interes]);
+                        }
 
-                    //     var objJournal_2 = createObjJournalEntry(rowValues["custentity_drt_nc_empresa.customer"].value, 630, (Number(rowValues[paramcol_interes]) + Number(rowValues[paramcol_iva])).toFixed(2), true, conexion, salesOrder);
-                    //     if (!objJournal.body_field) {
-                    //         objJournal = objJournal_2;
-                    //     }
-                    //     objJournal.line_field = objJournal.line_field.concat(objJournal_2.line_field);
-                    //     objJournal.body_field.custbody_drt_nc_total_transaccion = total.toFixed(2);
+                        var objJournal_2 = createObjJournalEntry(rowValues["custentity_drt_nc_empresa.customer"].value, 630, (Number(rowValues[paramcol_interes]) + Number(rowValues[paramcol_iva])).toFixed(2), true, conexion, salesOrder);
+                        if (!objJournal.body_field) {
+                            objJournal = objJournal_2;
+                        }
+                        objJournal.line_field = objJournal.line_field.concat(objJournal_2.line_field);
+                        objJournal.body_field.custbody_drt_nc_total_transaccion = total.toFixed(2);
 
-                    // }
+                    }
 
 
-                    // log.debug({
-                    //     title: "objJournal",
-                    //     details: objJournal
-                    // });
-                    // if (objJournal.body_field) {
-                    //     objJournal.body_field.custbody_drt_nc_identificador_folio = rowValues["custbody_drt_nc_identificador_folio"];
-                    //     objJournal.body_field.custbody_drt_nc_identificador_uuid = rowValues["custbody_drt_nc_identificador_uuid"];
-                    //     var journal2 = createTransaction(param_record.journal, objJournal);
+                    log.debug({
+                        title: "objJournal",
+                        details: objJournal
+                    });
+                    if (objJournal.body_field) {
+                        objJournal.body_field.custbody_drt_nc_identificador_folio = rowValues["custbody_drt_nc_identificador_folio"];
+                        objJournal.body_field.custbody_drt_nc_identificador_uuid = rowValues["custbody_drt_nc_identificador_uuid"];
+                        var journal2 = createTransaction(param_record.journal, objJournal);
 
-                    // }
+                    }
 
 
                 }
