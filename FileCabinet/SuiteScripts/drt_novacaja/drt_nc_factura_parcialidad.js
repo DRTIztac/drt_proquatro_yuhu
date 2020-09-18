@@ -276,6 +276,15 @@ define(['N/record', 'N/search'],
                         'isDynamic': true
                     });
 
+                    payment.setValue({
+                        fieldId: 'account',
+                        value: 1040
+                    });
+
+                    payment.setValue({
+                        fieldId: 'custbody_drt_nc_tipo_descuento',
+                        value: 1
+                    });
 
                     payment.setValue({
                         fieldId: notPayment,
@@ -346,49 +355,49 @@ define(['N/record', 'N/search'],
 
                     //GENERA ENTRADA DE DIARIO Y PAGO A INVOICE
 
-                    var conexion = Number(rowValues[notSalesOrder].value);
-                    var salesOrder = Number(rowJson.id);
+                    // var conexion = Number(rowValues[notSalesOrder].value);
+                    // var salesOrder = Number(rowJson.id);
 
                     //ENTRADA DE DIARIO
                     //TRASPASO DE DEUDA A EMPRESA A TRAVES DE ENTRADA DE DIARIO
-                    var total = 0;
-                    var objJournal = {
-                        line_field: []
-                    };
-                    if (rowValues[paramcol_capital] != 0) {
-                        total = Number(rowValues[paramcol_capital]);
-                        var accountCapital =
-                            objJournal = createObjJournalEntry(rowValues["custentity_drt_nc_empresa.customer"].value, 629, rowValues[paramcol_capital], true, conexion, salesOrder);
-                    }
+                    // var total = 0;
+                    // var objJournal = {
+                    //     line_field: []
+                    // };
+                    // if (rowValues[paramcol_capital] != 0) {
+                    //     total = Number(rowValues[paramcol_capital]);
+                    //     var accountCapital =
+                    //         objJournal = createObjJournalEntry(rowValues["custentity_drt_nc_empresa.customer"].value, 629, rowValues[paramcol_capital], true, conexion, salesOrder);
+                    // }
 
-                    if (rowValues[paramcol_interes] != 0) {
-                        if (Number(rowValues[paramcol_iva])) {
-                            total += Number(rowValues[paramcol_iva]);
-                        }
-                        if (Number(rowValues[paramcol_interes])) {
-                            total += Number(rowValues[paramcol_interes]);
-                        }
+                    // if (rowValues[paramcol_interes] != 0) {
+                    //     if (Number(rowValues[paramcol_iva])) {
+                    //         total += Number(rowValues[paramcol_iva]);
+                    //     }
+                    //     if (Number(rowValues[paramcol_interes])) {
+                    //         total += Number(rowValues[paramcol_interes]);
+                    //     }
 
-                        var objJournal_2 = createObjJournalEntry(rowValues["custentity_drt_nc_empresa.customer"].value, 630, (Number(rowValues[paramcol_interes]) + Number(rowValues[paramcol_iva])).toFixed(2), true, conexion, salesOrder);
-                        if (!objJournal.body_field) {
-                            objJournal = objJournal_2;
-                        }
-                        objJournal.line_field = objJournal.line_field.concat(objJournal_2.line_field);
-                        objJournal.body_field.custbody_drt_nc_total_transaccion = total.toFixed(2);
+                    //     var objJournal_2 = createObjJournalEntry(rowValues["custentity_drt_nc_empresa.customer"].value, 630, (Number(rowValues[paramcol_interes]) + Number(rowValues[paramcol_iva])).toFixed(2), true, conexion, salesOrder);
+                    //     if (!objJournal.body_field) {
+                    //         objJournal = objJournal_2;
+                    //     }
+                    //     objJournal.line_field = objJournal.line_field.concat(objJournal_2.line_field);
+                    //     objJournal.body_field.custbody_drt_nc_total_transaccion = total.toFixed(2);
 
-                    }
+                    // }
 
 
-                    log.debug({
-                        title: "objJournal",
-                        details: objJournal
-                    });
-                    if (objJournal.body_field) {
-                        objJournal.body_field.custbody_drt_nc_identificador_folio = rowValues["custbody_drt_nc_identificador_folio"];
-                        objJournal.body_field.custbody_drt_nc_identificador_uuid = rowValues["custbody_drt_nc_identificador_uuid"];
-                        var journal2 = createTransaction(param_record.journal, objJournal);
+                    // log.debug({
+                    //     title: "objJournal",
+                    //     details: objJournal
+                    // });
+                    // if (objJournal.body_field) {
+                    //     objJournal.body_field.custbody_drt_nc_identificador_folio = rowValues["custbody_drt_nc_identificador_folio"];
+                    //     objJournal.body_field.custbody_drt_nc_identificador_uuid = rowValues["custbody_drt_nc_identificador_uuid"];
+                    //     var journal2 = createTransaction(param_record.journal, objJournal);
 
-                    }
+                    // }
 
 
                 }
