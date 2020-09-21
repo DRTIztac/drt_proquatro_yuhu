@@ -296,9 +296,9 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                     if (parametro.customer.custentity_mx_rfc) {
                         objField_customer.custentity_mx_rfc = parametro.customer.custentity_mx_rfc;
                     }
-                    if (respuesta.data.commpany) {
-                        objField_customer.custentity_drt_nc_empresa = respuesta.data.commpany;
-                    }
+                    // if (respuesta.data.commpany) {
+                    //     objField_customer.custentity_drt_nc_empresa = respuesta.data.commpany;
+                    // }
                     var addes = {
                         custrecord_streetname: "calle",
                         custrecord_streetnum: "numero_exterior",
@@ -368,6 +368,12 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                 }
 
                 if (cliente) {
+                    if (respuesta.data.commpany) {
+                        drt_cn_lib.submitRecord(record.Type.CUSTOMER, cliente, {
+                            custentity_drt_nc_empresa: respuesta.data.commpany
+                        });
+                    }
+
                     respuesta.data.cliente = cliente;
                     objField_transaction.entity = cliente;
                 } else {
@@ -395,18 +401,18 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
 
                 if (parametro.custbody_drt_nc_folio_sustitucion) {
                     objField_transaction.custbody_drt_nc_folio_sustitucion = parametro.custbody_drt_nc_folio_sustitucion;
-                    var sustitucion = drt_cn_lib.searchidentificador(search.Type.TRANSACTION, 'custbody_drt_nc_identificador_folio', objField_transaction.custbody_drt_nc_folio_sustitucion);
-                    if (sustitucion.success) {
-                        objField_transaction.custbody_drt_nc_createdfrom = sustitucion.data;
-                        var actualizacion = drt_cn_lib.updateSalesOrder(objField_transaction.custbody_drt_nc_createdfrom, [], true, '');
-                        if (actualizacion.success) {
-                            respuesta.data.actualizacion = actualizacion.data;
-                        } else {
-                            respuesta.error.push('No se pudo Actualizar la orden de Venta ');
-                        }
-                    } else {
-                        respuesta.error.push('No se encontro transaccion a sustituir custbody_drt_nc_folio_sustitucion:' + objField_transaction.custbody_drt_nc_folio_sustitucion);
-                    }
+                    // var sustitucion = drt_cn_lib.searchidentificador(search.Type.TRANSACTION, 'custbody_drt_nc_identificador_folio', objField_transaction.custbody_drt_nc_folio_sustitucion);
+                    // if (sustitucion.success) {
+                    //     objField_transaction.custbody_drt_nc_createdfrom = sustitucion.data;
+                    //     var actualizacion = drt_cn_lib.updateSalesOrder(objField_transaction.custbody_drt_nc_createdfrom, [], true, '');
+                    //     if (actualizacion.success) {
+                    //         respuesta.data.actualizacion = actualizacion.data;
+                    //     } else {
+                    //         respuesta.error.push('No se pudo Actualizar la orden de Venta ');
+                    //     }
+                    // } else {
+                    //     respuesta.error.push('No se encontro transaccion a sustituir custbody_drt_nc_folio_sustitucion:' + objField_transaction.custbody_drt_nc_folio_sustitucion);
+                    // }
                 }
 
                 if (parametro.custbody_drt_nc_identificador_uuid) {
