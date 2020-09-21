@@ -225,10 +225,10 @@ function customizeGlImpact(transactionRecord, standardLines, customLines, book) 
 
                                         var fields = ['custitem_drt_accounnt_capital'];
                                         if (record_id) {
-                                            var columns = nlapiLookupField('item', record_id, fields);
+                                            // var columns = nlapiLookupField('item', record_id, fields);
                                             credit =
-                                                // 629;
-                                                columns[fields[0]] || '';
+                                                629;
+                                            //     columns[fields[0]] || '';
                                         }
 
                                         line++;
