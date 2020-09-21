@@ -309,8 +309,8 @@ define(['N/record', 'N/search'],
                         value: ""
                     });
                     payment.setValue({
-                        fieldId: notCreado,
-                        value: Number(rowJson.id)
+                        fieldId: 'custbody_drt_nc_createdfrom',
+                        value: invoiceid
                     });
                     payment.setValue({
                         fieldId: notFolio,
