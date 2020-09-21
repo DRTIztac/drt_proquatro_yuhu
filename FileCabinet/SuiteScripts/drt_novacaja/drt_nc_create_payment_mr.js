@@ -943,6 +943,13 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                     data: {},
                     error: []
                 };
+                var objField_journal = {};
+
+
+                log.audit({
+                    title: 'procesarJournal',
+                    details: JSON.stringify(parametro)
+                });
                 var newtransaction = {};
                 var entityLine = '';
                 var errorDatosFaltantes = validateData(
@@ -963,17 +970,12 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                 if (errorDatosFaltantes.success) {
                     respuesta.error.concat(errorDatosFaltantes.data);
                 }
-                var datosTransaction = drt_cn_lib.lookup(record.Type.INVOICE, parametro.internalid, ['entity', 'location']) || '';
+                var datosTransaction = drt_cn_lib.lookup(record.Type.INVOICE, parametro.internalid, ['entity']) || '';
                 if (datosTransaction.success) {
                     if (datosTransaction.data.entity && datosTransaction.data.entity[0] && datosTransaction.data.entity[0].value) {
                         entityLine = datosTransaction.data.entity[0].value;
                     } else {
                         respuesta.error.push('No se tiene cliente ');
-                    }
-                    if (datosTransaction.data.location && datosTransaction.data.location[0] && datosTransaction.data.location[0].value) {
-
-                    } else {
-                        respuesta.error.push('No se tiene Ubicacion ');
                     }
                 } else {
                     respuesta.error.push('No se tiene datos de transaccion.');
@@ -1036,7 +1038,6 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                     var objSublist_journal = {
                         line: [],
                     };
-                    var objField_journal = {};
 
                     if (parametro.total) {
                         objField_journal.custbody_drt_nc_total_transaccion = parametro.total;
