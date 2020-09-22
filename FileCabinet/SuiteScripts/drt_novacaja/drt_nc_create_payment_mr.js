@@ -94,12 +94,16 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                         };
                         var data = JSON.parse(recordData[ids]);
 
+                        var parametro = JSON.parse(data.values.custrecord_drt_nc_p_context);
                         log.audit({
-                            title: 'parametro.recordType',
+                            title: 'parametro',
                             details: JSON.stringify(parametro)
                         });
-                        var parametro = JSON.parse(data.values.custrecord_drt_nc_p_context);
                         var mensajeFinal = [];
+                        log.audit({
+                            title: 'parametro.recordType',
+                            details: JSON.stringify(parametro.recordType)
+                        });
                         switch (parametro.recordType) {
                             case 'customerpayment':
                                 var existPaymen = {
@@ -143,7 +147,7 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                                     };
                                 }
                                 if (!existTransaction.success) {
-                                    var cashsaleTransaction = procesarCashsale(parametro, parametro.custrecord_drt_nc_p_conexion.value);
+                                    var cashsaleTransaction = procesarCashsale(parametro, data.values.custrecord_drt_nc_p_conexion.value);
                                     if (cashsaleTransaction.success) {
                                         if (cashsaleTransaction.data.transaccion) {
                                             objupdate.custrecord_drt_nc_p_transaccion = cashsaleTransaction.data.transaccion;
@@ -361,6 +365,8 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                             custbody_drt_nc_monto_excedente: parametro.custbody_drt_nc_monto_excedente,
                             custbody_drt_nc_monto_faltante: parametro.custbody_drt_nc_monto_faltante,
                             custbody_drt_nc_identificador_pago: parametro.custbody_drt_nc_identificador_pago,
+                            custbody_drt_nc_num_amortizacion: parametro.custbody_drt_nc_num_amortizacion,
+                            custbody_drt_nc_tipo_descuento: parametro.custbody_drt_nc_tipo_descuento,
                         }, parametro.internalid, montoPago)
                     } else if (parametro.custbody_drt_nc_total_capital > 0) {
                         // respuesta.error.push('Solo se paga capital');
@@ -398,6 +404,8 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                         objField_journal.custbody_drt_nc_con_je = parseInt(parametro.record);
                         objField_journal.custbody_drt_nc_createdfrom = parametro.internalid;
                         objField_journal.custbody_drt_nc_pendiente_enviar = true;
+                        objField_journal.custbody_drt_nc_num_amortizacion = parametro.custbody_drt_nc_num_amortizacion;
+                        objField_journal.custbody_drt_nc_tipo_descuento = parametro.custbody_drt_nc_tipo_descuento;
                         if (parametro.trandate) {
                             objField_journal.trandate = format.parse({
                                 value: parametro.trandate,
@@ -522,7 +530,7 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                     respuesta.error.push('No se tiene datos de transaccion');
                 }
                 switch (parametro.custbody_drt_nc_tipo_pago) {
-                    case 4: //Mora
+                    case 2: //Mora
                         patametroActualizacionDos = false;
                         break;
                     case 3: //Capital Parcial
@@ -552,6 +560,7 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                 if (respuesta.error.length > 0) {
                     respuesta.error.push('No se pueden generar la transacción.');
                 } else {
+                    parametro.custbody_drt_nc_tipo_descuento = parseFloat(parametro.custbody_drt_nc_tipo_descuento);
                     parametro.custbody_drt_nc_total_capital = parseFloat(parametro.custbody_drt_nc_total_capital);
                     parametro.custbody_drt_nc_total_interes = parseFloat(parametro.custbody_drt_nc_total_interes);
                     parametro.custbody_drt_nc_total_iva = parseFloat(parametro.custbody_drt_nc_total_iva);
@@ -635,6 +644,7 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                                 custbody_drt_nc_identificador_uuid: parametro.custbody_drt_nc_identificador_uuid || '',
                                 custbody_drt_nc_identificador_pago: parametro.custbody_drt_nc_identificador_pago || '',
                                 custbody_drt_nc_identificador_folio: parametro.custbody_drt_nc_identificador_folio || '',
+                                custbody_drt_nc_tipo_descuento: parametro.custbody_drt_nc_tipo_descuento || '',
                                 custbody_drt_nc_pendiente_enviar: true,
                                 custbody_drt_nc_createdfrom: parametro.internalid,
                                 custbody_drt_nc_con_cs: idConexion,
@@ -672,6 +682,8 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                         if (parametro.custbody_drt_nc_identificador_pago) {
                             objField_journal.custbody_drt_nc_identificador_pago = parametro.custbody_drt_nc_identificador_pago;
                         }
+                        objField_journal.custbody_drt_nc_tipo_pago = parametro.custbody_drt_nc_tipo_pago;
+                        objField_journal.custbody_drt_nc_tipo_descuento = parametro.custbody_drt_nc_tipo_descuento;
                         objField_journal.custbody_drt_nc_con_je = parseInt(parametro.record);
                         objField_journal.custbody_drt_nc_createdfrom = parametro.internalid;
                         objField_journal.custbody_drt_nc_pendiente_enviar = true;
@@ -690,6 +702,7 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                         objSublist_journal.line.push({
                             account: accountDebit,
                             credit: parametro.custbody_drt_nc_total_capital,
+                            entity: datosTransaction.data.entity[0].value,
                         });
 
 
