@@ -68,6 +68,7 @@ function customizeGlImpact(transactionRecord, standardLines, customLines, book) 
         if (tipo_pagoText) {
             memo += ', Tipo pago ' + tipo_pagoText
         }
+        var idRecord = {};
         var entity_empresa = '';
         if (identificador_uuid && identificador_folio && !transaccion_ajuste) {
             var transaccionRepetida = searchTransaccion(identificador_folio, nc_num_amortizacion);
@@ -157,23 +158,29 @@ function customizeGlImpact(transactionRecord, standardLines, customLines, book) 
                         objField.custbody_drt_nc_createdfrom = transactionRecord.getLineItemValue('apply', 'internalid', 1) || '';
                         objField.custbody_drt_nc_con_je = transactionRecord.getFieldValue('custbody_drt_nc_con_cp') || '';
                         var LineItemCount = transactionRecord.getLineItemCount('apply') || '';
+                        nlapiLogExecution('AUDIT', 'LineItemCount', LineItemCount);
+
                         if (LineItemCount) {
                             total = total_capital;
                             debit =
                                 // 617;
                                 transactionRecord.getFieldValue('account') || '';
                             var internalid = transactionRecord.getLineItemValue('apply', 'internalid', 1) || '';
+                            nlapiLogExecution('AUDIT', 'internalid', internalid);
+
                             if (internalid) {
                                 var record = nlapiLoadRecord('invoice', internalid) || '';
                                 var record_id = record.getLineItemValue('item', 'item', 1) || '';
 
                                 var con_cp = transactionRecord.getFieldValue('custbody_drt_nc_con_cp') || '';
+                                nlapiLogExecution('AUDIT', 'con_cp', con_cp);
+
                                 if (con_cp) {
-                                    var rp = nlapiLookupField('customrecord_drt_nc_conect', con_cp, ['custrecord_drt_nc_c_transaccion']);
-                                    if (rp.custrecord_drt_nc_c_transaccion) {
-                                        var salesorder = nlapiLookupField('salesorder', rp.custrecord_drt_nc_c_transaccion, ['custbody_drt_nc_tipo_descuento']) || '';
-                                        tipo_descuento = salesorder.custbody_drt_nc_tipo_descuento || '';
-                                    }
+                                    // var rp = nlapiLookupField('customrecord_drt_nc_conect', con_cp, ['custrecord_drt_nc_c_transaccion']);
+                                    // if (rp.custrecord_drt_nc_c_transaccion) {
+                                    //     var salesorder = nlapiLookupField('salesorder', rp.custrecord_drt_nc_c_transaccion, ['custbody_drt_nc_tipo_descuento']) || '';
+                                    //     tipo_descuento = salesorder.custbody_drt_nc_tipo_descuento || '';
+                                    // }
                                     if (tipo_descuento == 1) {
                                         var entity = nlapiLookupField('customer', record_entity, ['custentity_drt_nc_empresa']);
                                         entity_empresa = entity.custentity_drt_nc_empresa || '';
@@ -251,8 +258,33 @@ function customizeGlImpact(transactionRecord, standardLines, customLines, book) 
                                             objSublist.line[line].custcol_drt_nc_identificador_uuid = objField.custbody_drt_nc_identificador_uuid;
                                             objSublist.line[line].memo = memo;
 
-                                            total = '';
+                                            // total = '';
                                         }
+                                    } else {
+                                        var fields = ['custitem_drt_accounnt_capital'];
+                                        if (record_id) {
+                                            var columns = nlapiLookupField('item', record_id, fields);
+                                            credit =
+                                                // 629;
+                                                columns[fields[0]] || '';
+                                        }
+
+                                        line++;
+                                        objSublist.line[line] = {};
+                                        objSublist.line[line].account = parseInt(transactionRecord.getFieldValue('account') || '');
+                                        objSublist.line[line].debit = parseFloat(total_capital).toFixed(2);
+                                        objSublist.line[line].entity = parseInt(record_entity);
+                                        objSublist.line[line].custcol_drt_nc_identificador_uuid = objField.custbody_drt_nc_identificador_uuid;
+                                        objSublist.line[line].memo = memo;
+
+                                        line++;
+                                        objSublist.line[line] = [];
+                                        objSublist.line[line].account = parseInt(credit);
+                                        objSublist.line[line].credit = parseFloat(total_capital).toFixed(2);
+                                        objSublist.line[line].entity = parseInt(record_entity);
+                                        objSublist.line[line].custcol_drt_nc_identificador_uuid = objField.custbody_drt_nc_identificador_uuid;
+                                        objSublist.line[line].memo = memo;
+
                                     }
                                 }
 
@@ -293,19 +325,21 @@ function customizeGlImpact(transactionRecord, standardLines, customLines, book) 
                     default:
                         break;
                 }
+                nlapiLogExecution('AUDIT', 'objField', JSON.stringify(objField));
+                nlapiLogExecution('AUDIT', 'objSublist', JSON.stringify(objSublist));
                 if (Object.keys(objField).length > 0 && Object.keys(objSublist.line).length > 0) {
-                    var idRecord = createRecord('journalentry', objField, objSublist);
+                    idRecord = createRecord('journalentry', objField, objSublist);
                     nlapiLogExecution('AUDIT', 'idRecord', JSON.stringify(idRecord));
                 }
             } else {
                 for (var je in transaccionRepetida.data) {
-                    var idRecord = {
-                        success: true,
-                        data: je
-                    };
+                    idRecord.success = true;
+                    idRecord.data = je;
                     break;
                 }
             }
+            nlapiLogExecution('AUDIT', 'idRecord', JSON.stringify(idRecord));
+
             if (idRecord.success) {
                 nlapiSubmitField(typeRecord[type.toLowerCase()], id, 'custbody_drt_nc_transaccion_ajuste', idRecord.data);
             }
