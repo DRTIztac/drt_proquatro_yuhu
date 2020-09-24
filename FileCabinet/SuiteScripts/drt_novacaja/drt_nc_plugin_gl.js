@@ -135,22 +135,23 @@ function customizeGlImpact(transactionRecord, standardLines, customLines, book) 
                                 objSublist.line[line].custcol_drt_nc_identificador_uuid = objField.custbody_drt_nc_identificador_uuid;
                                 objSublist.line[line].memo = memo + ', Abono ';
                             }
+                            if (total && debit && credit) {
+                                line++;
+                                objSublist.line[line] = {};
+                                objSublist.line[line].account = parseInt(debit);
+                                objSublist.line[line].debit = parseFloat(total).toFixed(2);
+                                objSublist.line[line].entity = parseInt(record_entity);
+                                objSublist.line[line].custcol_drt_nc_identificador_uuid = objField.custbody_drt_nc_identificador_uuid;
+                                objSublist.line[line].memo = memo;
 
-                            line++;
-                            objSublist.line[line] = {};
-                            objSublist.line[line].account = parseInt(debit);
-                            objSublist.line[line].debit = parseFloat(total).toFixed(2);
-                            objSublist.line[line].entity = parseInt(entity_empresa);
-                            objSublist.line[line].custcol_drt_nc_identificador_uuid = objField.custbody_drt_nc_identificador_uuid;
-                            objSublist.line[line].memo = memo;
-
-                            line++;
-                            objSublist.line[line] = [];
-                            objSublist.line[line].account = parseInt(credit);
-                            objSublist.line[line].credit = parseFloat(total).toFixed(2);
-                            objSublist.line[line].entity = parseInt(record_entity);
-                            objSublist.line[line].custcol_drt_nc_identificador_uuid = objField.custbody_drt_nc_identificador_uuid;
-                            objSublist.line[line].memo = memo;
+                                line++;
+                                objSublist.line[line] = [];
+                                objSublist.line[line].account = parseInt(credit);
+                                objSublist.line[line].credit = parseFloat(total).toFixed(2);
+                                objSublist.line[line].entity = parseInt(record_entity);
+                                objSublist.line[line].custcol_drt_nc_identificador_uuid = objField.custbody_drt_nc_identificador_uuid;
+                                objSublist.line[line].memo = memo;
+                            }
                         }
                         break;
                     case 'custpymt':
