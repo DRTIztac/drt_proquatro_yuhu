@@ -544,6 +544,7 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                     objField_journal.custbody_drt_nc_con_je = param_objdata.id;
                     objField_journal.custbody_drt_nc_createdfrom = respuesta.data.transaccion;
                     objField_journal.custbody_drt_nc_pendiente_enviar = false;
+                    objField_journal.custbody_drt_nc_num_amortizacion = 0;
 
                     if (objField_transaction.trandate) {
                         objField_journal.trandate = objField_transaction.trandate;

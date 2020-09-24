@@ -249,7 +249,7 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                             }
                             objRecord.setValue({
                                 fieldId: 'custbody_drt_nc_notificacion_registro',
-                                value: JSON.stringify(data),
+                                value: (response.data.code + ': ' + JSON.stringify(data)),
                                 ignoreFieldChange: true
                             });
 

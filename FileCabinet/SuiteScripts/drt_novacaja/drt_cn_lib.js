@@ -9,6 +9,7 @@ define([
         'N/log',
         'N/search',
         'N/record',
+        'N/http',
         'N/https',
         'N/format'
     ],
@@ -17,6 +18,7 @@ define([
         log,
         search,
         record,
+        http,
         https,
         format
     ) {
@@ -444,71 +446,71 @@ define([
                 switch (param_case) {
                     case 'salesorder':
                         respuesta.data.header = {
-                            "Authorization": "Api-Key Moa1M0rL.9XK5Z5qAyFcG2hH1N9dBPghwrfDkAmFc",
+                            "Authorization": "Api-Key 3DNj4Xkl.9EGoAHGzhglGyDhjxMsfvyh4lsXuu60j",
                             "Content-Type": "application/json"
                         };
-                        respuesta.data.url = 'https://apidev.yuhu.mx/api/v1/ns/webhook/' + param_case + '/';
+                        respuesta.data.url = 'http://192.81.211.56/api/v1/ns/webhook/' + param_case + '/';
                         respuesta.data.ejemplo = {};
                         break;
                     case 'invoice':
                         respuesta.data.header = {
-                            "Authorization": "Api-Key Moa1M0rL.9XK5Z5qAyFcG2hH1N9dBPghwrfDkAmFc",
+                            "Authorization": "Api-Key 3DNj4Xkl.9EGoAHGzhglGyDhjxMsfvyh4lsXuu60j",
                             "Content-Type": "application/json"
                         };
-                        respuesta.data.url = 'https://apidev.yuhu.mx/api/v1/ns/webhook/' + param_case + '/';
+                        respuesta.data.url = 'http://192.81.211.56/api/v1/ns/webhook/' + param_case + '/';
                         respuesta.data.ejemplo = {};
                         break;
 
                     case 'customerpayment':
                         respuesta.data.header = {
-                            "Authorization": "Api-Key Moa1M0rL.9XK5Z5qAyFcG2hH1N9dBPghwrfDkAmFc",
+                            "Authorization": "Api-Key 3DNj4Xkl.9EGoAHGzhglGyDhjxMsfvyh4lsXuu60j",
                             "Content-Type": "application/json"
                         };
-                        respuesta.data.url = 'https://apidev.yuhu.mx/api/v1/ns/webhook/' + param_case + '/';
+                        respuesta.data.url = 'http://192.81.211.56/api/v1/ns/webhook/' + param_case + '/';
                         respuesta.data.ejemplo = {};
                         break;
 
                     case 'journalentry':
                         respuesta.data.header = {
-                            "Authorization": "Api-Key Moa1M0rL.9XK5Z5qAyFcG2hH1N9dBPghwrfDkAmFc",
+                            "Authorization": "Api-Key 3DNj4Xkl.9EGoAHGzhglGyDhjxMsfvyh4lsXuu60j",
                             "Content-Type": "application/json"
                         };
-                        respuesta.data.url = 'https://apidev.yuhu.mx/api/v1/ns/webhook/' + param_case + '/';
+                        respuesta.data.url = 'http://192.81.211.56/api/v1/ns/webhook/' + param_case + '/';
                         respuesta.data.ejemplo = {};
                         break;
 
                     case 'customerdeposit':
                         respuesta.data.header = {
-                            "Authorization": "Api-Key Moa1M0rL.9XK5Z5qAyFcG2hH1N9dBPghwrfDkAmFc",
+                            "Authorization": "Api-Key 3DNj4Xkl.9EGoAHGzhglGyDhjxMsfvyh4lsXuu60j",
                             "Content-Type": "application/json"
                         };
-                        respuesta.data.url = 'https://apidev.yuhu.mx/api/v1/ns/webhook/' + param_case + '/';
+                        respuesta.data.url = 'http://192.81.211.56/api/v1/ns/webhook/' + param_case + '/';
                         respuesta.data.ejemplo = {};
                         break;
 
                     case 'check':
                         respuesta.data.header = {
-                            "Authorization": "Api-Key Moa1M0rL.9XK5Z5qAyFcG2hH1N9dBPghwrfDkAmFc",
+                            "Authorization": "Api-Key 3DNj4Xkl.9EGoAHGzhglGyDhjxMsfvyh4lsXuu60j",
                             "Content-Type": "application/json"
                         };
-                        respuesta.data.url = 'https://apidev.yuhu.mx/api/v1/ns/webhook/' + param_case + '/';
+                        respuesta.data.url = 'http://192.81.211.56/api/v1/ns/webhook/' + param_case + '/';
                         respuesta.data.ejemplo = {};
                         break;
 
                     case 'cashsale':
                         respuesta.data.header = {
-                            "Authorization": "Api-Key Moa1M0rL.9XK5Z5qAyFcG2hH1N9dBPghwrfDkAmFc",
+                            "Authorization": "Api-Key 3DNj4Xkl.9EGoAHGzhglGyDhjxMsfvyh4lsXuu60j",
                             "Content-Type": "application/json"
                         };
-                        respuesta.data.url = 'https://apidev.yuhu.mx/api/v1/ns/webhook/' + param_case + '/';
+                        respuesta.data.url = 'http://192.81.211.56/api/v1/ns/webhook/' + param_case + '/';
                         respuesta.data.ejemplo = {};
                         break;
                     case 'customer':
                         respuesta.data.header = {
-                            "Authorization": "Api-Key Moa1M0rL.9XK5Z5qAyFcG2hH1N9dBPghwrfDkAmFc",
+                            "Authorization": "Api-Key 3DNj4Xkl.9EGoAHGzhglGyDhjxMsfvyh4lsXuu60j",
                             "Content-Type": "application/json"
                         };
-                        respuesta.data.url = 'https://apidev.yuhu.mx/api/v1/ns/webhook/' + param_case + '/';
+                        respuesta.data.url = 'http://192.81.211.56/api/v1/ns/webhook/' + param_case + '/';
                         respuesta.data.ejemplo = {};
                         break;
 
@@ -553,7 +555,7 @@ define([
                         title: 'postWebhook param_body',
                         details: JSON.stringify(param_body)
                     });
-                    respuesta.data = https.post({
+                    respuesta.data = http.post({
                         headers: param_header,
                         url: param_url,
                         body: JSON.stringify(param_body),
