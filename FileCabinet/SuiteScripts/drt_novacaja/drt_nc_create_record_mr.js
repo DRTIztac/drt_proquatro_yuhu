@@ -189,7 +189,7 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                 }
                 //Emmpresa
                 if (parametro.empresa && parametro.empresa.custentity_mx_rfc) {
-                    var searchcompany = drt_cn_lib.searchidentificador(record.Type.CUSTOMER, 'custentity_mx_rfc', parametro.empresa.custentity_mx_rfc);
+                    var searchcompany = drt_cn_lib.searchidentificador(record.Type.CUSTOMER, 'custentity_drt_mx_rfc', parametro.empresa.custentity_mx_rfc);
                     if (searchcompany.success) {
                         respuesta.data.commpany = searchcompany.data;
 
@@ -212,7 +212,7 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                             objField_empresa.email = parametro.empresa.email;
                         }
                         if (parametro.empresa.custentity_mx_rfc) {
-                            objField_empresa.custentity_mx_rfc = parametro.empresa.custentity_mx_rfc;
+                            objField_empresa.custentity_drt_mx_rfc = parametro.empresa.custentity_mx_rfc;
                         }
                         if (
                             parametro.empresa.addressbook &&
@@ -395,6 +395,11 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
 
                 if (parametro.custbody_drt_nc_identificador_folio) {
                     objField_transaction.custbody_drt_nc_identificador_folio = parametro.custbody_drt_nc_identificador_folio;
+                    var transaccionExistente = drt_cn_lib.searchidentificador(search.Type.TRANSACTION, 'custbody_drt_nc_identificador_folio', objField_transaction.custbody_drt_nc_identificador_folio);
+                    if (transaccionExistente.success) {
+                        respuesta.data.transaccion = transaccionExistente.data;
+                        respuesta.error.push('Existe  una transaccion  con  el mismo custbody_drt_nc_identificador_folio:' + transaccionExistente.data);
+                    }
                 } else {
                     respuesta.error.push('Hace falta identificador_folio:' + parametro.custbody_drt_nc_identificador_folio);
                 }
@@ -417,11 +422,6 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
 
                 if (parametro.custbody_drt_nc_identificador_uuid) {
                     objField_transaction.custbody_drt_nc_identificador_uuid = parametro.custbody_drt_nc_identificador_uuid;
-                    var transaccionExistente = drt_cn_lib.searchidentificador(search.Type.TRANSACTION, 'custbody_drt_nc_identificador_uuid', objField_transaction.custbody_drt_nc_identificador_uuid);
-                    if (transaccionExistente.success) {
-                        respuesta.data.transaccion = transaccionExistente.data;
-                        respuesta.error.push('Existe  una transaccion  con  el mismo custbody_drt_nc_identificador_uuid:' + transaccionExistente.data);
-                    }
                 } else {
                     respuesta.error.push('Hace falta identificador_uuid:' + parametro.custbody_drt_nc_identificador_uuid);
                 }
