@@ -560,6 +560,7 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                         objSublist_journal.line.push({
                             account: parametro.dispersion[banco].banco,
                             credit: parametro.dispersion[banco].monto,
+                            entity: objField_transaction.entity,
                             custcol_drt_nc_identificador_uuid: parametro.dispersion[banco].identificador
                         });
                     }
