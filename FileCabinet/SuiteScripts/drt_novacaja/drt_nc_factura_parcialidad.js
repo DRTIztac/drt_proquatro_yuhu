@@ -3,9 +3,9 @@
  * @NScriptType MapReduceScript
  * @NModuleScope SameAccount
  */
-define(['N/record', 'N/search'],
+define(['N/record', 'N/search', 'N/format'],
 
-    function (record, search) {
+    function (record, search, format) {
 
         /**
          * Marks the beginning of the Map/Reduce process and generates input data.
@@ -29,6 +29,7 @@ define(['N/record', 'N/search'],
         function getInputData() {
 
             const param_registro = 'customsearch_drt_ss_line_salesorder';
+            // const param_registro = 'customsearch_drt_ss_line_saldo_inicial';
             var respuesta = [];
             var transactionSearchObj = search.load({
                 id: param_registro
@@ -90,6 +91,14 @@ define(['N/record', 'N/search'],
                 title: "JSON DETAIL",
                 details: JSON.stringify(rowJson)
             });
+            log.audit({
+                title: 'rowJson',
+                details: JSON.stringify(rowJson)
+            });
+            log.audit({
+                title: 'rowValues',
+                details: JSON.stringify(rowValues)
+            });
             log.debug({
                 title: "TEST",
                 details: ""
@@ -137,6 +146,13 @@ define(['N/record', 'N/search'],
                     'isDynamic': true
                 });
 
+                invrec.setValue({
+                    fieldId: 'trandate',
+                    value: format.parse({
+                        value: fecha,
+                        type: format.Type.DATE
+                    }) || ''
+                });
 
                 var itemcount = invrec.getLineCount({
                     "sublistId": "item"
@@ -266,7 +282,7 @@ define(['N/record', 'N/search'],
                     details: invoiceid
                 })
 
-                if (rowValues.custbody_drt_nc_tipo_descuento.text == "Retención") {
+                if (rowValues.custbody_drt_nc_tipo_descuento.value && parseInt(rowValues.custbody_drt_nc_tipo_descuento.value) == 1) {
 
                     //GENERA PAGO
                     var payment = record.transform({
@@ -277,13 +293,20 @@ define(['N/record', 'N/search'],
                     });
 
                     payment.setValue({
+                        fieldId: 'trandate',
+                        value: format.parse({
+                            value: fecha,
+                            type: format.Type.DATE
+                        }) || ''
+                    });
+                    payment.setValue({
                         fieldId: 'account',
                         value: 1040
                     });
 
                     payment.setValue({
                         fieldId: 'custbody_drt_nc_tipo_descuento',
-                        value: 1
+                        value: rowValues.custbody_drt_nc_tipo_descuento.value
                     });
 
                     payment.setValue({
