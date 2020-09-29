@@ -36,6 +36,7 @@ function customizeGlImpact(transactionRecord, standardLines, customLines, book) 
         objField.custbody_drt_nc_total_interes = transactionRecord.getFieldValue('custbody_drt_nc_total_interes') || '';
         objField.custbody_drt_nc_total_iva = transactionRecord.getFieldValue('custbody_drt_nc_total_iva') || '';
         objField.custbody_drt_nc_num_amortizacion = transactionRecord.getFieldValue('custbody_drt_nc_num_amortizacion') || '';
+        objField.custbody_drt_nc_identificador_pago = transactionRecord.getFieldValue('custbody_drt_nc_identificador_pago') || '';
 
         var id = transactionRecord.getFieldValue('id');
         var type = transactionRecord.getFieldValue('type');
@@ -53,6 +54,7 @@ function customizeGlImpact(transactionRecord, standardLines, customLines, book) 
         var total_iva = transactionRecord.getFieldValue('custbody_drt_nc_total_iva') || '';
         var transaccion_ajuste = transactionRecord.getFieldValue('custbody_drt_nc_transaccion_ajuste') || '';
         var nc_num_amortizacion = transactionRecord.getFieldValue('custbody_drt_nc_num_amortizacion') || '';
+        var identificador_pago = transactionRecord.getFieldValue('custbody_drt_nc_identificador_pago') || '';
         nlapiLogExecution('AUDIT', 'id', id);
         nlapiLogExecution('AUDIT', 'type', type);
         var total = '';
@@ -70,8 +72,8 @@ function customizeGlImpact(transactionRecord, standardLines, customLines, book) 
         }
         var idRecord = {};
         var entity_empresa = '';
-        if (identificador_uuid && identificador_folio && !transaccion_ajuste) {
-            var transaccionRepetida = searchTransaccion(identificador_folio, nc_num_amortizacion);
+        if (identificador_uuid && identificador_pago && !transaccion_ajuste) {
+            var transaccionRepetida = searchTransaccion(identificador_pago, nc_num_amortizacion);
             if (!transaccionRepetida.success) {
                 switch (type) {
                     case 'custinvc':
@@ -175,13 +177,20 @@ function customizeGlImpact(transactionRecord, standardLines, customLines, book) 
 
                                 var con_cp = transactionRecord.getFieldValue('custbody_drt_nc_con_cp') || '';
                                 nlapiLogExecution('AUDIT', 'con_cp', con_cp);
-
+                                var fields = ['custitem_drt_accounnt_capital'];
+                                if (record_id) {
+                                    var columns = nlapiLookupField('item', record_id, fields);
+                                    credit =
+                                        // 629;
+                                        columns[fields[0]] || '';
+                                }
                                 if (con_cp) {
                                     // var rp = nlapiLookupField('customrecord_drt_nc_conect', con_cp, ['custrecord_drt_nc_c_transaccion']);
                                     // if (rp.custrecord_drt_nc_c_transaccion) {
                                     //     var salesorder = nlapiLookupField('salesorder', rp.custrecord_drt_nc_c_transaccion, ['custbody_drt_nc_tipo_descuento']) || '';
                                     //     tipo_descuento = salesorder.custbody_drt_nc_tipo_descuento || '';
-                                    // }
+                                    // } var fields = ['custitem_drt_accounnt_capital'];
+
                                     if (tipo_descuento == 1) {
                                         var entity = nlapiLookupField('customer', record_entity, ['custentity_drt_nc_empresa']);
                                         entity_empresa = entity.custentity_drt_nc_empresa || '';
@@ -235,7 +244,6 @@ function customizeGlImpact(transactionRecord, standardLines, customLines, book) 
                                             objSublist.line[line].custcol_drt_nc_identificador_uuid = objField.custbody_drt_nc_identificador_uuid;
                                             objSublist.line[line].memo = memo + ', Pago de Cliente ';
 
-                                            var fields = ['custitem_drt_accounnt_capital'];
                                             if (record_id) {
                                                 // var columns = nlapiLookupField('item', record_id, fields);
                                                 credit =
@@ -262,13 +270,7 @@ function customizeGlImpact(transactionRecord, standardLines, customLines, book) 
                                             // total = '';
                                         }
                                     } else {
-                                        var fields = ['custitem_drt_accounnt_capital'];
-                                        if (record_id) {
-                                            var columns = nlapiLookupField('item', record_id, fields);
-                                            credit =
-                                                // 629;
-                                                columns[fields[0]] || '';
-                                        }
+
 
                                         line++;
                                         objSublist.line[line] = {};
@@ -455,14 +457,14 @@ function searchTransaccion(param_folio, param_amortizacion) {
         if (param_folio) {
             nlapiLogExecution('AUDIT', 'searchTransaccion', 'param_folio: ' + param_folio);
             var filters = [
-                ["custbody_drt_nc_identificador_folio", "is", param_folio],
+                ["custbody_drt_nc_identificador_pago", "is", param_folio],
                 "AND",
                 ["type", "anyof", "Journal"]
             ];
 
             var columns = [
                 new nlobjSearchColumn("custbody_drt_nc_num_amortizacion"),
-                new nlobjSearchColumn("custbody_drt_nc_identificador_folio"),
+                new nlobjSearchColumn("custbody_drt_nc_identificador_pago"),
                 new nlobjSearchColumn("custbody_drt_nc_identificador_uuid")
             ];
 
@@ -470,7 +472,7 @@ function searchTransaccion(param_folio, param_amortizacion) {
 
 
             for (var a = 0; a < detalles.length; a++) {
-                var identificador_folio = detalles[a].getValue('custbody_drt_nc_identificador_folio') || 0;
+                var identificador_folio = detalles[a].getValue('custbody_drt_nc_identificador_pago') || 0;
                 var identificador_uuid = detalles[a].getValue('custbody_drt_nc_identificador_uuid') || 0;
                 var num_amortizacion = detalles[a].getValue('custbody_drt_nc_num_amortizacion') || 0;
 
