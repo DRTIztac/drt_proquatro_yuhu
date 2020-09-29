@@ -421,6 +421,7 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                         objSublist_journal.line.push({
                             account: accountDebit,
                             credit: parametro.custbody_drt_nc_total_capital,
+                            entity: datosTransaction.data.entity[0].value,
                         });
 
 
