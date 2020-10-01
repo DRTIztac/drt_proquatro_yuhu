@@ -356,6 +356,7 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                             custbody_drt_nc_con_cp: idConexion || '',
                             custbody_drt_nc_tipo_pago: parametro.custbody_drt_nc_tipo_pago || '',
                             custbody_drt_nc_total_capital: parametro.custbody_drt_nc_total_capital || '',
+                            custbody_drt_nc_referencia: parametro.custbody_drt_nc_referencia || '',
                             custbody_drt_nc_total_interes: parametro.custbody_drt_nc_total_interes || '',
                             custbody_drt_nc_total_iva: parametro.custbody_drt_nc_total_iva || '',
                             custbody_drt_nc_total_transaccion: parametro.custbody_drt_nc_total_transaccion || '',
@@ -403,6 +404,7 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                         }
                         objField_journal.custbody_drt_nc_con_je = parseInt(parametro.record);
                         objField_journal.custbody_drt_nc_createdfrom = parametro.internalid;
+                        objField_journal.custbody_drt_nc_referencia = parametro.custbody_drt_nc_referencia;
                         objField_journal.custbody_drt_nc_pendiente_enviar = true;
                         objField_journal.custbody_drt_nc_num_amortizacion = parametro.custbody_drt_nc_num_amortizacion;
                         objField_journal.custbody_drt_nc_tipo_descuento = parametro.custbody_drt_nc_tipo_descuento;
@@ -415,11 +417,13 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
 
                         objSublist_journal.line.push({
                             account: parametro.account,
+                            memo: parametro.custbody_drt_nc_referencia,
                             debit: parametro.custbody_drt_nc_total_capital,
                             entity: datosTransaction.data.entity[0].value,
                         });
                         objSublist_journal.line.push({
                             account: accountDebit,
+                            memo: parametro.custbody_drt_nc_referencia,
                             credit: parametro.custbody_drt_nc_total_capital,
                             entity: datosTransaction.data.entity[0].value,
                         });
@@ -637,6 +641,7 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                                     type: format.Type.DATE
                                 }) || '',
                                 account: parametro.account || '',
+                                custbody_drt_nc_referencia: parametro.custbody_drt_nc_referencia || '',
                                 custbody_drt_nc_tipo_pago: parametro.custbody_drt_nc_tipo_pago || '',
                                 custbody_drt_nc_total_capital: parametro.custbody_drt_nc_total_capital || '',
                                 custbody_drt_nc_total_interes: parametro.custbody_drt_nc_total_interes || '',
@@ -683,6 +688,7 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                         if (parametro.custbody_drt_nc_identificador_pago) {
                             objField_journal.custbody_drt_nc_identificador_pago = parametro.custbody_drt_nc_identificador_pago;
                         }
+                        objField_journal.custbody_drt_nc_referencia = parametro.custbody_drt_nc_referencia;
                         objField_journal.custbody_drt_nc_tipo_pago = parametro.custbody_drt_nc_tipo_pago;
                         objField_journal.custbody_drt_nc_tipo_descuento = parametro.custbody_drt_nc_tipo_descuento;
                         objField_journal.custbody_drt_nc_con_je = parseInt(parametro.record);
@@ -697,11 +703,13 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
 
                         objSublist_journal.line.push({
                             account: parametro.account,
+                            memo: parametro.custbody_drt_nc_referencia,
                             debit: parametro.custbody_drt_nc_total_capital,
                             entity: datosTransaction.data.entity[0].value,
                         });
                         objSublist_journal.line.push({
                             account: accountDebit,
+                            memo: parametro.custbody_drt_nc_referencia,
                             credit: parametro.custbody_drt_nc_total_capital,
                             entity: datosTransaction.data.entity[0].value,
                         });
