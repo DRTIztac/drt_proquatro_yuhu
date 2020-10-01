@@ -483,7 +483,8 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                             price: "-1",
                             quantity: 1,
                             rate: parametro.item[liena].interes,
-                            tax1amt: parametro.item[liena].iva
+                            tax1amt: parametro.item[liena].iva,
+                            custcol_drt_nc_saldo_inicial: false
                         };
                         objPush.isclosed = parametro.item[liena].isclosed == 'T' || parametro.item[liena].isclosed == true;
                         if (parametro.item[liena].custcol_drt_nc_fecha_vencimiento) {
@@ -499,7 +500,11 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                             });
 
                         }
+                        if (parametro.item[liena].item) {
+                            objPush.item = parametro.item[liena].item;
+                        }
                         objPush.custcol_drt_nc_facturado = parametro.item[liena].custcol_drt_nc_facturado == 'T' || parametro.item[liena].custcol_drt_nc_facturado == true;
+                        objPush.custcol_drt_nc_saldo_inicial = objPush.custcol_drt_nc_facturado == true && objPush.isclosed == false;
                         objPush.custcol_drt_nc_monto_total = parametro.item[liena].total;
                         objPush.custcol_drt_nc_monto_interes = parametro.item[liena].interes;
                         objPush.custcol_drt_nc_num_amortizacion = parametro.item[liena].num_amortizacion;
