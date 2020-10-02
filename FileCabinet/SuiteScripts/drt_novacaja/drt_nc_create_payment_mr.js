@@ -363,8 +363,8 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                             custbody_drt_nc_identificador_uuid: parametro.custbody_drt_nc_identificador_uuid || '',
                             custbody_drt_nc_identificador_folio: parametro.custbody_drt_nc_identificador_folio || '',
                             custbody_drt_nc_createdfrom: parametro.internalid,
-                            custbody_drt_nc_monto_excedente: parametro.custbody_drt_nc_monto_excedente,
                             custbody_drt_nc_monto_faltante: parametro.custbody_drt_nc_monto_faltante,
+                            custbody_drt_nc_monto_excedente: parametro.custbody_drt_nc_monto_excedente,
                             custbody_drt_nc_identificador_pago: parametro.custbody_drt_nc_identificador_pago,
                             custbody_drt_nc_num_amortizacion: parametro.custbody_drt_nc_num_amortizacion,
                             custbody_drt_nc_tipo_descuento: parametro.custbody_drt_nc_tipo_descuento,
@@ -1029,8 +1029,8 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                     parametro.custbody_drt_nc_total_capital = parseFloat(parametro.custbody_drt_nc_total_capital);
                     parametro.custbody_drt_nc_total_interes = parseFloat(parametro.custbody_drt_nc_total_interes);
                     parametro.custbody_drt_nc_total_iva = parseFloat(parametro.custbody_drt_nc_total_iva);
-                    parametro.custbody_drt_nc_monto_excedente = parseFloat(parametro.custbody_drt_nc_monto_excedente);
-                    parametro.custbody_drt_nc_monto_faltante = parseFloat(parametro.custbody_drt_nc_monto_faltante);
+                    parametro.custbody_drt_nc_monto_faltante = parseFloat(parametro.faltante) || 0;
+                    parametro.custbody_drt_nc_monto_excedente = parseFloat(parametro.excedente) || 0;
 
                     if (parametro.custbody_drt_nc_total_transaccion) {
                         parametro.custbody_drt_nc_total_transaccion = parseFloat(parametro.custbody_drt_nc_total_transaccion);
@@ -1043,16 +1043,17 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                     }
 
                     var accountDebit = 819;
-                    var accountDeudores = 347;
-                    var cuentaItem = drt_cn_lib.lookup(search.Type.ITEM, loadItem.data, ['custitem_drt_accounnt_capital']);
-                    if (
-                        cuentaItem.success &&
-                        cuentaItem.data.custitem_drt_accounnt_capital &&
-                        cuentaItem.data.custitem_drt_accounnt_capital[0] &&
-                        cuentaItem.data.custitem_drt_accounnt_capital[0].value
-                    ) {
-                        accountDebit = cuentaItem.data.custitem_drt_accounnt_capital[0].value;
-                    }
+                    // var accountDeudores = 347;
+                    var accountDeudores = 1041;
+                    // var cuentaItem = drt_cn_lib.lookup(search.Type.ITEM, loadItem.data, ['custitem_drt_accounnt_capital']);
+                    // if (
+                    //     cuentaItem.success &&
+                    //     cuentaItem.data.custitem_drt_accounnt_capital &&
+                    //     cuentaItem.data.custitem_drt_accounnt_capital[0] &&
+                    //     cuentaItem.data.custitem_drt_accounnt_capital[0].value
+                    // ) {
+                    //     accountDebit = cuentaItem.data.custitem_drt_accounnt_capital[0].value;
+                    // }
                     log.audit({
                         title: 'accountDebit',
                         details: JSON.stringify(accountDebit)
@@ -1061,6 +1062,9 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                         line: [],
                     };
 
+                    if (parametro.custbody_drt_nc_referencia) {
+                        objField_journal.custbody_drt_nc_referencia = parametro.custbody_drt_nc_referencia || '';
+                    }
                     if (parametro.total) {
                         objField_journal.custbody_drt_nc_total_transaccion = parametro.total;
                     }
@@ -1097,13 +1101,15 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
 
                     objSublist_journal.line.push({
                         account: parametro.account,
-                        debit: parametro.total
+                        debit: parametro.total,
+                        memo: objField_journal.custbody_drt_nc_referencia
                     });
 
                     objSublist_journal.line.push({
-                        account: accountDebit,
+                        account: accountDeudores,
                         credit: parametro.total,
-                        entity: entityLine
+                        entity: entityLine,
+                        memo: objField_journal.custbody_drt_nc_referencia
                     });
                     if (parametro.custbody_drt_nc_monto_excedente) {
                         objField_journal.custbody_drt_nc_monto_excedente = parametro.custbody_drt_nc_monto_excedente;
@@ -1111,14 +1117,13 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                         objSublist_journal.line.push({
                             account: parametro.account,
                             debit: objField_journal.custbody_drt_nc_monto_excedente,
-                            entity: entityLine,
-                            memo: ' Monto Excedente '
+                            memo: objField_journal.custbody_drt_nc_referencia
                         });
                         objSublist_journal.line.push({
                             account: 438,
                             credit: objField_journal.custbody_drt_nc_monto_excedente,
-                            entity: entityLine,
-                            memo: ' Monto Excedente '
+                            entity: datosTransaction.data.entity[0].value || '',
+                            memo: objField_journal.custbody_drt_nc_referencia
                         });
                     }
 
