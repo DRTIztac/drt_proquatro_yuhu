@@ -175,6 +175,7 @@ function customizeGlImpact(transactionRecord, standardLines, customLines, book) 
                                         // } var fields = ['custitem_drt_accounnt_capital'];
 
                                         if (tipo_descuento == 1) {
+                                            objField.custbody_drt_nc_pendiente_enviar = 'T';
                                             var entity = nlapiLookupField('customer', record_entity, ['custentity_drt_nc_empresa']);
                                             entity_empresa = entity.custentity_drt_nc_empresa || '';
                                             var totalR = (parseFloat(total_interes) + parseFloat(total_iva));
@@ -215,7 +216,8 @@ function customizeGlImpact(transactionRecord, standardLines, customLines, book) 
                                                 );
                                                 line++;
                                                 objSublist.line[line] = {};
-                                                objSublist.line[line].account = parseInt( /*transactionRecord.getFieldValue('account') || {{}} */ 347);
+                                                // objSublist.line[line].account = parseInt(347);
+                                                objSublist.line[line].account = parseInt(1041);
                                                 objSublist.line[line].debit = parseFloat(totalR).toFixed(2);
                                                 objSublist.line[line].entity = parseInt(entity_empresa);
                                                 objSublist.line[line].custcol_drt_nc_identificador_uuid = objField.custbody_drt_nc_identificador_uuid;
@@ -240,7 +242,8 @@ function customizeGlImpact(transactionRecord, standardLines, customLines, book) 
 
                                                 line++;
                                                 objSublist.line[line] = {};
-                                                objSublist.line[line].account = parseInt(347);
+                                                // objSublist.line[line].account = parseInt(347);
+                                                objSublist.line[line].account = parseInt(1041);
                                                 objSublist.line[line].debit = parseFloat(total).toFixed(2);
                                                 objSublist.line[line].entity = parseInt(entity_empresa);
                                                 objSublist.line[line].custcol_drt_nc_identificador_uuid = objField.custbody_drt_nc_identificador_uuid;
