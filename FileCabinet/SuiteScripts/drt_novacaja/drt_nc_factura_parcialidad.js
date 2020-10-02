@@ -3,9 +3,9 @@
  * @NScriptType MapReduceScript
  * @NModuleScope SameAccount
  */
-define(['N/record', 'N/search', 'N/format'],
+define(['N/record', 'N/search', 'N/format', 'N/runtime'],
 
-    function (record, search, format) {
+    function (record, search, format, runtime) {
 
         /**
          * Marks the beginning of the Map/Reduce process and generates input data.
@@ -27,21 +27,24 @@ define(['N/record', 'N/search', 'N/format'],
         };
 
         function getInputData() {
-
+            var id_search = runtime.getCurrentScript().getParameter({
+                name: 'custscript_drt_nc_id_search'
+            }) || '';
             const param_registro = 'customsearch_drt_ss_line_salesorder';
             // const param_registro = 'customsearch_drt_ss_line_saldo_inicial';
-            var respuesta = [];
-            var transactionSearchObj = search.load({
-                id: param_registro
-            });
+            if (id_search) {
+                var transactionSearchObj = '';
+                transactionSearchObj = search.load({
+                    id: id_search
+                });
 
 
-            var defaultFilters = transactionSearchObj.filters;
+                var defaultFilters = transactionSearchObj.filters;
 
-            var allFilters = defaultFilters;
-            transactionSearchObj.filters = allFilters;
+                var allFilters = defaultFilters;
+                transactionSearchObj.filters = allFilters;
 
-
+            }
             return transactionSearchObj;
         }
 
