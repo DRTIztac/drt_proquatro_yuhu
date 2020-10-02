@@ -4,6 +4,7 @@
  */
 define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
     function (search, record, drt_cn_lib, runtime, format) {
+        var objTransaction = {};
 
         function getInputData() {
             try {
@@ -228,16 +229,23 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                             title: 'statuscode' + response.data.code + ' recordType: ' + data.recordType + ' id: ' + data.id,
                             details: JSON.stringify(data)
                         });
-
+                        if (!objTransaction[data.recordType]) {
+                            objTransaction[data.recordType] = [];
+                        }
                         if (
+                            objTransaction[data.recordType].indexOf(data.id) < 0 &&
                             data.recordType &&
                             data.id
                         ) {
-
+                            objTransaction[data.recordType].push(data.id);
                             var objRecord = record.load({
                                 type: data.recordType,
                                 id: data.id,
                                 isDynamic: true
+                            });
+                            log.audit({
+                                title: 'objTransaction',
+                                details: JSON.stringify(objTransaction)
                             });
                             if (response.data.code == 200) {
                                 objupdate.custbody_drt_nc_pendiente_enviar = false;
@@ -279,6 +287,10 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
 
         function summarize(context) {
             try {
+                log.audit({
+                    title: 'objTransaction',
+                    details: JSON.stringify(objTransaction)
+                });
                 log.audit({
                     title: ' context summary ',
                     details: JSON.stringify(context)
