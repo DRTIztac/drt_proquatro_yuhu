@@ -578,12 +578,12 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                     var loadItem = itemTransaction(record.Type.SALES_ORDER, parametro.internalid, 0);
 
                     if (
-                        parametro.custbody_drt_nc_total_interes > 0 || parametro.custbody_drt_nc_tipo_pago == 2
+                        parametro.custbody_drt_nc_total_interes > 0
                     ) {
                         var objSublist_transaction = {
                             item: [],
                         };
-                        if (parametro.item) {
+                        if (parametro.item && parametro.custbody_drt_nc_tipo_pago == 2) {
                             for (var itemi in parametro.item) {
                                 var valorUnitario = 0;
                                 var valorImpuesto = 0;
@@ -626,9 +626,9 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                                 custcol_drt_nc_monto_total: parametro.custbody_drt_nc_total_transaccion,
                             });
                             // objSublist_transaction.item[0].item = 17;
-                            if (loadItem.success) {
-                                objSublist_transaction.item[0].item = loadItem.data;
-                            }
+                            // if (loadItem.success) {
+                            //     objSublist_transaction.item[0].item = loadItem.data;
+                            // }
 
                             objSublist_transaction.item[0].rate = parametro.custbody_drt_nc_total_interes || 0;
                         }
