@@ -450,6 +450,9 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                 if (parametro.total) {
                     objField_transaction.custbody_drt_nc_total_transaccion = parametro.total;
                 }
+                if (parametro.custbody_drt_nc_fecha_vencimiento) {
+                    objField_transaction.custbody_drt_nc_fecha_vencimiento = parametro.custbody_drt_nc_fecha_vencimiento;
+                }
 
                 var articulo_interes = runtime.getCurrentScript().getParameter({
                     name: 'custscript_drt_nc_articulo_interes'
