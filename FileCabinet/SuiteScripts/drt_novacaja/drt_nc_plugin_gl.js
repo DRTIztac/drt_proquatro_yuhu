@@ -91,33 +91,6 @@ function customizeGlImpact(transactionRecord, standardLines, customLines, book) 
                                         // 327;
                                         transactionRecord.getFieldValue('account') || '';
                                 }
-                                if (total && debit && credit && tipo_descuento == 1) {
-
-                                    lineGL(
-                                        customLines,
-                                        total,
-                                        credit,
-                                        debit,
-                                        memo + ', Abono'
-                                    );
-                                    line++;
-                                    objSublist.line[line] = {};
-                                    objSublist.line[line].account = parseInt(credit);
-                                    objSublist.line[line].debit = parseFloat(total).toFixed(2);
-                                    objSublist.line[line].entity = parseInt(record_entity);
-                                    objSublist.line[line].custcol_drt_nc_identificador_uuid = objField.custbody_drt_nc_identificador_uuid;
-                                    // objSublist.line[line].memo = memo + ', Abono ';
-                                    objSublist.line[line].memo = objField.custbody_drt_nc_referencia;
-
-                                    line++;
-                                    objSublist.line[line] = [];
-                                    objSublist.line[line].account = parseInt(debit);
-                                    objSublist.line[line].credit = parseFloat(total).toFixed(2);
-                                    objSublist.line[line].entity = parseInt(record_entity);
-                                    objSublist.line[line].custcol_drt_nc_identificador_uuid = objField.custbody_drt_nc_identificador_uuid;
-                                    // objSublist.line[line].memo = memo + ', Abono ';
-                                    objSublist.line[line].memo = objField.custbody_drt_nc_referencia;
-                                }
                                 if (total && debit && credit) {
                                     line++;
                                     objSublist.line[line] = {};
