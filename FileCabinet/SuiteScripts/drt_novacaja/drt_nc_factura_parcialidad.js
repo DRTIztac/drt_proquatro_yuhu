@@ -112,386 +112,404 @@ define(['N/record', 'N/search', 'N/format', 'N/runtime'],
                 var fecha = rowValues.custcol_drt_nc_fecha;
                 var amortizacion = rowValues.custcol_drt_nc_num_amortizacion;
                 var conexion = rowValues.custbody_drt_nc_con_so;
+                var fecha = rowValues.custcol_drt_nc_fecha || '';
+                var fecha_vencimiento = rowValues.custbody_drt_nc_fecha_vencimiento || '';
 
-                var col_capital;
-                var col_interes;
-                var col_iva;
-                var col_total;
-                var cus_folio;
-                var cus_UUID;
-
-
-                log.debug({
-                    title: "id amortizacion",
-                    details: id + fecha
-                });
-
-                /*
-                 * {"recordType":"salesorder"
-                 * ,"id":"1543",
-                 * "values":{"tranid":"85",
-                 * "item":
-                 * {"value":"17","text":"ARTICULO INTERES"},"custcol2":"","custcol_drt_nc_fecha":"2020-06-19","custcol_drt_nc_num_amortizacion":"2"}}*/
-
-                var recordType = record.Type.INVOICE;
-                log.debug({
-                    title: "recordType",
-                    details: recordType
-                });
-
-                var currRegValue = "";
-
-
-                var invrec = record.transform({
-                    'fromType': record.Type.SALES_ORDER,
-                    'fromId': Number(rowJson.id),
-                    'toType': recordType,
-                    'isDynamic': true
-                });
-
-                invrec.setValue({
-                    fieldId: 'trandate',
-                    value: format.parse({
-                        value: fecha,
-                        type: format.Type.DATE
-                    }) || ''
-                });
-
-                var itemcount = invrec.getLineCount({
-                    "sublistId": "item"
-                });
-
-                log.debug({
-                    title: "itemcount",
-                    details: itemcount
-                });
-                for (var j = itemcount - 1; j >= 0; j--) {
-
-
-                    var sublistFieldValue = invrec.getSublistValue({
-                        sublistId: 'item',
-                        fieldId: 'custcol_drt_nc_num_amortizacion',
-                        line: j
-                    });
-
-
-
-                    if (amortizacion != sublistFieldValue) {
-                        invrec.removeLine({
-                            sublistId: 'item',
-                            line: j
-                        });
+                var valid = true;
+                if (fecha_vencimiento) {
+                    if (!fecha) {
+                        fecha = new Date();
+                    }
+                    var diasFactutracion = diferenciaDias(
+                        fecha,
+                        fecha_vencimiento
+                    );
+                    if (diasFactutracion.success) {
+                        valid = diasFactutracion.data > 0;
                     } else {
-                        col_capital = invrec.getSublistValue({
-                            sublistId: 'item',
-                            fieldId: paramcol_capital,
-                            line: j
-                        });
-
-                        col_interes = invrec.getSublistValue({
-                            sublistId: 'item',
-                            fieldId: paramcol_interes,
-                            line: j
-                        });
-                        col_iva = invrec.getSublistValue({
-                            sublistId: 'item',
-                            fieldId: paramcol_iva,
-                            line: j
-                        });
-                        col_total = invrec.getSublistValue({
-                            sublistId: 'item',
-                            fieldId: paramcol_total,
-                            line: j
-                        });
-
-                        cus_folio = invrec.getValue({
-                            fieldId: notFolio
-                        });
-                        cus_UUID = invrec.getValue({
-                            fieldId: notUUID
-                        });
-
-
-
-                        invrec.setValue({
-                            fieldId: paramcus_capital,
-                            value: col_capital
-                        });
-                        invrec.setValue({
-                            fieldId: paramcus_interes,
-                            value: col_interes
-                        });
-                        invrec.setValue({
-                            fieldId: paramcus_iva,
-                            value: col_iva
-                        });
-                        invrec.setValue({
-                            fieldId: paramcus_total,
-                            value: col_total
-
-                        });
-                        invrec.setValue({
-                            fieldId: paramcus_amortizacion,
-                            value: amortizacion
-
-                        });
-
-
+                        valid = false;
                     }
                 }
-                currRegValue = invrec.getValue({
-                    fieldId: notSalesOrder
-                });
-                invrec.setValue({
-                    fieldId: notinvoice,
-                    value: currRegValue
-                });
+                if (valid) {
+                    var col_capital;
+                    var col_interes;
+                    var col_iva;
+                    var col_total;
+                    var cus_folio;
+                    var cus_UUID;
 
 
+                    log.debug({
+                        title: "id amortizacion",
+                        details: id + fecha
+                    });
 
-                invrec.setValue({
-                    fieldId: 'custbody_drt_nc_num_amortizacion',
-                    value: amortizacion
-                });
-                invrec.setValue({
-                    fieldId: notificacionYuhu,
-                    value: true
-                });
-                invrec.setValue({
-                    fieldId: notPendiente,
-                    value: ""
-                });
-                invrec.setValue({
-                    fieldId: notCreado,
-                    value: Number(rowJson.id)
-                });
+                    /*
+                     * {"recordType":"salesorder"
+                     * ,"id":"1543",
+                     * "values":{"tranid":"85",
+                     * "item":
+                     * {"value":"17","text":"ARTICULO INTERES"},"custcol2":"","custcol_drt_nc_fecha":"2020-06-19","custcol_drt_nc_num_amortizacion":"2"}}*/
 
+                    var recordType = record.Type.INVOICE;
+                    log.debug({
+                        title: "recordType",
+                        details: recordType
+                    });
 
-
-
-                invrec.setValue({
-                    fieldId: notSalesOrder,
-                    value: ""
-                });
-
-                var invoiceid = invrec.save({
-                    'enableSourcing': true,
-                    'ignoreMandatoryFields': true
-                });
+                    var currRegValue = "";
 
 
-                log.debug({
-                    title: "generated invoice id",
-                    details: invoiceid
-                })
-
-                if (rowValues.custbody_drt_nc_tipo_descuento.value && parseInt(rowValues.custbody_drt_nc_tipo_descuento.value) == 1) {
-
-                    //GENERA PAGO
-                    var payment = record.transform({
-                        'fromType': record.Type.INVOICE,
-                        'fromId': invoiceid,
-                        'toType': record.Type.CUSTOMER_PAYMENT,
+                    var invrec = record.transform({
+                        'fromType': record.Type.SALES_ORDER,
+                        'fromId': Number(rowJson.id),
+                        'toType': recordType,
                         'isDynamic': true
                     });
 
-                    payment.setValue({
+                    invrec.setValue({
                         fieldId: 'trandate',
                         value: format.parse({
                             value: fecha,
                             type: format.Type.DATE
                         }) || ''
                     });
-                    payment.setValue({
-                        fieldId: 'account',
-                        value: 1040
+
+                    var itemcount = invrec.getLineCount({
+                        "sublistId": "item"
                     });
 
-                    payment.setValue({
-                        fieldId: 'custbody_drt_nc_tipo_descuento',
-                        value: rowValues.custbody_drt_nc_tipo_descuento.value
+                    log.debug({
+                        title: "itemcount",
+                        details: itemcount
                     });
+                    for (var j = itemcount - 1; j >= 0; j--) {
 
-                    payment.setValue({
-                        fieldId: notPayment,
+
+                        var sublistFieldValue = invrec.getSublistValue({
+                            sublistId: 'item',
+                            fieldId: 'custcol_drt_nc_num_amortizacion',
+                            line: j
+                        });
+
+
+
+                        if (amortizacion != sublistFieldValue) {
+                            invrec.removeLine({
+                                sublistId: 'item',
+                                line: j
+                            });
+                        } else {
+                            col_capital = invrec.getSublistValue({
+                                sublistId: 'item',
+                                fieldId: paramcol_capital,
+                                line: j
+                            });
+
+                            col_interes = invrec.getSublistValue({
+                                sublistId: 'item',
+                                fieldId: paramcol_interes,
+                                line: j
+                            });
+                            col_iva = invrec.getSublistValue({
+                                sublistId: 'item',
+                                fieldId: paramcol_iva,
+                                line: j
+                            });
+                            col_total = invrec.getSublistValue({
+                                sublistId: 'item',
+                                fieldId: paramcol_total,
+                                line: j
+                            });
+
+                            cus_folio = invrec.getValue({
+                                fieldId: notFolio
+                            });
+                            cus_UUID = invrec.getValue({
+                                fieldId: notUUID
+                            });
+
+
+
+                            invrec.setValue({
+                                fieldId: paramcus_capital,
+                                value: col_capital
+                            });
+                            invrec.setValue({
+                                fieldId: paramcus_interes,
+                                value: col_interes
+                            });
+                            invrec.setValue({
+                                fieldId: paramcus_iva,
+                                value: col_iva
+                            });
+                            invrec.setValue({
+                                fieldId: paramcus_total,
+                                value: col_total
+
+                            });
+                            invrec.setValue({
+                                fieldId: paramcus_amortizacion,
+                                value: amortizacion
+
+                            });
+
+
+                        }
+                    }
+                    currRegValue = invrec.getValue({
+                        fieldId: notSalesOrder
+                    });
+                    invrec.setValue({
+                        fieldId: notinvoice,
                         value: currRegValue
                     });
 
-                    payment.setValue({
-                        fieldId: notinvoice,
-                        value: ""
-                    });
 
-                    payment.setValue({
+
+                    invrec.setValue({
                         fieldId: 'custbody_drt_nc_num_amortizacion',
                         value: amortizacion
                     });
-                    payment.setValue({
+                    invrec.setValue({
                         fieldId: notificacionYuhu,
                         value: true
                     });
-                    payment.setValue({
+                    invrec.setValue({
                         fieldId: notPendiente,
                         value: ""
                     });
-                    payment.setValue({
-                        fieldId: 'custbody_drt_nc_createdfrom',
-                        value: invoiceid
-                    });
-                    payment.setValue({
-                        fieldId: notFolio,
-                        value: cus_folio
-                    });
-                    payment.setValue({
-                        fieldId: notUUID,
-                        value: cus_UUID
+                    invrec.setValue({
+                        fieldId: notCreado,
+                        value: Number(rowJson.id)
                     });
 
 
 
-                    payment.setValue({
-                        fieldId: paramcus_capital,
-                        value: col_capital
-                    });
-                    payment.setValue({
-                        fieldId: paramcus_interes,
-                        value: col_interes
-                    });
-                    payment.setValue({
-                        fieldId: paramcus_iva,
-                        value: col_iva
-                    });
-                    payment.setValue({
-                        fieldId: paramcus_total,
-                        value: col_total
 
+                    invrec.setValue({
+                        fieldId: notSalesOrder,
+                        value: ""
                     });
 
-
-                    var paymentId = payment.save({
+                    var invoiceid = invrec.save({
                         'enableSourcing': true,
                         'ignoreMandatoryFields': true
                     });
+
+
                     log.debug({
-                        title: "pago generado",
-                        details: paymentId
+                        title: "generated invoice id",
+                        details: invoiceid
                     })
 
+                    if (rowValues.custbody_drt_nc_tipo_descuento.value && parseInt(rowValues.custbody_drt_nc_tipo_descuento.value) == 1) {
 
-
-                    //GENERA ENTRADA DE DIARIO Y PAGO A INVOICE
-
-                    // var conexion = Number(rowValues[notSalesOrder].value);
-                    // var salesOrder = Number(rowJson.id);
-
-                    //ENTRADA DE DIARIO
-                    //TRASPASO DE DEUDA A EMPRESA A TRAVES DE ENTRADA DE DIARIO
-                    // var total = 0;
-                    // var objJournal = {
-                    //     line_field: []
-                    // };
-                    // if (rowValues[paramcol_capital] != 0) {
-                    //     total = Number(rowValues[paramcol_capital]);
-                    //     var accountCapital =
-                    //         objJournal = createObjJournalEntry(rowValues["custentity_drt_nc_empresa.customer"].value, 629, rowValues[paramcol_capital], true, conexion, salesOrder);
-                    // }
-
-                    // if (rowValues[paramcol_interes] != 0) {
-                    //     if (Number(rowValues[paramcol_iva])) {
-                    //         total += Number(rowValues[paramcol_iva]);
-                    //     }
-                    //     if (Number(rowValues[paramcol_interes])) {
-                    //         total += Number(rowValues[paramcol_interes]);
-                    //     }
-
-                    //     var objJournal_2 = createObjJournalEntry(rowValues["custentity_drt_nc_empresa.customer"].value, 630, (Number(rowValues[paramcol_interes]) + Number(rowValues[paramcol_iva])).toFixed(2), true, conexion, salesOrder);
-                    //     if (!objJournal.body_field) {
-                    //         objJournal = objJournal_2;
-                    //     }
-                    //     objJournal.line_field = objJournal.line_field.concat(objJournal_2.line_field);
-                    //     objJournal.body_field.custbody_drt_nc_total_transaccion = total.toFixed(2);
-
-                    // }
-
-
-                    // log.debug({
-                    //     title: "objJournal",
-                    //     details: objJournal
-                    // });
-                    // if (objJournal.body_field) {
-                    //     objJournal.body_field.custbody_drt_nc_identificador_folio = rowValues["custbody_drt_nc_identificador_folio"];
-                    //     objJournal.body_field.custbody_drt_nc_identificador_uuid = rowValues["custbody_drt_nc_identificador_uuid"];
-                    //     var journal2 = createTransaction(param_record.journal, objJournal);
-
-                    // }
-
-
-                }
-
-
-                //ACTUALIZA SALES RECORD 
-                var salesRec = record.load({
-                    type: record.Type.SALES_ORDER,
-                    id: rowJson.id,
-                    isDynamic: true
-                });
-
-                var itemcount = salesRec.getLineCount({
-                    "sublistId": "item"
-                });
-                var control = false;
-                for (var i = 0; i < itemcount; i++) {
-                    var intquantity = salesRec.getSublistValue({
-                        sublistId: 'item',
-                        fieldId: 'quantitybilled',
-                        line: i
-                    });
-                    var drtInvoice = salesRec.getSublistValue({
-                        sublistId: 'item',
-                        fieldId: 'custcol_drt_nc_invoice',
-                        line: i
-                    });
-
-
-                    if (intquantity == 1 && drtInvoice == "") {
-                        control = true;
-                        log.debug({
-                            title: "Invoice" + invoiceid,
-                            details: "Enter on change 2"
+                        //GENERA PAGO
+                        var payment = record.transform({
+                            'fromType': record.Type.INVOICE,
+                            'fromId': invoiceid,
+                            'toType': record.Type.CUSTOMER_PAYMENT,
+                            'isDynamic': true
                         });
-                        salesRec.selectLine({
-                            sublistId: "item",
+
+                        payment.setValue({
+                            fieldId: 'trandate',
+                            value: format.parse({
+                                value: fecha,
+                                type: format.Type.DATE
+                            }) || ''
+                        });
+                        payment.setValue({
+                            fieldId: 'account',
+                            value: 1040
+                        });
+
+                        payment.setValue({
+                            fieldId: 'custbody_drt_nc_tipo_descuento',
+                            value: rowValues.custbody_drt_nc_tipo_descuento.value
+                        });
+
+                        payment.setValue({
+                            fieldId: notPayment,
+                            value: currRegValue
+                        });
+
+                        payment.setValue({
+                            fieldId: notinvoice,
+                            value: ""
+                        });
+
+                        payment.setValue({
+                            fieldId: 'custbody_drt_nc_num_amortizacion',
+                            value: amortizacion
+                        });
+                        payment.setValue({
+                            fieldId: notificacionYuhu,
+                            value: true
+                        });
+                        payment.setValue({
+                            fieldId: notPendiente,
+                            value: ""
+                        });
+                        payment.setValue({
+                            fieldId: 'custbody_drt_nc_createdfrom',
+                            value: invoiceid
+                        });
+                        payment.setValue({
+                            fieldId: notFolio,
+                            value: cus_folio
+                        });
+                        payment.setValue({
+                            fieldId: notUUID,
+                            value: cus_UUID
+                        });
+
+
+
+                        payment.setValue({
+                            fieldId: paramcus_capital,
+                            value: col_capital
+                        });
+                        payment.setValue({
+                            fieldId: paramcus_interes,
+                            value: col_interes
+                        });
+                        payment.setValue({
+                            fieldId: paramcus_iva,
+                            value: col_iva
+                        });
+                        payment.setValue({
+                            fieldId: paramcus_total,
+                            value: col_total
+
+                        });
+
+
+                        var paymentId = payment.save({
+                            'enableSourcing': true,
+                            'ignoreMandatoryFields': true
+                        });
+                        log.debug({
+                            title: "pago generado",
+                            details: paymentId
+                        })
+
+
+
+                        //GENERA ENTRADA DE DIARIO Y PAGO A INVOICE
+
+                        // var conexion = Number(rowValues[notSalesOrder].value);
+                        // var salesOrder = Number(rowJson.id);
+
+                        //ENTRADA DE DIARIO
+                        //TRASPASO DE DEUDA A EMPRESA A TRAVES DE ENTRADA DE DIARIO
+                        // var total = 0;
+                        // var objJournal = {
+                        //     line_field: []
+                        // };
+                        // if (rowValues[paramcol_capital] != 0) {
+                        //     total = Number(rowValues[paramcol_capital]);
+                        //     var accountCapital =
+                        //         objJournal = createObjJournalEntry(rowValues["custentity_drt_nc_empresa.customer"].value, 629, rowValues[paramcol_capital], true, conexion, salesOrder);
+                        // }
+
+                        // if (rowValues[paramcol_interes] != 0) {
+                        //     if (Number(rowValues[paramcol_iva])) {
+                        //         total += Number(rowValues[paramcol_iva]);
+                        //     }
+                        //     if (Number(rowValues[paramcol_interes])) {
+                        //         total += Number(rowValues[paramcol_interes]);
+                        //     }
+
+                        //     var objJournal_2 = createObjJournalEntry(rowValues["custentity_drt_nc_empresa.customer"].value, 630, (Number(rowValues[paramcol_interes]) + Number(rowValues[paramcol_iva])).toFixed(2), true, conexion, salesOrder);
+                        //     if (!objJournal.body_field) {
+                        //         objJournal = objJournal_2;
+                        //     }
+                        //     objJournal.line_field = objJournal.line_field.concat(objJournal_2.line_field);
+                        //     objJournal.body_field.custbody_drt_nc_total_transaccion = total.toFixed(2);
+
+                        // }
+
+
+                        // log.debug({
+                        //     title: "objJournal",
+                        //     details: objJournal
+                        // });
+                        // if (objJournal.body_field) {
+                        //     objJournal.body_field.custbody_drt_nc_identificador_folio = rowValues["custbody_drt_nc_identificador_folio"];
+                        //     objJournal.body_field.custbody_drt_nc_identificador_uuid = rowValues["custbody_drt_nc_identificador_uuid"];
+                        //     var journal2 = createTransaction(param_record.journal, objJournal);
+
+                        // }
+
+
+                    }
+
+
+                    //ACTUALIZA SALES RECORD 
+                    var salesRec = record.load({
+                        type: record.Type.SALES_ORDER,
+                        id: rowJson.id,
+                        isDynamic: true
+                    });
+
+                    var itemcount = salesRec.getLineCount({
+                        "sublistId": "item"
+                    });
+                    var control = false;
+                    for (var i = 0; i < itemcount; i++) {
+                        var intquantity = salesRec.getSublistValue({
+                            sublistId: 'item',
+                            fieldId: 'quantitybilled',
+                            line: i
+                        });
+                        var drtInvoice = salesRec.getSublistValue({
+                            sublistId: 'item',
+                            fieldId: 'custcol_drt_nc_invoice',
                             line: i
                         });
 
-                        salesRec.setCurrentSublistValue({
-                            sublistId: 'item',
-                            fieldId: 'custcol_drt_nc_invoice',
-                            value: Number(invoiceid)
 
-                        });
+                        if (intquantity == 1 && drtInvoice == "") {
+                            control = true;
+                            log.debug({
+                                title: "Invoice" + invoiceid,
+                                details: "Enter on change 2"
+                            });
+                            salesRec.selectLine({
+                                sublistId: "item",
+                                line: i
+                            });
 
-                        salesRec.setCurrentSublistValue({
-                            sublistId: 'item',
-                            fieldId: 'custcol_drt_nc_facturado',
-                            value: true
+                            salesRec.setCurrentSublistValue({
+                                sublistId: 'item',
+                                fieldId: 'custcol_drt_nc_invoice',
+                                value: Number(invoiceid)
 
-                        });
-                        salesRec.commitLine({
-                            sublistId: "item"
-                        });
+                            });
 
+                            salesRec.setCurrentSublistValue({
+                                sublistId: 'item',
+                                fieldId: 'custcol_drt_nc_facturado',
+                                value: true
+
+                            });
+                            salesRec.commitLine({
+                                sublistId: "item"
+                            });
+
+                        }
+                        if (!(intquantity == 1 && drtInvoice == "") && control) {
+                            continue;
+                        }
                     }
-                    if (!(intquantity == 1 && drtInvoice == "") && control) {
-                        continue;
-                    }
+
+                    salesRec.save({
+                        enableSourcing: false,
+                        ignoreMandatoryFields: true
+                    });
                 }
-
-                salesRec.save({
-                    enableSourcing: false,
-                    ignoreMandatoryFields: true
-                });
-
             } catch (error) {
                 log.debug({
                     title: "error",
@@ -501,6 +519,48 @@ define(['N/record', 'N/search', 'N/format', 'N/runtime'],
             }
         }
 
+        function diferenciaDias(param_fecha_inicio, param_fecha_fin) {
+            try {
+                log.audit({
+                    title: 'diferenciaDias',
+                    details: 'param_fecha_inicio: ' + JSON.stringify(param_fecha_inicio) +
+                        'param_fecha_fin: ' + JSON.stringify(param_fecha_fin)
+                });
+
+                var respuesta = {
+                    success: false,
+                    data: 0
+                }
+                if (param_fecha_inicio && param_fecha_fin) {
+                    var parseInicio = format.parse({
+                        value: param_fecha_inicio,
+                        type: format.Type.DATE
+                    });
+                    var parseFin = format.parse({
+                        value: param_fecha_fin,
+                        type: format.Type.DATE
+                    });
+
+                    var fechaInicio_2 = new Date(parseInicio).getTime();
+                    var fechaFin_2 = new Date(parseFin).getTime();
+                    var diff_2 = fechaFin_2 - fechaInicio_2;
+                    var dias_2 = diff_2 / (1000 * 60 * 60 * 24);
+                    respuesta.data = dias_2.toFixed(0);
+                }
+                respuesta.success = true;
+            } catch (error) {
+                log.error({
+                    title: 'error',
+                    details: JSON.stringify(error)
+                });
+            } finally {
+                log.audit({
+                    title: 'respuesta diferenciaDias',
+                    details: JSON.stringify(respuesta)
+                });
+                return respuesta;
+            }
+        }
 
         function searchItemAccount(item) {
 
