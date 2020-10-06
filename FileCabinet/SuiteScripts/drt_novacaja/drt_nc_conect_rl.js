@@ -182,6 +182,7 @@ define(['./drt_cn_lib.js', 'N/file'], function (drt_cn_lib, file) {
                         if (context.record) {
                             objCreate.custrecord_drt_nc_p_conexion = context.record;
                         }
+                        break;
 
                     }
                     case 'journalentry': {
