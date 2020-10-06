@@ -887,11 +887,11 @@ define([
                                             fieldId: 'rate',
                                         }) +
                                         ' despues: ' + 0;
-                                    newRecord.setCurrentSublistValue({
-                                        sublistId: sublist,
-                                        fieldId: 'isclosed',
-                                        value: true
-                                    }) || '';
+                                    // newRecord.setCurrentSublistValue({
+                                    //     sublistId: sublist,
+                                    //     fieldId: 'isclosed',
+                                    //     value: true
+                                    // }) || '';
                                     newRecord.setCurrentSublistValue({
                                         sublistId: sublist,
                                         fieldId: 'custcol_drt_nc_facturado',
