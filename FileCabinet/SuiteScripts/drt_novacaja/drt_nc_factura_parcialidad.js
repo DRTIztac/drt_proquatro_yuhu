@@ -30,6 +30,10 @@ define(['N/record', 'N/search', 'N/format', 'N/runtime'],
             var id_search = runtime.getCurrentScript().getParameter({
                 name: 'custscript_drt_nc_id_search'
             }) || '';
+            log.audit({
+                title: 'id_search',
+                details: JSON.stringify(id_search)
+            });
             const param_registro = 'customsearch_drt_ss_line_salesorder';
             // const param_registro = 'customsearch_drt_ss_line_saldo_inicial';
             if (id_search) {
@@ -130,6 +134,14 @@ define(['N/record', 'N/search', 'N/format', 'N/runtime'],
                         valid = false;
                     }
                 }
+                log.audit({
+                    title: 'fecha',
+                    details: JSON.stringify(fecha)
+                });
+                log.audit({
+                    title: 'fecha_vencimiento',
+                    details: JSON.stringify(fecha_vencimiento)
+                });
                 if (valid) {
                     var col_capital;
                     var col_interes;
