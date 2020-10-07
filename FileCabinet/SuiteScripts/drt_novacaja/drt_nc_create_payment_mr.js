@@ -583,7 +583,7 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                         var objSublist_transaction = {
                             item: [],
                         };
-                        if (parametro.item.length > 0 && parametro.custbody_drt_nc_tipo_pago && parseInt(parametro.custbody_drt_nc_tipo_pago) == 2) {
+                        if (parametro.item && parametro.item.length > 0 && parametro.custbody_drt_nc_tipo_pago && parseInt(parametro.custbody_drt_nc_tipo_pago) == 2) {
                             for (var itemi in parametro.item) {
                                 var valorUnitario = 0;
                                 var valorImpuesto = 0;
