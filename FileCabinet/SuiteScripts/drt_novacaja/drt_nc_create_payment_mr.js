@@ -578,12 +578,12 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                     var loadItem = itemTransaction(record.Type.SALES_ORDER, parametro.internalid, 0);
 
                     if (
-                        parametro.custbody_drt_nc_total_interes > 0
+                        parametro.custbody_drt_nc_total_interes > 0 || parametro.item.length > 0
                     ) {
                         var objSublist_transaction = {
                             item: [],
                         };
-                        if (parametro.item && parametro.custbody_drt_nc_tipo_pago == 2) {
+                        if (parametro.item.length > 0 && parametro.custbody_drt_nc_tipo_pago && parseInt(parametro.custbody_drt_nc_tipo_pago) == 2) {
                             for (var itemi in parametro.item) {
                                 var valorUnitario = 0;
                                 var valorImpuesto = 0;
