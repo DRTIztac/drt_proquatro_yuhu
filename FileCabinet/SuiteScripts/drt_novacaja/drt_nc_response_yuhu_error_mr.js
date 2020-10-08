@@ -13,32 +13,30 @@ define([
         record,
         drt_cn_lib,
         runtime) {
-        var searchType = runtime.getCurrentScript().getParameter("custscript_drt_rd_folder") || '';
-        var arrayColumns = runtime.getCurrentScript().getParameter("custscript_drt_rd_folder") || '';
-        var arrayFilters = runtime.getCurrentScript().getParameter("custscript_drt_rd_folder") || '';
-        var pendiente_enviar_field = runtime.getCurrentScript().getParameter("custscript_drt_rd_folder") || '';
-        var informacion_envio_field = runtime.getCurrentScript().getParameter("custscript_drt_rd_folder") || '';
+
+
+        var objSearch = {};
+
 
         function getInputData() {
             try {
-                var arrayFilter = [
-                    ['custentity_drt_nc_con_cm', search.Operator.NONEOF, '@NONE@'],
-                    'and',
-                    ['custentity_drt_nc_pendiente_enviar', search.Operator.IS, "T"]
-                ];
-
+                var paramObjSearch = runtime.getCurrentScript().getParameter("custscript_drt_nc_objsearch") || '';
+                log.audit({
+                    title: 'paramObjSearch',
+                    details: JSON.stringify(paramObjSearch)
+                });
                 var respuesta = '';
-                if (
-                    searchType &&
-                    arrayColumns &&
-                    arrayFilters &&
-                    pendiente_enviar_field &&
-                    informacion_envio_field
-                ) {
+                if (paramObjSearch) {
+                    objSearch = JSON.parse(paramObjSearch);
+                    log.audit({
+                        title: 'objSearch',
+                        details: JSON.stringify(objSearch)
+                    });
+
                     respuesta = search.create({
-                        type: searchType,
-                        columns: arrayColumns,
-                        filters: arrayFilters
+                        type: objSearch.searchType,
+                        columns: objSearch.arrayColumns,
+                        filters: objSearch.arrayFilters
                     });
                 }
             } catch (error) {
@@ -71,68 +69,73 @@ define([
         function reduce(context) {
             try {
                 var recordData = context.values;
-
-                for (var ids in recordData) {
-                    try {
-                        var data = JSON.parse(recordData[ids]);
-                        var webhookConsultado = 'error';
-                        var response = {
-                            data: {
-                                code: '',
-                                body: '',
+                var fieldId = '';
+                var objSearch = {};
+                var paramObjSearch = runtime.getCurrentScript().getParameter("custscript_drt_nc_objsearch") || '';
+                objSearch = JSON.parse(paramObjSearch);
+                fieldId = objSearch.arrayColumns[0] || '';
+                log.audit({
+                    title: 'fieldId',
+                    details: JSON.stringify(fieldId)
+                });
+                if (fieldId) {
+                    for (var ids in recordData) {
+                        try {
+                            var data = JSON.parse(recordData[ids]);
+                            var webhookConsultado = 'error';
+                            var response = {
+                                data: {
+                                    code: '',
+                                    body: '',
+                                }
+                            };
+                            var dataWebhook = drt_cn_lib.bookWebhook(webhookConsultado);
+                            if (dataWebhook.success) {
+                                data.webhook = dataWebhook.data.url;
+                                response = drt_cn_lib.postWebhook(dataWebhook.data.header, dataWebhook.data.url, data);
                             }
-                        };
-                        var dataWebhook = drt_cn_lib.bookWebhook(webhookConsultado);
-                        if (dataWebhook.success) {
-                            data.webhook = dataWebhook.data.url;
-                            response = drt_cn_lib.postWebhook(dataWebhook.data.header, dataWebhook.data.url, data);
-                        }
-                        log.audit({
-                            title: ' statuscode ' + response.data.code +
-                                ' recordType: ' + data.recordType +
-                                ' id: ' + data.id,
-                            details: JSON.stringify(data)
-                        });
-
-                        if (
-                            data.recordType &&
-                            data.id
-                        ) {
-
-                            var objRecord = record.load({
-                                type: data.recordType,
-                                id: data.id,
-                                isDynamic: true
+                            log.audit({
+                                title: 'statuscode ' + response.data.code +
+                                    ' recordType: ' + data.recordType +
+                                    ' id: ' + data.id,
+                                details: JSON.stringify(data)
                             });
-                            if (response.data.code == 200) {
+
+                            if (
+                                data.recordType &&
+                                data.id &&
+                                fieldId
+                            ) {
+
+                                var objRecord = record.load({
+                                    type: data.recordType,
+                                    id: data.id,
+                                    isDynamic: true
+                                });
+
+
                                 objRecord.setValue({
-                                    fieldId: pendiente_enviar_field,
-                                    value: false,
+                                    fieldId: fieldId,
+                                    value: (response.data.code == 200),
                                     ignoreFieldChange: true
                                 });
+
+
+                                var recordId = objRecord.save({
+                                    enableSourcing: true,
+                                    ignoreMandatoryFields: true
+                                });
+                                log.audit({
+                                    title: 'recordId',
+                                    details: JSON.stringify(recordId)
+                                });
                             }
-
-
-                            objRecord.setValue({
-                                fieldId: informacion_envio_field,
-                                value: JSON.stringify(data),
-                                ignoreFieldChange: true
-                            });
-
-                            var recordId = objRecord.save({
-                                enableSourcing: true,
-                                ignoreMandatoryFields: true
-                            });
-                            log.audit({
-                                title: 'recordId',
-                                details: JSON.stringify(recordId)
+                        } catch (error) {
+                            log.error({
+                                title: 'error reduce',
+                                details: JSON.stringify(error)
                             });
                         }
-                    } catch (error) {
-                        log.error({
-                            title: 'error reduce',
-                            details: JSON.stringify(error)
-                        });
                     }
                 }
             } catch (error) {
