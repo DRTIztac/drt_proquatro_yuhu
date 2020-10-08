@@ -147,6 +147,34 @@ define(['./drt_cn_lib.js', 'N/file'], function (drt_cn_lib, file) {
             var field_context = '';
             var field_json = '';
             switch (context.data) {
+                case 'item':
+                    var e = {
+                        "data": "item",
+                        "recordType": "salesorder",
+                        "record": 15911,
+                        "sublist": [{
+                            "line": 2,
+                            "custcol_drt_nc_fecha": "2020-09-16",
+                            "custcol_drt_nc_fecha_vencimiento": "2020-09-16",
+                            "custcol_drt_nc_num_amortizacion": 100,
+                            "custcol_drt_nc_monto_iva": 1.16,
+                            "tax1amt": 1.16,
+                            "custcol_drt_nc_monto_interes": 10,
+                            "rate": 10,
+                            "custcol_drt_nc_monto_capital": 100,
+                            "custcol_drt_nc_facturado": true,
+                            "custcol_drt_nc_saldo_inicial": true,
+                        }],
+                        "field": {
+                            "trandate": "2020-10-16",
+                            "memo": "update",
+                            "custbody_drt_nc_referencia ": "custbody_drt_nc_referencia "
+                        }
+                    };
+                    var actualizacion = drt_cn_lib.updateTransactionLine(context.recordType, context.record, context.data, context.sublist, context.field);
+                    respuesta = {};
+                    respuesta = actualizacion;
+                    break;
                 case 'update':
                     var update = drt_cn_lib.updateYuhu(context);
                     respuesta = {};
@@ -279,6 +307,8 @@ define(['./drt_cn_lib.js', 'N/file'], function (drt_cn_lib, file) {
             return respuesta;
         }
     }
+
+
 
     function createFile(param_nombre, param_folder, param_contenido, param_tipo) {
         try {

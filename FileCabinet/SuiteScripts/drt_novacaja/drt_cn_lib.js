@@ -1030,7 +1030,135 @@ define([
                 return respuesta;
             }
         }
+
+        function updateTransactionLine(param_type, param_id, sublist, param_sublist, param_field) {
+            try {
+                var respuesta = {
+                    success: false,
+                    data: '',
+                    error: {}
+                };
+                log.audit({
+                    title: 'updateSalesOrder',
+                    details: ' param_id: ' + param_id +
+                        ' param_type: ' + JSON.stringify(param_type) +
+                        ' sublist: ' + JSON.stringify(sublist) +
+                        ' param_sublist: ' + JSON.stringify(param_sublist) +
+                        ' param_field: ' + JSON.stringify(param_field)
+                });
+                if (
+                    param_id &&
+                    param_type &&
+                    (
+                        Object.keys(param_sublist).length > 0 && sublist ||
+                        Object.keys(param_sublist).length <= 0
+                    ) &&
+                    (
+                        Object.keys(param_sublist).length > 0 ||
+                        Object.keys(param_field).length > 0
+                    )
+                ) {
+                    var newRecord = record.load({
+                        type: param_type,
+                        id: param_id,
+                        isDynamic: true
+                    });
+
+
+                    for (var line in param_sublist) {
+                        newRecord.selectLine({
+                            sublistId: sublist,
+                            line: param_sublist[line].line
+                        });
+                        for (var fieldIdSublist in param_sublist[line]) {
+                            if (param_sublist[line][fieldIdSublist] && fieldIdSublist != 'line') {
+                                log.audit({
+                                    title: 'param_sublist[' + line + '][' + fieldIdSublist + ']',
+                                    details: JSON.stringify(param_sublist[line][fieldIdSublist])
+                                });
+                                if (
+                                    fieldIdSublist == 'custcol_drt_nc_fecha' ||
+                                    fieldIdSublist == 'custcol_drt_nc_fecha_vencimiento'
+                                ) {
+                                    newRecord.setCurrentSublistValue({
+                                        sublistId: sublist,
+                                        fieldId: fieldIdSublist,
+                                        value: format.parse({
+                                            value: param_sublist[line][fieldIdSublist],
+                                            type: format.Type.DATE
+                                        })
+                                    });
+
+                                } else {
+                                    newRecord.setCurrentSublistValue({
+                                        sublistId: sublist,
+                                        fieldId: fieldIdSublist,
+                                        value: param_sublist[line][fieldIdSublist]
+                                    });
+
+                                }
+                            }
+                        }
+                        newRecord.commitLine({
+                            sublistId: sublist
+                        });
+
+                    }
+                    for (var fieldId in param_field) {
+                        log.audit({
+                            title: 'param_field[' + fieldId + ']',
+                            details: JSON.stringify(param_field[fieldId])
+                        });
+                        if (
+                            fieldId == 'trandate'
+                        ) {
+                            newRecord.setValue({
+                                fieldId: fieldId,
+                                value: format.parse({
+                                    value: param_field[fieldId],
+                                    type: format.Type.DATE
+                                })
+                            });
+
+                        } else {
+                            newRecord.setValue({
+                                fieldId: fieldId,
+                                value: param_field[fieldId]
+                            });
+                        }
+                    }
+                    respuesta.data = newRecord.save({
+                        enableSourcing: false,
+                        ignoreMandatoryFields: true
+                    }) || '';
+                } else {
+                    respuesta.error = {
+                        message: 'Faltan campos necesarios para la actualizacion ' +
+                            ' recordType: ' + JSON.stringify(param_type) +
+                            ' record: ' + param_id +
+                            ' sublist: ' + JSON.stringify(param_sublist) +
+                            ' field: ' + JSON.stringify(param_field)
+                    };
+
+                }
+                respuesta.success = respuesta.data != '';
+            } catch (error) {
+                respuesta.error = error;
+                log.error({
+                    title: 'error updateTransactionLine',
+                    details: JSON.stringify(error)
+                });
+            } finally {
+                log.emergency({
+                    title: 'respuesta updateTransactionLine',
+                    details: JSON.stringify(respuesta)
+                });
+                return respuesta;
+            }
+        }
+
         return {
+            updateTransactionLine: updateTransactionLine,
             voidTransaction: voidTransaction,
             lookup: lookup,
             searchRecord: searchRecord,
