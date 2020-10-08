@@ -513,6 +513,14 @@ define([
                         respuesta.data.url = 'http://192.81.211.56/api/v1/ns/webhook/' + param_case + '/';
                         respuesta.data.ejemplo = {};
                         break;
+                    case 'error':
+                        respuesta.data.header = {
+                            "Authorization": "Api-Key 3DNj4Xkl.9EGoAHGzhglGyDhjxMsfvyh4lsXuu60j",
+                            "Content-Type": "application/json"
+                        };
+                        respuesta.data.url = 'http://192.81.211.56/api/v1/ns/webhook/' + param_case + '/';
+                        respuesta.data.ejemplo = {};
+                        break;
 
 
                     default:
@@ -1005,19 +1013,37 @@ define([
             try {
                 var respuesta = {
                     success: false,
-                    data: ''
+                    data: '',
+                    message: [],
+                    error: {}
                 };
                 log.audit({
                     title: 'voidTransaction',
                     details: ' param_transaction: ' + param_transaction +
                         ' param_id: ' + param_id
                 });
-                respuesta.data = transaction.void({
-                    type: param_transaction, //transaction.Type.SALES_ORDER,
-                    id: parseInt(param_id) //salesOrderId
-                });
+                if (param_transaction && param_id) {
+                    var voidJe = true;
+                    if (param_transaction != record.Type.JOURNAL_ENTRY) {
+                        var transaccion = lookup(param_transaction, param_id, 'custbody_drt_nc_transaccion_ajuste');
+                        if (transaccion.success) {
+                            var voidJe = voidTransaction(record.Type.JOURNAL_ENTRY, transaccion.data.custbody_drt_nc_transaccion_ajuste);
+                            voidJe = voidJe.success;
+                            respuesta.message.push('Transaccion de impacto anulada ' + transaccion.data.custbody_drt_nc_transaccion_ajuste + ' ' + voidJe.success);
+                        }
+                    }
+                    if (voidJe) {
+                        respuesta.data = transaction.void({
+                            type: param_transaction, //transaction.Type.SALES_ORDER,
+                            id: parseInt(param_id) //salesOrderId
+                        });
+                        respuesta.message.push('Transaccion solicitada anulada ' + param_transaction + ' ' + param_id);
+                    }
+                }
                 respuesta.success = respuesta.data != '';
             } catch (error) {
+                respuesta.message.push('No se pudo anular la transaccion ' + param_transaction + ' ' + param_id);
+                respuesta.error = error;
                 log.error({
                     title: 'error voidTransaction',
                     details: JSON.stringify(error)
