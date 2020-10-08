@@ -134,13 +134,12 @@ define(['N/record', 'N/search', 'N/format', 'N/runtime'],
                         valid = false;
                     }
                 }
+
                 log.audit({
-                    title: 'fecha',
-                    details: JSON.stringify(fecha)
-                });
-                log.audit({
-                    title: 'fecha_vencimiento',
-                    details: JSON.stringify(fecha_vencimiento)
+                    title: 'Fecha Valida',
+                    details: ' fecha: ' + JSON.stringify(fecha) +
+                        ' fecha_vencimiento: ' + JSON.stringify(fecha_vencimiento) +
+                        ' Crear transaccion: ' + valid
                 });
                 if (valid) {
                     var col_capital;
