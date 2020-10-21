@@ -368,11 +368,18 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                 }
 
                 if (cliente) {
+                    var objSubmitCustomer ={
+                        custentity_drt_nc_pendiente_enviar:true,
+                        custentity_psg_ei_entity_edoc_standard:3
+                    };
+
                     if (respuesta.data.commpany) {
-                        drt_cn_lib.submitRecord(record.Type.CUSTOMER, cliente, {
-                            custentity_drt_nc_empresa: respuesta.data.commpany
+                        objSubmitCustomer.custentity_drt_nc_empresa= respuesta.data.commpany;
+                        drt_cn_lib.submitRecord(respuesta.data.commpany, cliente, {
+                        custentity_drt_nc_pendiente_enviar:true
                         });
                     }
+                    drt_cn_lib.submitRecord(record.Type.CUSTOMER, cliente, objSubmitCustomer);
 
                     respuesta.data.cliente = cliente;
                     objField_transaction.entity = cliente;
