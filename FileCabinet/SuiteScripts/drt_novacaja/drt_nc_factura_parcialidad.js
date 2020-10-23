@@ -185,7 +185,20 @@ define(['N/record', 'N/search', 'N/format', 'N/runtime'],
                             type: format.Type.DATE
                         }) || ''
                     });
-
+                    var objDefaul={
+                        custbody_psg_ei_template: 9,
+                        custbody_psg_ei_status: 1,
+                        custbody_edoc_gen_trans_pdf: true,
+                        custbody_mx_cfdi_usage: 3,
+                        custbody_mx_txn_sat_payment_method: 28,
+                        custbody_mx_txn_sat_payment_term: 3,
+                    };
+                    for(var field_id in objDefaul){
+                        invrec.setValue({
+                            fieldId: field_id,
+                            value: objDefaul[field_id]
+                        });
+                    }
                     var itemcount = invrec.getLineCount({
                         "sublistId": "item"
                     });
