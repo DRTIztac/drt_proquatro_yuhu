@@ -11,7 +11,8 @@ define([
         'N/record',
         'N/http',
         'N/https',
-        'N/format'
+        'N/format',
+        'N/runtime'
     ],
     function (
         transaction,
@@ -20,7 +21,8 @@ define([
         record,
         http,
         https,
-        format
+        format,
+        runtime
     ) {
 
         function searchRecord(param_type, param_filters, param_column) {
@@ -131,6 +133,32 @@ define([
                     });
                 }
 
+                var objDefaul = {};
+                if (param_type == record.Type.INVOICE) {
+                    objDefaul.custbody_psg_ei_template = 9;
+                    objDefaul.custbody_psg_ei_status = 1;
+                    objDefaul.custbody_edoc_gen_trans_pdf = true;
+                    objDefaul.custbody_mx_cfdi_usage = 3;
+                    objDefaul.custbody_mx_txn_sat_payment_method = 28;
+                    objDefaul.custbody_mx_txn_sat_payment_term = 3;
+                } else if (param_type == record.Type.CASH_SALE) {
+                    objDefaul.custbody_psg_ei_template = 7;
+                    objDefaul.custbody_psg_ei_status = 1;
+                    objDefaul.custbody_edoc_gen_trans_pdf = true;
+                    objDefaul.custbody_mx_cfdi_usage = 3;
+                    objDefaul.custbody_mx_txn_sat_payment_method = 28;
+                    objDefaul.custbody_mx_txn_sat_payment_term = 3;
+                }
+                log.audit({
+                    title: 'objDefaul',
+                    details: JSON.stringify(objDefaul)
+                });
+                for (var field_id in objDefaul) {
+                    newRecord.setValue({
+                        fieldId: field_id,
+                        value: objDefaul[field_id]
+                    });
+                }
                 for (var sublist in param_obj_sublist) {
                     for (var element in param_obj_sublist[sublist]) {
                         newRecord.selectNewLine({
@@ -442,91 +470,53 @@ define([
                     title: 'bookWebhook',
                     details: JSON.stringify(param_case)
                 });
+                var apykey = runtime.getCurrentScript().getParameter({
+                    name: 'custscript_drt_nc_apykey'
+                }) || '';
+                var url = runtime.getCurrentScript().getParameter({
+                    name: 'custscript_drt_nc_url'
+                }) || '';
+
+                respuesta.data.header = {
+                    "Authorization": apykey, //"Api-Key PjAmZ2Sq.vO3FJtxnejCy20kNUBDZ0r3KZ1L8th5Q",
+                    "Content-Type": "application/json"
+                };
+                respuesta.data.url = url;
+
+                respuesta.data.ejemplo = {};
 
                 switch (param_case) {
                     case 'salesorder':
-                        respuesta.data.header = {
-                            "Authorization": "Api-Key PjAmZ2Sq.vO3FJtxnejCy20kNUBDZ0r3KZ1L8th5Q",
-                            "Content-Type": "application/json"
-                        };
-                        respuesta.data.url = 'http://192.81.211.56/api/v1/ns/webhook/' + param_case + '/';
-                        respuesta.data.ejemplo = {};
+                        respuesta.data.url += param_case + '/';
                         break;
+
                     case 'invoice':
-                        respuesta.data.header = {
-                            "Authorization": "Api-Key PjAmZ2Sq.vO3FJtxnejCy20kNUBDZ0r3KZ1L8th5Q",
-                            "Content-Type": "application/json"
-                        };
-                        respuesta.data.url = 'http://192.81.211.56/api/v1/ns/webhook/' + param_case + '/';
-                        respuesta.data.ejemplo = {};
+                        respuesta.data.url += param_case + '/';
                         break;
 
                     case 'customerpayment':
-                        respuesta.data.header = {
-                            "Authorization": "Api-Key PjAmZ2Sq.vO3FJtxnejCy20kNUBDZ0r3KZ1L8th5Q",
-                            "Content-Type": "application/json"
-                        };
-                        respuesta.data.url = 'http://192.81.211.56/api/v1/ns/webhook/' + param_case + '/';
-                        respuesta.data.ejemplo = {};
+                        respuesta.data.url += param_case + '/';
                         break;
 
                     case 'journalentry':
-                        respuesta.data.header = {
-                            "Authorization": "Api-Key PjAmZ2Sq.vO3FJtxnejCy20kNUBDZ0r3KZ1L8th5Q",
-                            "Content-Type": "application/json"
-                        };
-                        respuesta.data.url = 'http://192.81.211.56/api/v1/ns/webhook/' + param_case + '/';
-                        respuesta.data.ejemplo = {};
-                        break;
-
-                    case 'customerdeposit':
-                        respuesta.data.header = {
-                            "Authorization": "Api-Key PjAmZ2Sq.vO3FJtxnejCy20kNUBDZ0r3KZ1L8th5Q",
-                            "Content-Type": "application/json"
-                        };
-                        respuesta.data.url = 'http://192.81.211.56/api/v1/ns/webhook/' + param_case + '/';
-                        respuesta.data.ejemplo = {};
-                        break;
-
-                    case 'check':
-                        respuesta.data.header = {
-                            "Authorization": "Api-Key PjAmZ2Sq.vO3FJtxnejCy20kNUBDZ0r3KZ1L8th5Q",
-                            "Content-Type": "application/json"
-                        };
-                        respuesta.data.url = 'http://192.81.211.56/api/v1/ns/webhook/' + param_case + '/';
-                        respuesta.data.ejemplo = {};
+                        respuesta.data.url += param_case + '/';
                         break;
 
                     case 'cashsale':
-                        respuesta.data.header = {
-                            "Authorization": "Api-Key PjAmZ2Sq.vO3FJtxnejCy20kNUBDZ0r3KZ1L8th5Q",
-                            "Content-Type": "application/json"
-                        };
-                        respuesta.data.url = 'http://192.81.211.56/api/v1/ns/webhook/' + param_case + '/';
-                        respuesta.data.ejemplo = {};
+                        respuesta.data.url += param_case + '/';
                         break;
                     case 'customer':
-                        respuesta.data.header = {
-                            "Authorization": "Api-Key PjAmZ2Sq.vO3FJtxnejCy20kNUBDZ0r3KZ1L8th5Q",
-                            "Content-Type": "application/json"
-                        };
-                        respuesta.data.url = 'http://192.81.211.56/api/v1/ns/webhook/' + param_case + '/';
-                        respuesta.data.ejemplo = {};
+                        respuesta.data.url += param_case + '/';
                         break;
                     case 'error':
-                        respuesta.data.header = {
-                            "Authorization": "Api-Key PjAmZ2Sq.vO3FJtxnejCy20kNUBDZ0r3KZ1L8th5Q",
-                            "Content-Type": "application/json"
-                        };
-                        respuesta.data.url = 'http://192.81.211.56/api/v1/ns/webhook/' + param_case + '/';
-                        respuesta.data.ejemplo = {};
+                        respuesta.data.url += param_case + '/';
                         break;
 
 
                     default:
                         break;
                 }
-                respuesta.success = Object.keys(respuesta.data).length > 0;
+                respuesta.success = apykey != '' && url != '';
             } catch (error) {
                 log.error({
                     title: 'error bookWebhook',
@@ -563,13 +553,33 @@ define([
                         title: 'postWebhook param_body',
                         details: JSON.stringify(param_body)
                     });
-                    respuesta.data = http.post({
-                        headers: param_header,
-                        url: param_url,
-                        body: JSON.stringify(param_body),
-                    }) || {
-                        code: 0
-                    };
+                    var is_https = runtime.getCurrentScript().getParameter({
+                        name: 'custscript_drt_nc_https'
+                    }) == 'T';
+
+                    log.audit({
+                        title: 'is_https',
+                        details: JSON.stringify(is_https)
+                    });
+
+                    if (is_https) {
+                        respuesta.data = https.post({
+                            headers: param_header,
+                            url: param_url,
+                            body: JSON.stringify(param_body),
+                        }) || {
+                            code: 0
+                        };
+
+                    } else {
+                        respuesta.data = http.post({
+                            headers: param_header,
+                            url: param_url,
+                            body: JSON.stringify(param_body),
+                        }) || {
+                            code: 0
+                        };
+                    }
                 }
                 respuesta.success = respuesta.data.code == 200;
             } catch (error) {
