@@ -181,7 +181,7 @@ define(['./drt_cn_lib.js', 'N/file'], function (drt_cn_lib, file) {
                     respuesta = update;
                     break;
 
-                case 'void':
+                case 'VOID':
                     if (context && context.recordType && context.id) {
                         var voidTransaction = drt_cn_lib.voidTransaction(context.recordType, context.id);
                         respuesta = {};
