@@ -1036,10 +1036,12 @@ define([
                     var voidJe = true;
                     if (param_transaction != record.Type.JOURNAL_ENTRY) {
                         var transaccion = lookup(param_transaction, param_id, 'custbody_drt_nc_transaccion_ajuste');
-                        if (transaccion.success) {
-                            var voidJe = voidTransaction(record.Type.JOURNAL_ENTRY, transaccion.data.custbody_drt_nc_transaccion_ajuste);
-                            voidJe = voidJe.success;
-                            respuesta.message.push('Transaccion de impacto anulada ' + transaccion.data.custbody_drt_nc_transaccion_ajuste + ' ' + voidJe.success);
+                        if (transaccion.success && transaccion.data.custbody_drt_nc_transaccion_ajuste.length>0) {
+                            var voidJe2 = voidTransaction(record.Type.JOURNAL_ENTRY, transaccion.data.custbody_drt_nc_transaccion_ajuste[0].value);
+                            if(voidJe2.success){
+                                respuesta.message.push('Transaccion de impacto anulada ' +record.Type.JOURNAL_ENTRY+' '+ transaccion.data.custbody_drt_nc_transaccion_ajuste[0].value );
+                            }
+                            voidJe = voidJe2.success;
                         }
                     }
                     if (voidJe) {
