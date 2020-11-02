@@ -80,21 +80,28 @@ define([
                         // custbody_mx_customer_rfc
                         // custentity_mx_rfc
 
-                        var updateCustomer = drt_cn_lib.submitRecord(record.Type.CUSTOMER, data.values.custrecord_psg_ei_audit_entity.value, {
-                            custentity_mx_rfc: 'XAXX010101000'
-                        });
+                        // var updateCustomer = drt_cn_lib.submitRecord(record.Type.CUSTOMER, data.values.custrecord_psg_ei_audit_entity.value, {
+                        //     custentity_mx_rfc: 'XAXX010101000'
+                        // });
                         var updateTransaction = drt_cn_lib.submitRecord(record.Type.INVOICE, data.values.custrecord_psg_ei_audit_transaction.value, {
                             custbody_mx_customer_rfc: 'XAXX010101000',
                             custbody_psg_ei_status: 1
                         });
-                        var updateRecord=drt_cn_lib.submitRecord('customrecord_psg_ei_audit_trail', data.id, {
-                           isinactive: true
-                       });
                         if (
-                            updateCustomer.success &&
-                            updateRecord.success &&
+                            !updateRecord.success
+                        ) {
+                            var updateTransaction = drt_cn_lib.submitRecord(record.Type.CASH_SALE, data.values.custrecord_psg_ei_audit_transaction.value, {
+                                custbody_mx_customer_rfc: 'XAXX010101000',
+                                custbody_psg_ei_status: 1
+                            });
+                        }
+                        if (
+                            updateRecord.success
+                        ) {
+                            var updateRecord = drt_cn_lib.submitRecord('customrecord_psg_ei_audit_trail', data.id, {
+                                isinactive: true
+                            });
                             updateTransaction.success
-                            ) {
 
                             var webhookConsultado = 'error';
                             var response = {
@@ -108,7 +115,10 @@ define([
                                 data.webhook = dataWebhook.data.url;
                                 response = drt_cn_lib.postWebhook(dataWebhook.data.header, dataWebhook.data.url, data);
                             }
-                            log.audit({title:'response '+data.id,details:JSON.stringify(response)});
+                            log.audit({
+                                title: 'response ' + data.id,
+                                details: JSON.stringify(response)
+                            });
                         }
                     } catch (error) {
                         log.error({
