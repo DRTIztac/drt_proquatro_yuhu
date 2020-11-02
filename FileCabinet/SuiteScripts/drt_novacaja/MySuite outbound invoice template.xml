@@ -80,7 +80,7 @@
     </fx:Emisor>
     <fx:Receptor>
         <fx:CdgPaisReceptor>${custom.billaddr.countrycode}</fx:CdgPaisReceptor>
-        <fx:RFCReceptor>${customer.custentity_mx_rfc}</fx:RFCReceptor>
+        <fx:RFCReceptor>${transaction.custbody_mx_customer_rfc}</fx:RFCReceptor>
         <fx:NombreReceptor>${customerName}</fx:NombreReceptor>
         <fx:UsoCFDI>${satCodes.cfdiUsage}</fx:UsoCFDI>
     </fx:Receptor>
