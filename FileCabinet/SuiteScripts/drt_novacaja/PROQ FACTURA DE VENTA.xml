@@ -194,8 +194,8 @@
 	<td align="left" style="width: 60%;">${record.billaddress}</td>
 	</tr>
 	<tr>
-	<td align="left" style="width: 60%;">Email: ${record.custbodycorreo_cte} <br />RFC: ${record.custbody_mx_customer_rfc}</td>
-	<td align="left" style="width: 40%;">RFC: ${companyInformation.federalidnumber}</td>
+	<td align="left" style="width: 60%;">Email: ${record.entity.email} <br />RFC: ${record.custbody_mx_customer_rfc}</td>
+	<td align="left" style="width: 40%;">RFC:<#if custom?has_content && custom.companyInfo?has_content && vcustom.companyInfo.rfc?has_content> ${custom.companyInfo.rfc} </#if></td>
 	</tr></table>
 
 <table class="body" style="width: 100%; margin-top: 10px;"><tr>
@@ -208,6 +208,27 @@
     <td align="left" colspan="4">${record.terms}</td>
 	<td align="left" colspan="4">${record.salesrep}</td>
 	</tr></table>
+    <table class="itemtable" style="width: 100%; margin-top: 10px;">
+        <thead>
+            <tr>
+            <th align="center">Folio</th>
+            <th align="center">Amortizacion</th>
+            <th align="center">Capital</th>
+            <th align="center">Interes</th>
+            <th align="center">IVA</th>  
+            <th align="center">Total</th>
+            </tr>
+        </thead>
+        <tr>
+            <td align="center">${record.custbody_drt_nc_identificador_folio}</td>
+            <td align="center">${record.custbody_drt_nc_num_amortizacion}</td>
+            <td align="center">${record.custbody_drt_nc_total_capital?string.currency}</td>
+            <td align="center">${record.custbody_drt_nc_total_interes?string.currency}</td>
+            <td align="center">${record.custbody_drt_nc_total_iva?string.currency}</td>
+            <td align="center">${record.custbody_drt_nc_total_transaccion?string.currency}</td>
+        </tr>
+    </table>
+
 <#if record.item?has_content>
 <#assign objLoteLong={}>
 <#if record.custbody_drt_serie_lote_obj?has_content>
