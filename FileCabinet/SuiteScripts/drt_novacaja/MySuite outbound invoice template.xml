@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<#setting locale = "en_US">
+
+<#if custom.multiCurrencyFeature == "true">
+    <#assign "currencyCode" = transaction.currencysymbol>
+    <#if transaction.exchangerate == 1>
+        <#assign exchangeRate = 1>
+    <#else>
+        <#assign exchangeRate = transaction.exchangerate?string["0.000000"]>
+    </#if>
+<#else>
+    <#assign "currencyCode" = "MXN">
+    <#assign exchangeRate = 1>
+</#if>
+<#if custom.oneWorldFeature == "true">
+    <#assign customCompanyInfo = transaction.subsidiary>
+<#else>
+    <#assign "customCompanyInfo" = companyinformation>
+</#if>
+<#if customer.isperson == "T">
+    <#assign customerName = customer.firstname + ' ' + customer.lastname>
+<#else>
+    <#assign "customerName" = customer.companyname>
+</#if>
+<#assign "summary" = custom.summary>
+<#assign "satCodes" = custom.satcodes>
+<#assign "totalAmount" = summary.subtotal - summary.totalDiscount>
+<#assign "companyTaxRegNumber" = custom.companyInfo.rfc>
+<#assign paymentMethod = satCodes.paymentMethod>
+<#assign paymentTerm = satCodes.paymentTerm>
+<#if satCodes.proofType == "I">
+    <#assign satProofType = "FACTURA">
+<#else>
+    <#assign satProofType = "NOTA_DE_CREDITO">
+    <#if custom.relatedCfdis.types[0] == "07">
+        <#assign paymentMethod = "30">
+        <#assign paymentTerm = "PUE">
+    </#if>
+</#if>
+<fx:FactDocMX
+    xmlns:fx="http://www.fact.com.mx/schema/fx"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.fact.com.mx/schema/fx http://www.mysuitemex.com/fact/schema/fx_2010_f.xsd">
+    <fx:Version>7</fx:Version>
+    <fx:Identificacion>
+        <fx:CdgPaisEmisor>MX</fx:CdgPaisEmisor>
+        <fx:TipoDeComprobante>${satProofType}</fx:TipoDeComprobante>
+        <fx:RFCEmisor>${companyTaxRegNumber}</fx:RFCEmisor>
+        <#if customCompanyInfo.legalname?has_content>
+        <fx:RazonSocialEmisor>${customCompanyInfo.legalname}</fx:RazonSocialEmisor>
+        </#if>
+        <fx:Usuario>${custom.loggedUserName}</fx:Usuario>
+        <fx:AsignacionSolicitada>
+            <#if transaction.custbody_mx_cfdi_serie?has_content>            
+                <fx:Serie>${transaction.custbody_mx_cfdi_serie}</fx:Serie>
+            </#if>
+            <#if transaction.custbody_mx_cfdi_folio?has_content>            
+                 <fx:Folio>${transaction.custbody_mx_cfdi_folio}</fx:Folio>
+            </#if>           
+            <fx:TiempoDeEmision>${transaction.createddate?string.iso_nz}</fx:TiempoDeEmision>
+        </fx:AsignacionSolicitada>
+        <fx:LugarExpedicion>${customCompanyInfo.zip}</fx:LugarExpedicion>
+    </fx:Identificacion>
+    <#list custom.relatedCfdis.types as cfdiRelType>
+   <fx:CfdiRelacionados>
+        <fx:TipoRelacion>${cfdiRelType}</fx:TipoRelacion>
+   <#assign "cfdisArray" = custom.relatedCfdis.cfdis["k"+cfdiRelType?index]>
+   <#if cfdisArray?has_content>
+   <#list cfdisArray as cfdiIdx>
+        <fx:UUID>${transaction.recmachcustrecord_mx_rcs_orig_trans[cfdiIdx.index?number].custrecord_mx_rcs_uuid}</fx:UUID>
+   </#list>
+   </#if>
+   </fx:CfdiRelacionados>
+    </#list>  
+    <fx:Emisor>
+        <fx:RegimenFiscal>
+            <fx:Regimen>${satCodes.industryType}</fx:Regimen>
+        </fx:RegimenFiscal>
+    </fx:Emisor>
+    <fx:Receptor>
+        <fx:CdgPaisReceptor>${custom.billaddr.countrycode}</fx:CdgPaisReceptor>
+        <fx:RFCReceptor>${customer.custentity_mx_rfc}</fx:RFCReceptor>
+        <fx:NombreReceptor>${customerName}</fx:NombreReceptor>
+        <fx:UsoCFDI>${satCodes.cfdiUsage}</fx:UsoCFDI>
+    </fx:Receptor>
+    <fx:Conceptos>
+    <#list custom.items as customItem>
+    <#assign "item" = transaction.item[customItem.line?number]>
+    <#assign "taxes" = customItem.taxes>
+    <#assign "itemSatCodes" = satCodes.items[customItem.line?number]>
+    <#if customItem.type == "Group"  || customItem.type == "Kit">
+      <#assign "itemSatUnitCode" = "H87">
+      <#assign "itemUnits" = "Pieza">
+    <#else>
+      <#assign "itemSatUnitCode" = (customItem.satUnitCode)!"">
+      <#assign "itemUnits" = item.units>
+    </#if>
+    <fx:Concepto>
+        <fx:Cantidad>${item.quantity?string["0.000000"]}</fx:Cantidad>
+        <fx:ClaveUnidad>${itemSatUnitCode}</fx:ClaveUnidad>
+        <#if itemUnits?has_content>
+        <fx:UnidadDeMedida>${itemUnits}</fx:UnidadDeMedida>
+        </#if>
+        <fx:ClaveProdServ>${itemSatCodes.itemCode}</fx:ClaveProdServ>
+        <fx:Codigo>${item.item}</fx:Codigo>
+        <fx:Descripcion>${item.description}</fx:Descripcion>
+        <fx:ValorUnitario>${customItem.rate?number?string["0.00"]}</fx:ValorUnitario> 
+        <fx:Importe>${customItem.amount?number?string["0.00"]}</fx:Importe> 
+        <fx:Descuento>${customItem.totalDiscount?number?abs?string["0.00"]}</fx:Descuento>
+        <fx:ImpuestosSAT>
+        <#if taxes.taxItems?has_content>
+        <fx:Traslados>
+            <#list taxes.taxItems as customTaxItem>
+            <#if customTaxItem.taxFactorType == "Exento">
+            <fx:Traslado Base="${customTaxItem.taxBaseAmount?number?string["0.00"]}" Impuesto="${customTaxItem.satTaxCode}" TipoFactor="${customTaxItem.taxFactorType}" />
+            </#if>
+            <#if !customTaxItem.taxFactorType?has_content || customTaxItem.taxFactorType != "Exento">
+            <fx:Traslado Base="${customTaxItem.taxBaseAmount?number?string["0.00"]}" Importe="${customTaxItem.taxAmount?number?string["0.00"]}" Impuesto="${customTaxItem.satTaxCode}" TasaOCuota="${customTaxItem.taxRate?number?string["0.000000"]}" TipoFactor="${customTaxItem.taxFactorType}" />
+            </#if>
+            </#list>
+        </fx:Traslados>
+        </#if>
+        <#if taxes.whTaxItems?has_content>
+        <fx:Retenciones>
+            <#list taxes.whTaxItems as customTaxItem>
+            <fx:Retencion Base="${customTaxItem.taxBaseAmount?number?string["0.00"]}" Importe="${customTaxItem.taxAmount?number?string["0.00"]}" Impuesto="${customTaxItem.satTaxCode}" TasaOCuota="${customTaxItem.taxRate?number?string["0.000000"]}" TipoFactor="${customTaxItem.taxFactorType}" />
+            </#list>
+        </fx:Retenciones>
+        </#if>
+        </fx:ImpuestosSAT>
+        <fx:Opciones>
+        <#if item.custcol_mx_txn_line_sat_cust_req_num?has_content>
+            <fx:DatosDeImportacion>
+                <fx:InformacionAduanera>
+                    <fx:NumeroDePedimento>${item.custcol_mx_txn_line_sat_cust_req_num}</fx:NumeroDePedimento>
+                </fx:InformacionAduanera>
+            </fx:DatosDeImportacion>
+        </#if>
+        <#if item.custcol_mx_txn_line_sat_cadastre_id?has_content>
+            <fx:CuentaPredial>${item.custcol_mx_txn_line_sat_cadastre_id}</fx:CuentaPredial>
+        </#if>        
+        <#if customItem.parts?has_content>
+            <#list customItem.parts as part>
+            <#assign "partItem" = transaction.item[part.line?number]>
+            <#assign "partSatCodes" = satCodes.items[part.line?number]>
+            <fx:Parte Cantidad="${partItem.quantity?string["0.0"]}" ClaveProdServ="${partSatCodes.itemCode}" Descripcion="${partItem.description}" Importe="${part.amount?number?string["0.00"]}" ValorUnitario="${part.rate?number?string["0.00"]}" NoIdentificacion="${part.itemId}" Unidad="${part.satUnitCode}"/>
+            </#list>
+        </#if>              
+        </fx:Opciones>  
+    </fx:Concepto>
+    </#list>
+</fx:Conceptos>
+    <#if summary.includeWithHolding == "true" || summary.includeTransfers == "true">
+    <#if summary.includeWithHolding == "true" && summary.includeTransfers == "true">
+    <fx:ImpuestosSAT TotalImpuestosRetenidos="${summary.totalWithHoldTaxAmt?number?string["0.00"]}" TotalImpuestosTrasladados="${summary.totalNonWithHoldTaxAmt?number?string["0.00"]}">
+    <#elseif summary.includeWithHolding == "true">
+    <fx:ImpuestosSAT TotalImpuestosRetenidos="${summary.totalWithHoldTaxAmt?number?string["0.00"]}">
+    <#elseif summary.includeTransfers == "true">
+    <fx:ImpuestosSAT TotalImpuestosTrasladados="${summary.totalNonWithHoldTaxAmt?number?string["0.00"]}">
+    </#if>
+    <#if summary.includeWithHolding == "true">
+    <fx:Retenciones>
+        <#list summary.whTaxes as customTaxItem>
+        <fx:Retencion Importe="${customTaxItem.taxAmount?number?string["0.00"]}" Impuesto="${customTaxItem.satTaxCode}" />
+        </#list>
+    </fx:Retenciones>
+    </#if>
+    <#if summary.includeTransfers == "true">
+    <fx:Traslados>
+        <#list summary.transferTaxes as customTaxItem>
+        <#if !customTaxItem.taxFactorType?has_content || customTaxItem.taxFactorType != "Exento">
+        <fx:Traslado Importe="${customTaxItem.taxAmount?number?string["0.00"]}" Impuesto="${customTaxItem.satTaxCode}" TasaOCuota="${customTaxItem.taxRate?number?string["0.000000"]}" TipoFactor="${customTaxItem.taxFactorType}" />
+        </#if>
+        </#list>
+    </fx:Traslados>
+    </#if>
+    <#if summary.includeWithHolding == "true" || summary.includeTransfers == "true">
+    </fx:ImpuestosSAT>
+    </#if>
+    </#if>    
+    <fx:Totales>
+        <fx:Moneda>${currencyCode}</fx:Moneda>
+        <fx:TipoDeCambioVenta>${exchangeRate}</fx:TipoDeCambioVenta>
+        <fx:SubTotalBruto>${summary.subtotal?number?string["0.00"]}</fx:SubTotalBruto>
+        <fx:SubTotal>${summary.subtotal?number?string["0.00"]}</fx:SubTotal>
+        <fx:Descuento>${summary.totalDiscount?number?abs?string["0.00"]}</fx:Descuento>
+        <fx:Total>${summary.totalAmount?number?string["0.00"]}</fx:Total>
+        <fx:TotalEnLetra>-</fx:TotalEnLetra>
+         <#if (paymentMethod!"")?has_content>
+            <fx:FormaDePago>${paymentMethod}</fx:FormaDePago>
+         </#if>
+    </fx:Totales>
+    <fx:ComprobanteEx>
+        <fx:TerminosDePago>
+         <#if (paymentTerm!"")?has_content>
+            <fx:MetodoDePago>${paymentTerm}</fx:MetodoDePago>
+         </#if>
+         <#if transaction.terms?has_content>
+            <fx:CondicionesDePago>${transaction.terms}</fx:CondicionesDePago>
+        </#if>
+        </fx:TerminosDePago>
+    </fx:ComprobanteEx>
+</fx:FactDocMX>
