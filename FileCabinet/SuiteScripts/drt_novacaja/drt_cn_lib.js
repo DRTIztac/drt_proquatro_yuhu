@@ -138,14 +138,14 @@ define([
                     objDefaul.custbody_psg_ei_template = 9;
                     objDefaul.custbody_psg_ei_status = 1;
                     objDefaul.custbody_edoc_gen_trans_pdf = true;
-                    objDefaul.custbody_mx_cfdi_usage = 3;
+                    objDefaul.custbody_mx_cfdi_usage = 22;
                     objDefaul.custbody_mx_txn_sat_payment_method = 28;
                     objDefaul.custbody_mx_txn_sat_payment_term = 3;
                 } else if (param_type == record.Type.CASH_SALE) {
                     objDefaul.custbody_psg_ei_template = 7;
                     objDefaul.custbody_psg_ei_status = 1;
                     objDefaul.custbody_edoc_gen_trans_pdf = true;
-                    objDefaul.custbody_mx_cfdi_usage = 3;
+                    objDefaul.custbody_mx_cfdi_usage = 22;
                     objDefaul.custbody_mx_txn_sat_payment_method = 28;
                     objDefaul.custbody_mx_txn_sat_payment_term = 3;
                 }
@@ -1036,10 +1036,10 @@ define([
                     var voidJe = true;
                     if (param_transaction != record.Type.JOURNAL_ENTRY) {
                         var transaccion = lookup(param_transaction, param_id, 'custbody_drt_nc_transaccion_ajuste');
-                        if (transaccion.success && transaccion.data.custbody_drt_nc_transaccion_ajuste.length>0) {
+                        if (transaccion.success && transaccion.data.custbody_drt_nc_transaccion_ajuste.length > 0) {
                             var voidJe2 = voidTransaction(record.Type.JOURNAL_ENTRY, transaccion.data.custbody_drt_nc_transaccion_ajuste[0].value);
-                            if(voidJe2.success){
-                                respuesta.message.push('Transaccion de impacto anulada ' +record.Type.JOURNAL_ENTRY+' '+ transaccion.data.custbody_drt_nc_transaccion_ajuste[0].value );
+                            if (voidJe2.success) {
+                                respuesta.message.push('Transaccion de impacto anulada ' + record.Type.JOURNAL_ENTRY + ' ' + transaccion.data.custbody_drt_nc_transaccion_ajuste[0].value);
                             }
                             voidJe = voidJe2.success;
                         }
