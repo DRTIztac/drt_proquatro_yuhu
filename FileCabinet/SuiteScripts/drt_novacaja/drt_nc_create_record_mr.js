@@ -172,7 +172,11 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                 };
 
                 var objField_empresa = {};
-                var objAddress_empresa = {};
+                var objAddress_empresa = {
+                    addressbook: {
+                        country: 'MX'
+                    }
+                };
                 var cliente = '';
                 var objField_customer = {};
 
@@ -201,7 +205,7 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                             objField_empresa.firstname = parametro.empresa.firstname;
                             objField_empresa.lastname = parametro.empresa.lastname;
                         } else {
-                            parametro.empresa.isperson = "F";
+                            objField_empresa.isperson = "F";
                             objField_empresa.companyname = parametro.empresa.companyname;
                         }
 
@@ -214,21 +218,26 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                         if (parametro.empresa.custentity_mx_rfc) {
                             objField_empresa.custentity_drt_mx_rfc = parametro.empresa.custentity_mx_rfc;
                         }
-                        if (
-                            parametro.empresa.addressbook &&
-                            parametro.empresa.addressbook.custrecord_streetname &&
-                            parametro.empresa.addressbook.custrecord_streetnum &&
-                            parametro.empresa.addressbook.city &&
-                            parametro.empresa.addressbook.state &&
-                            parametro.empresa.addressbook.zip
-                        ) {
-                            objAddress_empresa.addressbook = {};
-                            objAddress_empresa.addressbook.country = 'MX';
+                        // if (
+                        //     parametro.empresa.addressbook &&
+                        //     parametro.empresa.addressbook.custrecord_streetname &&
+                        //     parametro.empresa.addressbook.custrecord_streetnum &&
+                        //     parametro.empresa.addressbook.city &&
+                        //     parametro.empresa.addressbook.state &&
+                        //     parametro.empresa.addressbook.zip
+                        // ) 
+                        {
+
+                            if (parametro.empresa.addressbook.country) {
+                                objAddress_empresa.addressbook.country = parametro.empresa.addressbook.country;
+                            }
                             if (parametro.empresa.addressbook.custrecord_streetname) {
                                 objAddress_empresa.addressbook.custrecord_streetname = parametro.empresa.addressbook.custrecord_streetname;
                             }
                             if (parametro.empresa.addressbook.custrecord_streetnum) {
                                 objAddress_empresa.addressbook.custrecord_streetnum = parametro.empresa.addressbook.custrecord_streetnum;
+                            } else {
+                                respuesta.error.push('Hace falta custrecord_streetnum de la empresa');
                             }
                             if (parametro.empresa.addressbook.custrecord_unit) {
                                 objAddress_empresa.addressbook.custrecord_unit = parametro.empresa.addressbook.custrecord_unit;
@@ -241,6 +250,8 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                             }
                             if (parametro.empresa.addressbook.zip) {
                                 objAddress_empresa.addressbook.zip = parametro.empresa.addressbook.zip;
+                            } else {
+                                respuesta.error.push('Hace falta zip de la empresa');
                             }
                             if (parametro.empresa.addressbook.custrecord_village) {
                                 objAddress_empresa.addressbook.custrecord_village = parametro.empresa.addressbook.custrecord_village;
@@ -312,22 +323,31 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                         addressee: "destinatario",
                     };
 
-                    var objAddress = {};
-                    if (
-                        parametro.customer.addressbook &&
-                        parametro.customer.addressbook.custrecord_streetname &&
-                        parametro.customer.addressbook.custrecord_streetnum &&
-                        parametro.customer.addressbook.city &&
-                        parametro.customer.addressbook.state &&
-                        parametro.customer.addressbook.zip
-                    ) {
-                        objAddress.addressbook = {};
-                        objAddress.addressbook.country = 'MX';
+                    var objAddress = {
+                        addressbook: {
+                            country: 'MX'
+                        }
+                    };
+                    // if (
+                    //     parametro.customer.addressbook &&
+                    //     parametro.customer.addressbook.custrecord_streetname &&
+                    //     parametro.customer.addressbook.custrecord_streetnum &&
+                    //     parametro.customer.addressbook.city &&
+                    //     parametro.customer.addressbook.state &&
+                    //     parametro.customer.addressbook.zip
+                    // ) 
+                    {
+
+                        if (parametro.customer.addressbook.country) {
+                            objAddress.addressbook.country = parametro.customer.addressbook.country;
+                        }
                         if (parametro.customer.addressbook.custrecord_streetname) {
                             objAddress.addressbook.custrecord_streetname = parametro.customer.addressbook.custrecord_streetname;
                         }
                         if (parametro.customer.addressbook.custrecord_streetnum) {
                             objAddress.addressbook.custrecord_streetnum = parametro.customer.addressbook.custrecord_streetnum;
+                        } else {
+                            respuesta.error.push('Hace falta custrecord_streetnum del cliente');
                         }
                         if (parametro.customer.addressbook.custrecord_unit) {
                             objAddress.addressbook.custrecord_unit = parametro.customer.addressbook.custrecord_unit;
@@ -340,6 +360,8 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                         }
                         if (parametro.customer.addressbook.zip) {
                             objAddress.addressbook.zip = parametro.customer.addressbook.zip;
+                        } else {
+                            respuesta.error.push('Hace falta zip del cliente');
                         }
                         if (parametro.customer.addressbook.custrecord_village) {
                             objAddress.addressbook.custrecord_village = parametro.customer.addressbook.custrecord_village;
@@ -347,9 +369,9 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                         if (parametro.customer.addressbook.city) {
                             objAddress.addressbook.city = parametro.customer.addressbook.city;
                         }
-                        if (parametro.customer.isperson) {
+                        if (parametro.customer.isperson == "T") {
                             objAddress.addressbook.addressee = parametro.customer.firstname + ' ' + parametro.customer.lastname;
-                        } else {
+                        } else if (parametro.customer.isperson == "F") {
                             objAddress.addressbook.addressee = parametro.customer.companyname;
                         }
 
@@ -368,15 +390,15 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                 }
 
                 if (cliente) {
-                    var objSubmitCustomer ={
-                        custentity_drt_nc_pendiente_enviar:true,
-                        custentity_psg_ei_entity_edoc_standard:3
+                    var objSubmitCustomer = {
+                        custentity_drt_nc_pendiente_enviar: true,
+                        custentity_psg_ei_entity_edoc_standard: 3
                     };
 
                     if (respuesta.data.commpany) {
-                        objSubmitCustomer.custentity_drt_nc_empresa= respuesta.data.commpany;
-                        drt_cn_lib.submitRecord(record.Type.CUSTOMER,respuesta.data.commpany, {
-                        custentity_drt_nc_pendiente_enviar:true
+                        objSubmitCustomer.custentity_drt_nc_empresa = respuesta.data.commpany;
+                        drt_cn_lib.submitRecord(record.Type.CUSTOMER, respuesta.data.commpany, {
+                            custentity_drt_nc_pendiente_enviar: true
                         });
                     }
                     drt_cn_lib.submitRecord(record.Type.CUSTOMER, cliente, objSubmitCustomer);
@@ -544,13 +566,13 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                     if (newtransaction.success) {
                         respuesta.data.transaccion = newtransaction.data;
                     }
-                    
+
                     if (respuesta.data.transaccion && parametro.dispersion && parametro.dispersion.length > 0) {
                         var objSublist_journal = {
                             line: [],
                         };
                         var objField_journal = {};
-    
+
                         if (objField_transaction.custbody_drt_nc_identificador_folio) {
                             objField_journal.custbody_drt_nc_identificador_folio = objField_transaction.custbody_drt_nc_identificador_folio;
                         }
@@ -561,11 +583,11 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                         objField_journal.custbody_drt_nc_createdfrom = respuesta.data.transaccion;
                         objField_journal.custbody_drt_nc_pendiente_enviar = false;
                         objField_journal.custbody_drt_nc_num_amortizacion = 0;
-    
+
                         if (objField_transaction.trandate) {
                             objField_journal.trandate = objField_transaction.trandate;
                         }
-    
+
                         for (var banco in parametro.dispersion) {
                             objSublist_journal.line.push({
                                 account: accountDebit,
@@ -580,12 +602,12 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                                 custcol_drt_nc_identificador_uuid: parametro.dispersion[banco].identificador
                             });
                         }
-    
+
                         var newjournalentry = drt_cn_lib.createRecord(record.Type.JOURNAL_ENTRY, objField_journal, objSublist_journal, {});
                         if (newjournalentry.success) {
                             respuesta.data.journal = newjournalentry.data;
                         }
-    
+
                     }
                 }
                 respuesta.success = Object.keys(respuesta.data).length > 0;
