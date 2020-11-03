@@ -176,7 +176,7 @@ define(['./drt_cn_lib.js', 'N/file'], function (drt_cn_lib, file) {
                     respuesta = actualizacion;
                     break;
                 case 'update':
-                    var update = drt_cn_lib.updateYuhu(context);
+                    var update = drt_cn_lib.updateYuhu(context.body);
                     respuesta = {};
                     respuesta = update;
                     break;
