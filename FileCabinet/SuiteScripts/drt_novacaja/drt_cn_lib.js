@@ -555,7 +555,7 @@ define([
                     });
                     var is_https = runtime.getCurrentScript().getParameter({
                         name: 'custscript_drt_nc_https'
-                    }) == 'T';
+                    }) || '';
 
                     log.audit({
                         title: 'is_https',
@@ -588,10 +588,10 @@ define([
                     details: JSON.stringify(error)
                 });
             } finally {
-                // log.emergency({
-                //     title: 'respuesta postWebhook ',
-                //     details: JSON.stringify(respuesta)
-                // });
+                log.emergency({
+                    title: 'respuesta postWebhook ',
+                    details: JSON.stringify(respuesta)
+                });
                 return respuesta;
             }
         }
