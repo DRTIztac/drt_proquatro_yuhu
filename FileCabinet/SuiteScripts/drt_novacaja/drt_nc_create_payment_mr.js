@@ -471,6 +471,9 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                         // }
                     }
                 }
+                if (newtransaction.error && Object.keys(newtransaction.error).length > 0) {
+                    respuesta.error.push('No se pudo generar la transacción. ' + JSON.stringify(newtransaction.error));
+                }
 
                 respuesta.success = Object.keys(respuesta.data).length > 0;
             } catch (error) {
@@ -1195,7 +1198,8 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
             try {
                 var respuesta = {
                     success: false,
-                    data: {}
+                    data: {},
+                    error: {}
                 };
                 log.audit({
                     title: 'param_amount',
@@ -1256,6 +1260,7 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                 respuesta.success = respuesta.data != '';
 
             } catch (error) {
+                respuesta.error = error;
                 log.error({
                     title: 'error createPayment',
                     details: JSON.stringify(error)
