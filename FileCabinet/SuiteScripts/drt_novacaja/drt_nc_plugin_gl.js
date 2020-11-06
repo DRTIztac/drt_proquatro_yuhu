@@ -190,7 +190,7 @@ function customizeGlImpact(transactionRecord, standardLines, customLines, book) 
                                                 line++;
                                                 objSublist.line[line] = {};
                                                 // objSublist.line[line].account = parseInt(347);
-                                                objSublist.line[line].account = parseInt(1041);
+                                                objSublist.line[line].account = parseInt(1026); //1041
                                                 objSublist.line[line].debit = parseFloat(totalR).toFixed(2);
                                                 objSublist.line[line].entity = parseInt(entity_empresa);
                                                 objSublist.line[line].custcol_drt_nc_identificador_uuid = objField.custbody_drt_nc_identificador_uuid;
@@ -216,7 +216,7 @@ function customizeGlImpact(transactionRecord, standardLines, customLines, book) 
                                                 line++;
                                                 objSublist.line[line] = {};
                                                 // objSublist.line[line].account = parseInt(347);
-                                                objSublist.line[line].account = parseInt(1041);
+                                                objSublist.line[line].account = parseInt(1026); //1041
                                                 objSublist.line[line].debit = parseFloat(total).toFixed(2);
                                                 objSublist.line[line].entity = parseInt(entity_empresa);
                                                 objSublist.line[line].custcol_drt_nc_identificador_uuid = objField.custbody_drt_nc_identificador_uuid;
@@ -344,16 +344,21 @@ function createRecord(param_type, param_field, param_sublist) {
             if (param_sublist) {
                 for (var sublist in param_sublist) {
                     for (var line in param_sublist[sublist]) {
-                        recordCreate.selectNewLineItem(sublist);
-                        for (var field in param_sublist[sublist][line]) {
-                            nlapiLogExecution('AUDIT', 'param_sublist[' + sublist + '][' + line + '][' + field + ']', JSON.stringify(param_sublist[sublist][line][field]));
-                            if (
-                                param_sublist[sublist][line][field]
-                            ) {
-                                recordCreate.setCurrentLineItemValue(sublist, field, param_sublist[sublist][line][field]);
+                        if (
+                            param_sublist[sublist][line].debit > 0 ||
+                            param_sublist[sublist][line].credit > 0
+                        ) {
+                            recordCreate.selectNewLineItem(sublist);
+                            for (var field in param_sublist[sublist][line]) {
+                                nlapiLogExecution('AUDIT', 'param_sublist[' + sublist + '][' + line + '][' + field + ']', JSON.stringify(param_sublist[sublist][line][field]));
+                                if (
+                                    param_sublist[sublist][line][field]
+                                ) {
+                                    recordCreate.setCurrentLineItemValue(sublist, field, param_sublist[sublist][line][field]);
+                                }
                             }
+                            recordCreate.commitLineItem(sublist);
                         }
-                        recordCreate.commitLineItem(sublist);
                     }
                 }
             }

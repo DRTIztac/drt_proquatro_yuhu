@@ -139,14 +139,14 @@ define([
                     objDefaul.custbody_psg_ei_status = 1;
                     objDefaul.custbody_edoc_gen_trans_pdf = true;
                     objDefaul.custbody_mx_cfdi_usage = 22;
-                    objDefaul.custbody_mx_txn_sat_payment_method = 28;
+                    objDefaul.custbody_mx_txn_sat_payment_method = 3;
                     objDefaul.custbody_mx_txn_sat_payment_term = 3;
                 } else if (param_type == record.Type.CASH_SALE) {
                     objDefaul.custbody_psg_ei_template = 7;
                     objDefaul.custbody_psg_ei_status = 1;
                     objDefaul.custbody_edoc_gen_trans_pdf = true;
                     objDefaul.custbody_mx_cfdi_usage = 22;
-                    objDefaul.custbody_mx_txn_sat_payment_method = 28;
+                    objDefaul.custbody_mx_txn_sat_payment_method = 3;
                     objDefaul.custbody_mx_txn_sat_payment_term = 3;
                 }
                 log.audit({
@@ -233,16 +233,23 @@ define([
                     data: '',
                     error: {}
                 };
-                respuesta.data = record.submitFields({
-                    type: param_type,
-                    id: param_id,
-                    values: param_field_value,
-                    options: {
-                        enableSourcing: false,
-                        ignoreMandatoryFields: true
-                    }
+                log.audit({
+                    title: 'submitRecord',
+                    details: ' param_type: ' + param_type +
+                        ' param_id: ' + param_id +
+                        ' param_field_value: ' + JSON.stringify(param_field_value)
                 });
-
+                if (param_type && param_id && Object.keys(param_field_value).length > 0) {
+                    respuesta.data = record.submitFields({
+                        type: param_type,
+                        id: param_id,
+                        values: param_field_value,
+                        options: {
+                            enableSourcing: false,
+                            ignoreMandatoryFields: true
+                        }
+                    });
+                }
 
                 respuesta.success = respuesta.data != '';
             } catch (error) {
@@ -607,9 +614,7 @@ define([
                     title: 'updateYuhu param_context',
                     details: JSON.stringify(param_context)
                 });
-
-                if (param_context && param_context.recordType && param_context.id) {
-
+                if (param_context.recordType && param_context.id) {
                     if (Object.keys(param_context.body).length > 0) {
                         var newRecord = record.load({
                             type: param_context.recordType,

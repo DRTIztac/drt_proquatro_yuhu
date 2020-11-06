@@ -12,6 +12,7 @@ define([
         record,
         drt_cn_lib
     ) {
+        var arrayError = [];
 
         function getInputData() {
             try {
@@ -88,20 +89,24 @@ define([
                             custbody_psg_ei_status: 1
                         });
                         if (
-                            !updateRecord.success
+                            !updateTransaction.success
                         ) {
                             var updateTransaction = drt_cn_lib.submitRecord(record.Type.CASH_SALE, data.values.custrecord_psg_ei_audit_transaction.value, {
                                 custbody_mx_customer_rfc: 'XAXX010101000',
                                 custbody_psg_ei_status: 1
                             });
                         }
+
                         if (
-                            updateRecord.success
+                            updateTransaction.success
                         ) {
                             var updateRecord = drt_cn_lib.submitRecord('customrecord_psg_ei_audit_trail', data.id, {
                                 isinactive: true
                             });
-                            updateTransaction.success
+                            arrayError.push({
+                                entity: data.values.custrecord_psg_ei_audit_entity.value || '',
+                                transaction: data.values.custrecord_psg_ei_audit_transaction.value || '',
+                            });
 
                             var webhookConsultado = 'error';
                             var response = {
@@ -127,6 +132,10 @@ define([
                         });
                     }
                 }
+                log.audit({
+                    title: 'arrayError',
+                    details: JSON.stringify(arrayError)
+                });
             } catch (error) {
                 log.error({
                     title: 'error reduce',

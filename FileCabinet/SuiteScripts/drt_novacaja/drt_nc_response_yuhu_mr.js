@@ -249,26 +249,28 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                             });
                             if (response.data.code == 200) {
                                 objupdate.custbody_drt_nc_pendiente_enviar = false;
-                                objRecord.setValue({
-                                    fieldId: 'custbody_drt_nc_pendiente_enviar',
-                                    value: false,
-                                    ignoreFieldChange: true
-                                });
+                                // objRecord.setValue({
+                                //     fieldId: 'custbody_drt_nc_pendiente_enviar',
+                                //     value: false,
+                                //     ignoreFieldChange: true
+                                // });
                             }
-                            objRecord.setValue({
-                                fieldId: 'custbody_drt_nc_notificacion_registro',
-                                value: (response.data.code + ': ' + JSON.stringify(data)),
-                                ignoreFieldChange: true
-                            });
+                            // objRecord.setValue({
+                            //     fieldId: 'custbody_drt_nc_notificacion_registro',
+                            //     value: (response.data.code + ': ' + JSON.stringify(data)),
+                            //     ignoreFieldChange: true
+                            // });
+                            objupdate.custbody_drt_nc_notificacion_registro = (response.data.code + ' : ' + JSON.stringify(data));
+                            drt_cn_lib.submitRecord(data.recordType, data.id, objupdate);
 
-                            var recordId = objRecord.save({
-                                enableSourcing: true,
-                                ignoreMandatoryFields: true
-                            });
-                            log.audit({
-                                title: 'recordId',
-                                details: JSON.stringify(recordId)
-                            });
+                            // var recordId = objRecord.save({
+                            //     enableSourcing: true,
+                            //     ignoreMandatoryFields: true
+                            // });
+                            // log.audit({
+                            //     title: 'recordId',
+                            //     details: JSON.stringify(recordId)
+                            // });
                         }
                     } catch (error) {
                         log.error({

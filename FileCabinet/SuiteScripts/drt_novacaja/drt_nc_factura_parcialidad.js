@@ -185,15 +185,15 @@ define(['N/record', 'N/search', 'N/format', 'N/runtime'],
                             type: format.Type.DATE
                         }) || ''
                     });
-                    var objDefaul={
+                    var objDefaul = {
                         custbody_psg_ei_template: 9,
                         custbody_psg_ei_status: 1,
                         custbody_edoc_gen_trans_pdf: true,
-                        custbody_mx_cfdi_usage: 3,
+                        custbody_mx_cfdi_usage: 22,
                         custbody_mx_txn_sat_payment_method: 28,
                         custbody_mx_txn_sat_payment_term: 3,
                     };
-                    for(var field_id in objDefaul){
+                    for (var field_id in objDefaul) {
                         invrec.setValue({
                             fieldId: field_id,
                             value: objDefaul[field_id]
@@ -346,12 +346,17 @@ define(['N/record', 'N/search', 'N/format', 'N/runtime'],
                         });
                         payment.setValue({
                             fieldId: 'account',
-                            value: 1040
+                            value: 1023 // 1040
                         });
 
                         payment.setValue({
                             fieldId: 'custbody_drt_nc_tipo_descuento',
                             value: rowValues.custbody_drt_nc_tipo_descuento.value
+                        });
+
+                        payment.setValue({
+                            fieldId: 'custbody_psg_ei_template',
+                            value: ''
                         });
 
                         payment.setValue({
@@ -601,7 +606,7 @@ define(['N/record', 'N/search', 'N/format', 'N/runtime'],
 
             var lineItem = {
                 sublist: "item",
-                item: 17,
+                item: 18, //17
                 quantity: 1,
                 price: -1,
                 rate: 0

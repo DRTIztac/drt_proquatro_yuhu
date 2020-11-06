@@ -611,7 +611,7 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                             }
                         } else {
                             objSublist_transaction.item.push({
-                                item: 17,
+                                item: 18, //17,
                                 price: "-1",
                                 quantity: 1,
                                 rate: 0,
@@ -809,7 +809,7 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                         var objSublist_transaction = {
                             item: [],
                         };
-                        var itemDefecto = 17;
+                        var itemDefecto = 18; // 17;
                         if (parametro.custbody_drt_nc_tipo_credito) {
                             itemDefecto = parametro.custbody_drt_nc_tipo_credito;
                         } else {
@@ -1044,7 +1044,7 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
 
                     var accountDebit = 819;
                     // var accountDeudores = 347;
-                    var accountDeudores = 1041;
+                    var accountDeudores = 1026 // 1041;
                     // var cuentaItem = drt_cn_lib.lookup(search.Type.ITEM, loadItem.data, ['custitem_drt_accounnt_capital']);
                     // if (
                     //     cuentaItem.success &&
