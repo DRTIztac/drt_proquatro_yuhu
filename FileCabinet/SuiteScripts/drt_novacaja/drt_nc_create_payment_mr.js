@@ -607,7 +607,7 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                     var loadItem = itemTransaction(record.Type.SALES_ORDER, parametro.internalid, 0);
 
                     if (
-                        parametro.custbody_drt_nc_total_interes > 0 || (parametro.item && parametro.item.length > 0)
+                        parametro.custbody_drt_nc_total_interes > 0
                     ) {
                         var objSublist_transaction = {
                             item: [],
