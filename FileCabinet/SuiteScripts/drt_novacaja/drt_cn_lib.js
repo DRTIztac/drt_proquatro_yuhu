@@ -623,10 +623,27 @@ define([
                         });
 
                         for (var field in param_context.body) {
-                            newRecord.setValue({
-                                fieldId: field,
-                                value: param_context.body[field]
-                            });
+                            if (
+                                (
+                                    field == 'trandate' ||
+                                    field == 'custbody_drt_nc_fecha_vencimiento'
+                                ) &&
+                                param_context.body[field]
+                            ) {
+                                newRecord.setValue({
+                                    fieldId: field,
+                                    value: format.parse({
+                                        value: param_context.body[field],
+                                        type: format.Type.DATE
+                                    })
+                                });
+
+                            } else {
+                                newRecord.setValue({
+                                    fieldId: field,
+                                    value: param_context.body[field]
+                                });
+                            }
                         }
 
                         respuesta.data = newRecord.save({
@@ -1153,7 +1170,11 @@ define([
                             details: JSON.stringify(param_field[fieldId])
                         });
                         if (
-                            fieldId == 'trandate'
+                            (
+                                fieldId == 'trandate' ||
+                                fieldId == 'custbody_drt_nc_fecha_vencimiento'
+                            ) &&
+                            param_field[fieldId]
                         ) {
                             newRecord.setValue({
                                 fieldId: fieldId,
