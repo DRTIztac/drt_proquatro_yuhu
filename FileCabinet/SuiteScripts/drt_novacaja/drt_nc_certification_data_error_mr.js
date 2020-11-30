@@ -74,6 +74,7 @@ define([
                             title: 'data',
                             details: JSON.stringify(data)
                         });
+                        var update = true;
                         // data.values.custrecord_psg_ei_audit_entity.value
                         // data.values.custrecord_psg_ei_audit_transaction.value
                         // data.values.custrecord_psg_ei_audit_details
@@ -84,46 +85,71 @@ define([
                         // var updateCustomer = drt_cn_lib.submitRecord(record.Type.CUSTOMER, data.values.custrecord_psg_ei_audit_entity.value, {
                         //     custentity_mx_rfc: 'XAXX010101000'
                         // });
-                        var updateTransaction = drt_cn_lib.submitRecord(record.Type.INVOICE, data.values.custrecord_psg_ei_audit_transaction.value, {
-                            custbody_mx_customer_rfc: 'XAXX010101000',
-                            custbody_psg_ei_status: 1
+
+
+                        var typeTransaction = record.Type.INVOICE;
+                        var datosTransaction = drt_cn_lib.lookup(typeTransaction, data.values.custrecord_psg_ei_audit_transaction.value, ['custbody_mx_customer_rfc']);
+                        if (datosTransaction.success) {
+                            log.audit({
+                                title: 'datosTransaction.data.custbody_mx_customer_rfc',
+                                details: JSON.stringify(datosTransaction.data.custbody_mx_customer_rfc)
+                            });
+                            if (datosTransaction.data.custbody_mx_customer_rfc && datosTransaction.data.custbody_mx_customer_rfc == 'XAXX010101000') {
+                                update = false;
+                            } else {
+                                update = true;
+                            }
+                        } else {
+                            typeTransaction = record.Type.CASH_SALE;
+                            datosTransaction = drt_cn_lib.lookup(typeTransaction, data.values.custrecord_psg_ei_audit_transaction.value, ['custbody_mx_customer_rfc']);
+                        }
+
+                        log.audit({
+                            title: 'typeTransaction',
+                            details: JSON.stringify(typeTransaction)
+                        });
+                        log.audit({
+                            title: 'data.values.custrecord_psg_ei_audit_details',
+                            details: JSON.stringify(data.values.custrecord_psg_ei_audit_details)
                         });
                         if (
-                            !updateTransaction.success
+                            update &&
+                            data.values.custrecord_psg_ei_audit_details &&
+                            data.values.custrecord_psg_ei_audit_details.indexOf("RFC") >= 0
                         ) {
-                            var updateTransaction = drt_cn_lib.submitRecord(record.Type.CASH_SALE, data.values.custrecord_psg_ei_audit_transaction.value, {
+                            var updateTransaction = drt_cn_lib.submitRecord(typeTransaction, data.values.custrecord_psg_ei_audit_transaction.value, {
                                 custbody_mx_customer_rfc: 'XAXX010101000',
                                 custbody_psg_ei_status: 1
                             });
-                        }
 
-                        if (
-                            updateTransaction.success
-                        ) {
-                            var updateRecord = drt_cn_lib.submitRecord('customrecord_psg_ei_audit_trail', data.id, {
-                                isinactive: true
-                            });
-                            arrayError.push({
-                                entity: data.values.custrecord_psg_ei_audit_entity.value || '',
-                                transaction: data.values.custrecord_psg_ei_audit_transaction.value || '',
-                            });
+                            if (
+                                updateTransaction.success
+                            ) {
+                                var updateRecord = drt_cn_lib.submitRecord('customrecord_psg_ei_audit_trail', data.id, {
+                                    isinactive: true
+                                });
+                                arrayError.push({
+                                    entity: data.values.custrecord_psg_ei_audit_entity.value || '',
+                                    transaction: data.values.custrecord_psg_ei_audit_transaction.value || '',
+                                });
 
-                            var webhookConsultado = 'error';
-                            var response = {
-                                data: {
-                                    code: '',
-                                    body: '',
+                                var webhookConsultado = 'error';
+                                var response = {
+                                    data: {
+                                        code: '',
+                                        body: '',
+                                    }
+                                };
+                                var dataWebhook = drt_cn_lib.bookWebhook(webhookConsultado);
+                                if (dataWebhook.success) {
+                                    data.webhook = dataWebhook.data.url;
+                                    response = drt_cn_lib.postWebhook(dataWebhook.data.header, dataWebhook.data.url, data);
                                 }
-                            };
-                            var dataWebhook = drt_cn_lib.bookWebhook(webhookConsultado);
-                            if (dataWebhook.success) {
-                                data.webhook = dataWebhook.data.url;
-                                response = drt_cn_lib.postWebhook(dataWebhook.data.header, dataWebhook.data.url, data);
+                                log.audit({
+                                    title: 'response ' + data.id,
+                                    details: JSON.stringify(response)
+                                });
                             }
-                            log.audit({
-                                title: 'response ' + data.id,
-                                details: JSON.stringify(response)
-                            });
                         }
                     } catch (error) {
                         log.error({
