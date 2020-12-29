@@ -496,6 +496,9 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                         // }
                         // }
                     }
+                    if (newtransaction.error && Object.keys(newtransaction.error).length > 0) {
+                        respuesta.error.push('No se pudo generar ' + record.Type.JOURNAL_ENTRY + ' ' + JSON.stringify(newtransaction.error));
+                    }
                 }
                 if (newtransaction.error && Object.keys(newtransaction.error).length > 0) {
                     respuesta.error.push('No se pudo generar la transacción. ' + JSON.stringify(newtransaction.error));
@@ -687,6 +690,9 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                             objSublist_transaction, {}
                         );
 
+                        if (newtransaction.error && Object.keys(newtransaction.error).length > 0) {
+                            respuesta.error.push('No se pudo generar ' + record.Type.CASH_SALE + ' ' + JSON.stringify(newtransaction.error));
+                        }
                     } else if (parametro.custbody_drt_nc_total_capital > 0) {
                         // respuesta.error.push('Solo se paga capital');
                         var accountDebit = 819;
@@ -755,7 +761,9 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
 
 
                         newtransaction = drt_cn_lib.createRecord(record.Type.JOURNAL_ENTRY, objField_journal, objSublist_journal, {});
-
+                        if (newtransaction.error && Object.keys(newtransaction.error).length > 0) {
+                            respuesta.error.push('No se pudo generar ' + record.Type.JOURNAL_ENTRY + ' ' + JSON.stringify(newtransaction.error));
+                        }
                     }
 
                     if (newtransaction.success) {
@@ -910,6 +918,10 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                             objSublist_transaction, {}
                         );
 
+                        if (newtransaction.error && Object.keys(newtransaction.error).length > 0) {
+                            respuesta.error.push('No se pudo generar ' + record.Type.INVOICE + ' ' + JSON.stringify(newtransaction.error));
+                        }
+
                     } else if (parametro.custbody_drt_nc_total_capital > 0) {
                         // respuesta.error.push('Solo se paga capital');
                         var accountDebit = 819;
@@ -978,6 +990,10 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                     }
                     if (newtransaction.success) {
                         respuesta.data.transaccion = newtransaction.data;
+                    }
+
+                    if (newtransaction.error && Object.keys(newtransaction.error).length > 0) {
+                        respuesta.error.push('No se pudo generar ' + record.Type.JOURNAL_ENTRY + ' ' + JSON.stringify(newtransaction.error));
                     }
                 }
 
@@ -1171,6 +1187,10 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
 
                     if (newtransaction.success) {
                         respuesta.data.transaccion = newtransaction.data;
+                    }
+
+                    if (newtransaction.error && Object.keys(newtransaction.error).length > 0) {
+                        respuesta.error.push('No se pudo generar ' + record.Type.JOURNAL_ENTRY + ' ' + JSON.stringify(newtransaction.error));
                     }
                 }
 
