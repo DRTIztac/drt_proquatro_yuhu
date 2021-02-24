@@ -2,8 +2,8 @@
  *@NApiVersion 2.x
  *@NScriptType MapReduceScript
  */
-define(['N/search', 'N/record', 'N/runtime', "N/transaction"],
-    function (search, record, runtime, transaction) {
+define(['N/search', 'N/record', 'N/runtime'],
+    function (search, record, runtime) {
         var objTransaction = {};
         var arraySucces = [];
         var arrayFail = [];
@@ -74,17 +74,6 @@ define(['N/search', 'N/record', 'N/runtime', "N/transaction"],
                         ) {
                             objTransaction[data.recordType].push(data.id);
 
-                            // if (
-                            //     data.recordType == record.Type.CASH_SALE ||
-                            //     data.recordType == record.Type.CUSTOMER_PAYMENT ||
-                            //     data.recordType == record.Type.INVOICE
-                            // ) {
-                                // var recordVoid = transaction.void({
-                                //     type: data.recordType,
-                                //     id: data.id,
-                                // })||'';
-                                // log.audit({title:'recordVoid',details:JSON.stringify(recordVoid)});
-                            // }
                             deleteRecord = record.delete({
                                 type: data.recordType,
                                 id: data.id,
@@ -103,9 +92,9 @@ define(['N/search', 'N/record', 'N/runtime', "N/transaction"],
                     } finally {
                         if (deleteRecord == data.id) {
                             arraySucces.push(data.id);
-                        } else if(
-                            arraySucces.indexOf(data.id)<0
-                        ){
+                        } else if (
+                            arraySucces.indexOf(data.id) < 0
+                        ) {
                             arrayFail.push(data.id);
                         }
                     }
