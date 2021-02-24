@@ -58,7 +58,7 @@
             <#if transaction.custbody_mx_cfdi_folio?has_content>            
                  <fx:Folio>${transaction.custbody_mx_cfdi_folio}</fx:Folio>
             </#if>           
-            <fx:TiempoDeEmision>${transaction.createddate?string.iso_nz}</fx:TiempoDeEmision>
+            <fx:TiempoDeEmision>${transaction.trandate?string.iso}T00:00:00</fx:TiempoDeEmision>
         </fx:AsignacionSolicitada>
         <fx:LugarExpedicion>${customCompanyInfo.zip}</fx:LugarExpedicion>
     </fx:Identificacion>
@@ -80,7 +80,7 @@
     </fx:Emisor>
     <fx:Receptor>
         <fx:CdgPaisReceptor>${custom.billaddr.countrycode}</fx:CdgPaisReceptor>
-        <fx:RFCReceptor>${transaction.custbody_mx_customer_rfc}</fx:RFCReceptor>
+        <fx:RFCReceptor>${customer.custentity_mx_rfc}</fx:RFCReceptor>
         <fx:NombreReceptor>${customerName}</fx:NombreReceptor>
         <fx:UsoCFDI>${satCodes.cfdiUsage}</fx:UsoCFDI>
     </fx:Receptor>
