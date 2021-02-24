@@ -117,12 +117,16 @@ define([
                             data.values.custrecord_psg_ei_audit_details &&
                             data.values.custrecord_psg_ei_audit_details.indexOf("RFC") >= 0
                         ) {
+                            var updateCustomer = drt_cn_lib.submitRecord(record.Type.CUSTOMER, data.values.custrecord_psg_ei_audit_entity.value, {
+                                custentity_mx_rfc: 'XAXX010101000'
+                            });
                             var updateTransaction = drt_cn_lib.submitRecord(typeTransaction, data.values.custrecord_psg_ei_audit_transaction.value, {
-                                custbody_mx_customer_rfc: 'XAXX010101000',
+                                // custbody_mx_customer_rfc: 'XAXX010101000',
                                 custbody_psg_ei_status: 1
                             });
 
                             if (
+                                updateCustomer.success &&
                                 updateTransaction.success
                             ) {
                                 var updateRecord = drt_cn_lib.submitRecord('customrecord_psg_ei_audit_trail', data.id, {
