@@ -1,0 +1,21 @@
+{
+    "recordType": "cashsale",
+    "record": "21502",
+    "internalid": 80477,
+    "custbody_drt_nc_tipo_pago": 2,
+    "custbody_drt_nc_identificador_pago": "0b2e3639-4502-447b-83ed-e716ddd0d58a",
+    "custbody_drt_nc_identificador_uuid": "0222ffd6-fdc1-4a0d-b842-e1bc7cea3218",
+    "custbody_drt_nc_identificador_folio": "CRT007956",
+    "custbody_drt_nc_referencia": "30840",
+    "custbody_drt_nc_tipo_descuento": 2,
+    "trandate": "2021-04-01",
+    "account": "617",
+    "total": "462.07",
+    "item": [{
+        "description": "Moratorio",
+        "item": "29",
+        "iva": 63.73,
+        "rate": 398.34,
+        "quantity": 1
+    }]
+}
