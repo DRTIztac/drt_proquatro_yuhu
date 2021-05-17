@@ -556,6 +556,11 @@ define([
                         title: 'postWebhook param_url',
                         details: JSON.stringify(param_url)
                     });
+                    param_body.envType = runtime.envType || '';
+                    log.audit({
+                        title: 'param_body.envType',
+                        details: JSON.stringify(param_body.envType)
+                    });
                     log.audit({
                         title: 'postWebhook param_body',
                         details: JSON.stringify(param_body)
