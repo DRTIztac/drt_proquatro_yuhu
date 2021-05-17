@@ -1,0 +1,56 @@
+{
+    "recordType": "cashsale",
+    "id": "371276",
+    "values": {
+        "custbody_drt_nc_identificador_pago": "0b2e3639-4502-447b-83ed-e716ddd0d58a",
+        "trandate": "2021-4-1",
+        "tranid": "382",
+        "amount": "462.07",
+        "entity": {
+            "value": "15954",
+            "text": "1762 GLORIA ELVIA MORENO GUAJARDO"
+        },
+        "total": "462.07",
+        "taxtotal": "63.73",
+        "custbody_drt_nc_pendiente_enviar": "T",
+        "custbody_drt_nc_con_cp": "",
+        "custbody_drt_nc_con_cs": {
+            "value": "21502",
+            "text": "21502"
+        },
+        "custbody_drt_nc_con_in": "",
+        "custbody_drt_nc_con_je": "",
+        "custbody_drt_nc_con_so": "",
+        "custbody_drt_nc_identificador_folio": "CRT007956",
+        "custbody_drt_nc_identificador_uuid": "0222ffd6-fdc1-4a0d-b842-e1bc7cea3218",
+        "custbody_drt_nc_folio_sustitucion": "",
+        "custbody_drt_nc_num_amortizacion": "",
+        "custbody_drt_nc_tipo_descuento": {
+            "value": "2",
+            "text": "Domiciliación"
+        },
+        "custbody_drt_nc_total_transaccion": "462.07",
+        "custbody_drt_nc_total_iva": "",
+        "custbody_drt_nc_total_interes": "",
+        "custbody_drt_nc_total_capital": "",
+        "custbody_drt_nc_createdfrom": {
+            "value": "80477",
+            "text": "Orden de venta #1712"
+        },
+        "custbody_mx_cfdi_uuid": "",
+        "custbody_drt_nc_tipo_pago": {
+            "value": "2",
+            "text": "Moratorio"
+        },
+        "custentity_drt_nc_curp.customer": "MOGG890928MNLRJL01",
+        "custentity_drt_nc_uuid_yuhu.customer": "ad6b4181-d1f5-49bd-bf72-997c278c3a04",
+        "custentity_mx_rfc.customer": "MOGG890928PE8",
+        "isperson.customer": "T",
+        "companyname.customer": "",
+        "firstname.customer": "GLORIA ELVIA",
+        "lastname.customer": "MORENO GUAJARDO",
+        "email.customer": "gloriamoreno885@gmail.com"
+    },
+    "webhook": "https://api.yuhu.mx/api/v1/ns/webhook/cashsale/",
+    "envType": "PRODUCTION"
+}
