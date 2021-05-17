@@ -528,6 +528,7 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                     error: []
                 };
                 var newtransaction = {}
+                var moraTransaction = false;
                 var patametroActualizacionUno = {};
                 var patametroActualizacionDos = false;
                 parametro.custbody_drt_nc_tipo_pago = parseFloat(parametro.custbody_drt_nc_tipo_pago);
@@ -569,6 +570,7 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                 switch (parametro.custbody_drt_nc_tipo_pago) {
                     case 2: //Mora
                         patametroActualizacionDos = false;
+                        moraTransaction = true;
                         break;
                     case 3: //Capital Parcial
                         patametroActualizacionUno = parametro.item;
@@ -610,7 +612,8 @@ define(['N/search', 'N/record', './drt_cn_lib', 'N/runtime', 'N/format'],
                     var loadItem = itemTransaction(record.Type.SALES_ORDER, parametro.internalid, 0);
 
                     if (
-                        parametro.custbody_drt_nc_total_interes > 0
+                        parametro.custbody_drt_nc_total_interes > 0 ||
+                        moraTransaction
                     ) {
                         var objSublist_transaction = {
                             item: [],
