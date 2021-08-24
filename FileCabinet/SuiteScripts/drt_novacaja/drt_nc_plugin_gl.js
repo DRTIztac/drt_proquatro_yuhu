@@ -114,7 +114,7 @@ function customizeGlImpact(transactionRecord, standardLines, customLines, book) 
                             break;
                         case 'custpymt':
                             record_entity = transactionRecord.getFieldValue('customer') || '';
-                            objField.custbody_drt_nc_createdfrom = transactionRecord.getLineItemValue('apply', 'internalid', 1) || '';
+                            objField.custbody_drt_nc_createdfrom = transactionRecord.getFieldValue('custbody_drt_nc_createdfrom') || '';
                             objField.custbody_drt_nc_con_je = transactionRecord.getFieldValue('custbody_drt_nc_con_cp') || '';
                             var LineItemCount = transactionRecord.getLineItemCount('apply') || '';
                             nlapiLogExecution('AUDIT', 'LineItemCount', LineItemCount);
